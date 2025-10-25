@@ -5,10 +5,26 @@
 
 // TMarks 服务相关
 export const TMARKS_URLS = {
+    DEFAULT_BASE_URL: 'https://tmarks.669696.xyz',
     DEFAULT_API_BASE: 'https://tmarks.669696.xyz/api',
-    WEB_APP: 'https://tmarks.669696.xyz/',
-    TAB_GROUPS: 'https://tmarks.669696.xyz/tab',
 } as const;
+
+/**
+ * 根据基础 URL 生成完整的 URL
+ * @param baseUrl 基础 URL（例如：https://tmarks.669696.xyz）
+ */
+export function getTMarksUrls(baseUrl?: string) {
+    const base = baseUrl || TMARKS_URLS.DEFAULT_BASE_URL;
+    // 移除末尾的斜杠
+    const cleanBase = base.replace(/\/$/, '');
+    
+    return {
+        BASE_URL: cleanBase,
+        API_BASE: `${cleanBase}/api`,
+        WEB_APP: `${cleanBase}/`,
+        TAB_GROUPS: `${cleanBase}/tab`,
+    };
+}
 
 // AI 服务默认 URL
 export const AI_SERVICE_URLS = {

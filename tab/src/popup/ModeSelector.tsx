@@ -6,7 +6,8 @@
 import { useState, useEffect } from 'react';
 // @ts-ignore
 import { Lunar } from 'lunar-javascript';
-import { TMARKS_URLS } from '@/lib/constants/urls';
+import { getTMarksUrls } from '@/lib/constants/urls';
+import { StorageService } from '@/lib/utils/storage';
 
 interface ModeSelectorProps {
   onSelectBookmark: () => void;
@@ -16,6 +17,7 @@ interface ModeSelectorProps {
 
 export function ModeSelector({ onSelectBookmark, onSelectTabCollection, onOpenOptions }: ModeSelectorProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [tmarksUrls, setTmarksUrls] = useState(getTMarksUrls());
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -25,6 +27,20 @@ export function ModeSelector({ onSelectBookmark, onSelectTabCollection, onOpenOp
     return () => {
       clearInterval(timer);
     };
+  }, []);
+
+  // 加载用户配置的 TMarks URL
+  useEffect(() => {
+    const loadTMarksUrl = async () => {
+      const config = await StorageService.getTMarksConfig();
+      if (config?.bookmarkApiUrl) {
+        // 从 API URL 中提取基础 URL
+        // 例如：https://tmarks.669696.xyz/api -> https://tmarks.669696.xyz
+        const baseUrl = config.bookmarkApiUrl.replace(/\/api\/?$/, '');
+        setTmarksUrls(getTMarksUrls(baseUrl));
+      }
+    };
+    loadTMarksUrl();
   }, []);
 
   const formatDate = (date: Date) => {
@@ -189,7 +205,7 @@ export function ModeSelector({ onSelectBookmark, onSelectTabCollection, onOpenOp
             {/* 我的书签 */}
             <button
               onClick={() => {
-                chrome.tabs.create({ url: TMARKS_URLS.WEB_APP });
+                chrome.tabs.create({ url: tmarksUrls.WEB_APP });
               }}
               className="flex-1 flex items-center justify-center py-2.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors shadow-sm"
             >
@@ -199,7 +215,7 @@ export function ModeSelector({ onSelectBookmark, onSelectTabCollection, onOpenOp
             {/* 我的收纳 */}
             <button
               onClick={() => {
-                chrome.tabs.create({ url: TMARKS_URLS.TAB_GROUPS });
+                chrome.tabs.create({ url: tmarksUrls.TAB_GROUPS });
               }}
               className="flex-1 flex items-center justify-center py-2.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors shadow-sm"
             >

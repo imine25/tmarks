@@ -7,13 +7,13 @@ import type {
 import { AppError } from '@/types';
 import { StorageService } from '@/lib/utils/storage';
 import { createTMarksClient, type TMarksBookmark, type TMarksTag } from '@/lib/api/tmarks';
-import { TMARKS_URLS } from '@/lib/constants/urls';
+import { getTMarksUrls } from '@/lib/constants/urls';
 
 export class BookmarkAPIClient {
   private client: ReturnType<typeof createTMarksClient> | null = null;
 
   async initialize(): Promise<void> {
-    const baseUrl = await StorageService.getBookmarkSiteApiUrl();
+    const configuredUrl = await StorageService.getBookmarkSiteApiUrl();
     const apiKey = await StorageService.getBookmarkSiteApiKey();
 
     if (!apiKey) {
@@ -23,10 +23,28 @@ export class BookmarkAPIClient {
       );
     }
 
+    // 从配置的 URL 获取 API 基础地址
+    // 支持两种格式：
+    // 1. 基础 URL（推荐）：https://tmarks.669696.xyz -> https://tmarks.669696.xyz/api
+    // 2. 完整 API URL（兼容旧版）：https://tmarks.669696.xyz/api -> https://tmarks.669696.xyz/api
+    let apiBaseUrl: string;
+    if (configuredUrl) {
+      if (configuredUrl.endsWith('/api')) {
+        // 已经是完整的 API URL
+        apiBaseUrl = configuredUrl;
+      } else {
+        // 基础 URL，需要补全 /api
+        apiBaseUrl = getTMarksUrls(configuredUrl).API_BASE;
+      }
+    } else {
+      // 使用默认 URL
+      apiBaseUrl = getTMarksUrls().API_BASE;
+    }
+
     // Create TMarks client with proper API key
     this.client = createTMarksClient({
       apiKey,
-      baseUrl: baseUrl || TMARKS_URLS.DEFAULT_API_BASE
+      baseUrl: apiBaseUrl
     });
   }
 

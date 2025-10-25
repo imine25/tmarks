@@ -234,6 +234,17 @@ export class StorageService {
   }
 
   /**
+   * Get TMarks configuration (API URL and API Key)
+   */
+  static async getTMarksConfig(): Promise<{ bookmarkApiUrl: string; bookmarkApiKey: string }> {
+    const config = await this.loadConfig();
+    return {
+      bookmarkApiUrl: config.bookmarkSite.apiUrl,
+      bookmarkApiKey: config.bookmarkSite.apiKey
+    };
+  }
+
+  /**
    * Clear all stored data
    */
   static async clear(): Promise<void> {

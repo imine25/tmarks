@@ -1,4 +1,4 @@
-import { ExternalLink, Trash2, Edit2, Pin, CheckSquare, Check, X, GripVertical } from 'lucide-react'
+import { ExternalLink, Trash2, Edit2, Pin, CheckSquare, Check, X, GripVertical, FolderInput } from 'lucide-react'
 import type { TabGroupItem } from '@/lib/types'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -17,6 +17,7 @@ interface TabItemProps {
   onTogglePin: (groupId: string, itemId: string, currentPinned: number) => void
   onToggleTodo: (groupId: string, itemId: string, currentTodo: number) => void
   onDeleteItem: (groupId: string, itemId: string, title: string) => void
+  onMoveItem?: (item: TabGroupItem) => void
   setEditingItemId: (id: string | null) => void
   setEditingTitle: (title: string) => void
   extractDomain: (url: string) => string
@@ -36,6 +37,7 @@ export function TabItem({
   onTogglePin,
   onToggleTodo,
   onDeleteItem,
+  onMoveItem,
   setEditingItemId,
   setEditingTitle,
   extractDomain,
@@ -204,6 +206,15 @@ export function TabItem({
               >
                 <CheckSquare className="w-4 h-4" />
               </button>
+              {onMoveItem && (
+                <button
+                  onClick={() => onMoveItem(item)}
+                  className="p-1.5 text-muted-foreground hover:bg-muted rounded transition-colors"
+                  title="移动到其他组"
+                >
+                  <FolderInput className="w-4 h-4" />
+                </button>
+              )}
               <button
                 onClick={() => onDeleteItem(groupId, item.id, item.title)}
                 className="p-1.5 text-destructive hover:bg-destructive/10 rounded transition-colors"
