@@ -12,29 +12,7 @@
 
 简体中文
 
-[在线演示](https://tmarks.669696.xyz) | [问题反馈](https://github.com/yourusername/tmarks/issues)
-
----
-
-## 🚀 一键部署
-
-[![Deploy to Cloudflare Pages](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/yourusername/tmarks)
-
-> 点击按钮后,Cloudflare会自动:
-> 1. Fork仓库到你的GitHub账号
-> 2. 创建Cloudflare Pages项目
-> 3. 配置构建设置
-> 4. 开始首次部署
->
-> ⚠️ **部署后还需要手动配置:**
-> - 创建D1数据库并运行迁移
-> - 创建KV命名空间
-> - 配置环境变量(JWT_SECRET、ENCRYPTION_KEY)
-> - 绑定D1和KV资源
->
-> 详细步骤请查看 [部署指南](#-部署)
-
-</div>
+[在线演示](https://tmarks.669696.xyz) | [问题反馈](https://github.com/yourusername/tmarks/issues
 
 ---
 
