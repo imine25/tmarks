@@ -464,7 +464,7 @@ export function BookmarksPage() {
                 className={`w-full px-3 py-2 text-sm flex items-center gap-2 transition-colors ${
                   visibilityFilter === option
                     ? 'bg-primary/10 text-primary font-medium'
-                    : 'text-base-content/80 hover:bg-base-200/60'
+                    : 'text-muted-foreground hover:bg-muted'
                 }`}
               >
                 <VisibilityIcon filter={option} />
@@ -501,7 +501,7 @@ export function BookmarksPage() {
                 className={`w-full px-3 py-2 text-sm flex items-center gap-2 transition-colors ${
                   viewMode === modeOption
                     ? 'bg-primary/10 text-primary font-medium'
-                    : 'text-base-content/80 hover:bg-base-200/60'
+                    : 'text-muted-foreground hover:bg-muted'
                 }`}
               >
                 <ViewModeIcon mode={modeOption} />
@@ -564,7 +564,7 @@ export function BookmarksPage() {
                 {/* 搜索框 */}
                 <div className="flex-1">
                   <div className="relative">
-                    <svg className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-base-content/40 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                     <input
@@ -595,7 +595,7 @@ export function BookmarksPage() {
                       onClick={toggleVisibilityMenu}
                       className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all shadow-float touch-manipulation ${
                         visibilityFilter === 'all'
-                          ? 'bg-base-200 text-base-content/80 hover:bg-base-300'
+                          ? 'bg-muted text-foreground hover:bg-muted/80'
                           : visibilityFilter === 'public'
                             ? 'bg-success/10 text-success hover:bg-success/20'
                             : 'bg-warning/10 text-warning hover:bg-warning/20'
@@ -612,7 +612,7 @@ export function BookmarksPage() {
                     <button
                       ref={viewMenuButtonRef}
                       onClick={toggleViewMenu}
-                      className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all shadow-float bg-base-200 text-base-content/80 hover:bg-base-300 touch-manipulation"
+                      className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all shadow-float bg-muted text-foreground hover:bg-muted/80 touch-manipulation"
                       title="切换视图"
                       aria-label="切换视图"
                       type="button"
@@ -666,7 +666,7 @@ export function BookmarksPage() {
         <div className="fixed inset-0 z-50 lg:hidden">
           {/* 背景遮罩 */}
           <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-background/80 backdrop-blur-sm"
             onClick={() => setIsTagSidebarOpen(false)}
           />
 

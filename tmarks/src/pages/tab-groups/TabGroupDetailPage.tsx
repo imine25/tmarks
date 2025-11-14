@@ -238,7 +238,7 @@ export function TabGroupDetailPage() {
                 <button
                   onClick={handleSaveTitle}
                   disabled={isSavingTitle || !editedTitle.trim()}
-                  className="p-2 rounded-lg bg-success text-white hover:bg-success/90 transition-colors disabled:opacity-50"
+                  className="p-2 rounded-lg bg-success text-success-foreground hover:bg-success/90 transition-colors disabled:opacity-50"
                 >
                   <Check className="w-5 h-5" />
                 </button>
@@ -305,7 +305,7 @@ export function TabGroupDetailPage() {
                 </div>
                 <button
                   onClick={handleRestoreAll}
-                  className="px-3 py-1.5 rounded-lg bg-success text-white text-sm font-medium hover:shadow-lg hover:bg-success/90 transition-all duration-200 flex items-center gap-1.5"
+                  className="px-3 py-1.5 rounded-lg bg-success text-success-foreground text-sm font-medium hover:shadow-lg hover:bg-success/90 transition-all duration-200 flex items-center gap-1.5"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                   全部恢复
@@ -317,11 +317,11 @@ export function TabGroupDetailPage() {
             {tabGroup.items.map((item, index) => (
               <div
                 key={item.id}
-                className="group relative flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:border-emerald-500/50 hover:shadow-md transition-all duration-200 cursor-pointer"
+                className="group relative flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:border-success/50 hover:shadow-md transition-all duration-200 cursor-pointer"
                 onClick={() => handleOpenTab(item.url)}
               >
                 {/* Index Badge */}
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex-shrink-0">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-success/20 to-success/10 flex-shrink-0">
                   <span
                     className="text-sm font-semibold"
                     style={{ color: 'var(--foreground)' }}

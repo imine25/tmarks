@@ -175,7 +175,7 @@ export function StatisticsPage() {
                           minWidth: '60px',
                         }}
                       >
-                        <span className="text-white font-semibold">{item.count}</span>
+                        <span className="text-primary-foreground font-semibold">{item.count}</span>
                       </div>
                     </div>
                   </div>

@@ -90,7 +90,7 @@ export function MoveToFolderDialog({
             className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
               isSelected
                 ? 'bg-primary text-primary-content'
-                : 'hover:bg-base-200'
+                : 'hover:bg-muted'
             }`}
             style={{ paddingLeft: `${level * 20 + 12}px` }}
             onClick={() => setSelectedFolderId(folder.id)}
@@ -102,7 +102,7 @@ export function MoveToFolderDialog({
                   e.stopPropagation()
                   toggleFolder(folder.id)
                 }}
-                className="w-4 h-4 flex items-center justify-center hover:bg-base-300 rounded"
+                className="w-4 h-4 flex items-center justify-center hover:bg-muted/80 rounded"
               >
                 {isExpanded ? (
                   <ChevronDown className="w-3 h-3" />
@@ -143,7 +143,7 @@ export function MoveToFolderDialog({
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-fade-in">
       {/* 背景遮罩 */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-background/80 backdrop-blur-sm"
         onClick={handleCancel}
       />
 
@@ -174,7 +174,7 @@ export function MoveToFolderDialog({
             className={`flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors border-b ${
               selectedFolderId === null
                 ? 'bg-primary text-primary-content'
-                : 'hover:bg-base-200'
+                : 'hover:bg-muted'
             }`}
             style={{ borderColor: 'var(--border)' }}
             onClick={() => setSelectedFolderId(null)}
@@ -188,7 +188,7 @@ export function MoveToFolderDialog({
             {rootFolders.length > 0 ? (
               renderFolderTree(rootFolders)
             ) : (
-              <div className="px-3 py-8 text-center text-sm text-base-content/50">
+              <div className="px-3 py-8 text-center text-sm text-muted-foreground">
                 没有可用的文件夹
               </div>
             )}

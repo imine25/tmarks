@@ -235,15 +235,15 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
   const isPending = createBookmark.isPending || updateBookmark.isPending || deleteBookmark.isPending || createTag.isPending
 
   return (
-    <div className="fixed inset-0 bg-base-content/50 backdrop-blur-sm flex items-center justify-center z-[9998] p-4">
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[9998] p-4">
       <div className="card w-full max-w-4xl max-h-[92vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-base-content">
+          <h2 className="text-xl font-bold text-foreground">
             {isEditing ? '编辑书签' : '新增书签'}
           </h2>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg hover:bg-base-200 flex items-center justify-center text-base-content transition-colors"
+            className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center text-foreground transition-colors"
             disabled={isPending}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -265,7 +265,7 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
           {/* 第一行：标题和URL */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="title" className="block text-xs font-medium mb-1.5 text-base-content">
+              <label htmlFor="title" className="block text-xs font-medium mb-1.5 text-foreground">
                 标题 <span className="text-error">*</span>
               </label>
               <input
@@ -281,7 +281,7 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
             </div>
 
             <div>
-              <label htmlFor="url" className="block text-xs font-medium mb-1.5 text-base-content">
+              <label htmlFor="url" className="block text-xs font-medium mb-1.5 text-foreground">
                 URL <span className="text-error">*</span>
               </label>
               <div className="relative">
@@ -296,7 +296,7 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
                 />
                 {checkingUrl && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <svg className="animate-spin h-4 w-4 text-base-content/40" viewBox="0 0 24 24" fill="none">
+                    <svg className="animate-spin h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
@@ -310,7 +310,7 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
                   </svg>
                   <div className="flex-1">
                     <p className="font-medium">该 URL 已存在</p>
-                    <p className="mt-0.5 text-base-content/60">
+                    <p className="mt-0.5 text-muted-foreground">
                       书签：{urlWarning.bookmark.title}
                     </p>
                   </div>
@@ -322,7 +322,7 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
           {/* 第二行：描述和封面图 */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="description" className="block text-xs font-medium mb-1.5 text-base-content">
+              <label htmlFor="description" className="block text-xs font-medium mb-1.5 text-foreground">
                 描述
               </label>
               <textarea
@@ -336,7 +336,7 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
             </div>
 
             <div>
-              <label htmlFor="coverImage" className="block text-xs font-medium mb-1.5 text-base-content">
+              <label htmlFor="coverImage" className="block text-xs font-medium mb-1.5 text-foreground">
                 封面图 URL
               </label>
               <div className="flex gap-2">
@@ -366,14 +366,14 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
           {/* 标签选择 */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-medium text-base-content">
+              <label className="block text-xs font-medium text-foreground">
                 标签
-                <span className="text-xs text-base-content/50 ml-1.5">
+                <span className="text-xs text-muted-foreground ml-1.5">
                   （支持逗号批量添加）
                 </span>
               </label>
               {selectedTagIds.length > 0 && (
-                <span className="text-xs text-base-content/60">
+                <span className="text-xs text-muted-foreground">
                   已选 {selectedTagIds.length} 个
                 </span>
               )}
@@ -414,10 +414,10 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
             )}
 
             {/* 可选标签列表 */}
-            <div className="p-2.5 bg-base-200 rounded-lg max-h-[120px] overflow-y-auto scrollbar-hide">
+            <div className="p-2.5 bg-muted rounded-lg max-h-[120px] overflow-y-auto scrollbar-hide">
               <div className="flex flex-wrap gap-1.5">
                 {tags.length === 0 ? (
-                  <p className="text-xs text-base-content/50 py-1">
+                  <p className="text-xs text-muted-foreground py-1">
                     暂无标签，在上方输入框输入后按 Enter 创建
                   </p>
                 ) : (
@@ -428,7 +428,7 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
                         key={tag.id}
                         type="button"
                         onClick={() => toggleTag(tag.id)}
-                        className="text-xs px-2.5 py-1 rounded-full bg-card border border-border text-base-content hover:border-primary/50 hover:bg-primary/5 transition-colors"
+                        className="text-xs px-2.5 py-1 rounded-full bg-card border border-border text-foreground hover:border-primary/50 hover:bg-primary/5 transition-colors"
                         disabled={isPending}
                       >
                         {tag.name}
@@ -449,7 +449,7 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
                   onChange={(e) => setIsPinned(e.target.checked)}
                   disabled={isPending}
                 />
-                <span className="text-xs text-base-content">置顶</span>
+                <span className="text-xs text-foreground">置顶</span>
               </label>
 
               <label className="flex items-center gap-1.5 cursor-pointer">
@@ -459,7 +459,7 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
                   onChange={(e) => setIsArchived(e.target.checked)}
                   disabled={isPending}
                 />
-                <span className="text-xs text-base-content">归档</span>
+                <span className="text-xs text-foreground">归档</span>
               </label>
 
             <label className="flex items-center gap-1.5 cursor-pointer">
@@ -469,7 +469,7 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
                 onChange={(e) => setIsPublic(e.target.checked)}
                 disabled={isPending}
               />
-              <span className="text-xs text-base-content">公开分享</span>
+              <span className="text-xs text-foreground">公开分享</span>
             </label>
             </div>
 

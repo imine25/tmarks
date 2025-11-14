@@ -41,7 +41,7 @@ export function ImportSection({ onImport }: ImportSectionProps) {
     preserve_timestamps: true,
     batch_size: 50,
     max_concurrent: 5,
-    default_tag_color: '#3b82f6',
+    default_tag_color: 'hsl(var(--primary))',
     folder_as_tag: true
   })
 
@@ -200,17 +200,17 @@ export function ImportSection({ onImport }: ImportSectionProps) {
     <div className="space-y-4 sm:space-y-6">
       {/* 标题 */}
       <div>
-        <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
+        <h3 className="text-base sm:text-lg font-semibold text-foreground">
           导入书签
         </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           从其他平台导入您的书签数据
         </p>
       </div>
 
       {/* 格式选择 */}
       <div className="space-y-3">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="block text-sm font-medium text-foreground">
           文件格式
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -221,28 +221,28 @@ export function ImportSection({ onImport }: ImportSectionProps) {
                 key={format.value}
                 className={`relative rounded-lg border p-3 sm:p-4 cursor-pointer transition-all touch-manipulation ${
                   selectedFormat === format.value
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    ? 'border-primary bg-primary/10'
+                    : 'border-border hover:border-border/80'
                 }`}
                 onClick={() => setSelectedFormat(format.value)}
               >
                 <div className="flex items-start space-x-3">
-                  <Icon className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <Icon className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2">
-                      <span className="font-medium text-gray-900 dark:text-gray-100 text-sm sm:text-base">
+                      <span className="font-medium text-foreground text-sm sm:text-base">
                         {format.label}
                       </span>
                       {format.recommended && (
-                        <span className="px-2 py-0.5 text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 rounded flex-shrink-0">
+                        <span className="px-2 py-0.5 text-xs bg-success/10 text-success rounded flex-shrink-0">
                           推荐
                         </span>
                       )}
                     </div>
-                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                       {format.description}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                    <p className="text-xs text-muted-foreground mt-1">
                       支持: {format.extensions.join(', ')}
                     </p>
                   </div>
@@ -252,7 +252,7 @@ export function ImportSection({ onImport }: ImportSectionProps) {
                     value={format.value}
                     checked={selectedFormat === format.value}
                     onChange={() => setSelectedFormat(format.value)}
-                    className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 flex-shrink-0 mt-0.5"
+                    className="h-4 w-4 text-primary border-border focus:ring-primary flex-shrink-0 mt-0.5"
                   />
                 </div>
               </div>
@@ -263,7 +263,7 @@ export function ImportSection({ onImport }: ImportSectionProps) {
 
       {/* 文件选择 */}
       <div className="space-y-3">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="block text-sm font-medium text-foreground">
           选择文件
         </label>
 
@@ -278,30 +278,30 @@ export function ImportSection({ onImport }: ImportSectionProps) {
               <div className="flex flex-col items-center space-y-3">
                 {isValidating ? (
                   <>
-                    <Loader2 className="h-8 w-8 text-blue-600 dark:text-blue-400 animate-spin" />
+                    <Loader2 className="h-8 w-8 text-primary animate-spin" />
                     <div>
-                      <p className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                      <p className="text-lg font-medium text-foreground">
                         正在验证文件...
                       </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-muted-foreground">
                         {selectedFile.name} ({formatFileSize(selectedFile.size)})
                       </p>
                     </div>
                   </>
                 ) : (
                   <>
-                    <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+                    <CheckCircle className="h-8 w-8 text-success" />
                     <div>
-                      <p className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                      <p className="text-lg font-medium text-foreground">
                         文件已选择
                       </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-muted-foreground">
                         {selectedFile.name} ({formatFileSize(selectedFile.size)})
                       </p>
                     </div>
                     <button
                       onClick={handleReset}
-                      className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
+                      className="px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-md hover:bg-muted"
                     >
                       重新选择
                     </button>
@@ -327,10 +327,10 @@ export function ImportSection({ onImport }: ImportSectionProps) {
 
       {/* 导入选项 */}
       <div className="space-y-4">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="block text-sm font-medium text-foreground">
           导入选项
         </label>
-        
+
         <div className="space-y-3">
           <label className="flex items-center space-x-3">
             <input
@@ -340,9 +340,9 @@ export function ImportSection({ onImport }: ImportSectionProps) {
                 ...prev,
                 skip_duplicates: e.target.checked
               }))}
-              className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="h-4 w-4 text-primary border-border rounded focus:ring-primary"
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">
+            <span className="text-sm text-foreground">
               跳过重复的书签
             </span>
           </label>
@@ -355,9 +355,9 @@ export function ImportSection({ onImport }: ImportSectionProps) {
                 ...prev,
                 create_missing_tags: e.target.checked
               }))}
-              className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="h-4 w-4 text-primary border-border rounded focus:ring-primary"
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">
+            <span className="text-sm text-foreground">
               自动创建缺失的标签
             </span>
           </label>
@@ -370,9 +370,9 @@ export function ImportSection({ onImport }: ImportSectionProps) {
                 ...prev,
                 preserve_timestamps: e.target.checked
               }))}
-              className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="h-4 w-4 text-primary border-border rounded focus:ring-primary"
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">
+            <span className="text-sm text-foreground">
               保留原始时间戳
             </span>
           </label>
@@ -386,9 +386,9 @@ export function ImportSection({ onImport }: ImportSectionProps) {
                   ...prev,
                   folder_as_tag: e.target.checked
                 }))}
-                className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                className="h-4 w-4 text-primary border-border rounded focus:ring-primary"
               />
-              <span className="text-sm text-gray-700 dark:text-gray-300">
+              <span className="text-sm text-foreground">
                 将文件夹转换为标签
               </span>
             </label>
@@ -414,40 +414,40 @@ export function ImportSection({ onImport }: ImportSectionProps) {
 
       {/* 导入结果 */}
       {importResult && (
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 sm:p-4">
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
+        <div className="bg-muted rounded-lg p-3 sm:p-4">
+          <h4 className="text-sm font-semibold text-foreground mb-3">
             导入结果
           </h4>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             <div className="text-center sm:text-left">
-              <div className="text-lg sm:text-xl font-bold text-green-600 dark:text-green-400">
+              <div className="text-lg sm:text-xl font-bold text-success">
                 {importResult.success}
               </div>
-              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <div className="text-xs sm:text-sm text-muted-foreground mt-1">
                 成功导入
               </div>
             </div>
             <div className="text-center sm:text-left">
-              <div className="text-lg sm:text-xl font-bold text-red-600 dark:text-red-400">
+              <div className="text-lg sm:text-xl font-bold text-destructive">
                 {importResult.failed}
               </div>
-              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <div className="text-xs sm:text-sm text-muted-foreground mt-1">
                 导入失败
               </div>
             </div>
             <div className="text-center sm:text-left">
-              <div className="text-lg sm:text-xl font-bold text-yellow-600 dark:text-yellow-400">
+              <div className="text-lg sm:text-xl font-bold text-warning">
                 {importResult.skipped}
               </div>
-              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <div className="text-xs sm:text-sm text-muted-foreground mt-1">
                 跳过重复
               </div>
             </div>
             <div className="text-center sm:text-left">
-              <div className="text-lg sm:text-xl font-bold text-blue-600 dark:text-blue-400">
+              <div className="text-lg sm:text-xl font-bold text-primary">
                 {importResult.total}
               </div>
-              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <div className="text-xs sm:text-sm text-muted-foreground mt-1">
                 总计处理
               </div>
             </div>
@@ -457,14 +457,14 @@ export function ImportSection({ onImport }: ImportSectionProps) {
           {importResult.total > 0 && (
             <div className="mt-4">
               <div className="flex items-center justify-between text-xs sm:text-sm mb-2">
-                <span className="text-gray-600 dark:text-gray-400">成功率</span>
-                <span className="font-medium text-gray-900 dark:text-gray-100">
+                <span className="text-muted-foreground">成功率</span>
+                <span className="font-medium text-foreground">
                   {Math.round((importResult.success / importResult.total) * 100)}%
                 </span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="w-full bg-border rounded-full h-2">
                 <div
-                  className="bg-green-600 dark:bg-green-400 h-2 rounded-full transition-all duration-500"
+                  className="bg-success h-2 rounded-full transition-all duration-500"
                   style={{ width: `${(importResult.success / importResult.total) * 100}%` }}
                 />
               </div>
@@ -493,14 +493,14 @@ export function ImportSection({ onImport }: ImportSectionProps) {
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => navigate('/bookmarks')}
-                className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 sm:py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 touch-manipulation"
+                className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 sm:py-2 text-sm font-medium text-primary-foreground bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary touch-manipulation"
               >
                 <span>查看导入的书签</span>
                 <ArrowRight className="h-4 w-4" />
               </button>
               <button
                 onClick={handleReset}
-                className="flex-1 px-4 py-3 sm:py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 touch-manipulation"
+                className="flex-1 px-4 py-3 sm:py-2 text-sm font-medium text-foreground bg-card border border-border rounded-md hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary touch-manipulation"
               >
                 继续导入
               </button>
@@ -515,7 +515,7 @@ export function ImportSection({ onImport }: ImportSectionProps) {
           <button
             onClick={handleImport}
             disabled={!selectedFile || !validationResult?.valid || isImporting || isValidating}
-            className="w-full flex items-center justify-center space-x-2 px-4 py-3 sm:py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+            className="w-full flex items-center justify-center space-x-2 px-4 py-3 sm:py-2 text-sm font-medium text-primary-foreground bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
           >
             {isImporting ? (
               <Loader2 className="h-4 w-4 animate-spin" />

@@ -169,14 +169,14 @@ export function TrashPage() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleRestore(group.id, group.title)}
-                    className="flex items-center gap-2 px-4 py-2 bg-success text-white rounded-lg hover:bg-success/90 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-success text-success-foreground rounded-lg hover:bg-success/90 transition-colors"
                   >
                     <RotateCcw className="w-4 h-4" />
                     恢复
                   </button>
                   <button
                     onClick={() => handlePermanentDelete(group.id, group.title)}
-                    className="flex items-center gap-2 px-4 py-2 bg-destructive text-white rounded-lg hover:bg-destructive/90 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                     永久删除

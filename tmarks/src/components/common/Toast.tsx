@@ -20,28 +20,28 @@ const ICONS = {
 
 const COLORS = {
   success: {
-    bg: 'bg-green-50',
-    border: 'border-green-200',
-    icon: 'text-green-600',
-    text: 'text-green-900',
+    bg: 'bg-success/10',
+    border: 'border-success/20',
+    icon: 'text-success',
+    text: 'text-success-foreground',
   },
   error: {
-    bg: 'bg-red-50',
-    border: 'border-red-200',
-    icon: 'text-red-600',
-    text: 'text-red-900',
+    bg: 'bg-destructive/10',
+    border: 'border-destructive/20',
+    icon: 'text-destructive',
+    text: 'text-destructive-foreground',
   },
   info: {
-    bg: 'bg-blue-50',
-    border: 'border-blue-200',
-    icon: 'text-blue-600',
-    text: 'text-blue-900',
+    bg: 'bg-primary/10',
+    border: 'border-primary/20',
+    icon: 'text-primary',
+    text: 'text-foreground',
   },
   warning: {
-    bg: 'bg-yellow-50',
-    border: 'border-yellow-200',
-    icon: 'text-yellow-600',
-    text: 'text-yellow-900',
+    bg: 'bg-warning/10',
+    border: 'border-warning/20',
+    icon: 'text-warning',
+    text: 'text-warning-foreground',
   },
 }
 

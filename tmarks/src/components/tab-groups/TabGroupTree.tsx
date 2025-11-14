@@ -356,15 +356,12 @@ function TreeNode({
       {/* 拖动目标指示器 - 插入到上方 */}
       {isDropTarget && dropPosition === 'before' && (
         <div
-          className="absolute left-0 right-0 pointer-events-none"
+          className="absolute left-0 right-0 pointer-events-none bg-primary rounded-sm animate-pulse"
           style={{
             top: '-2px',
             height: '3px',
-            backgroundColor: '#3b82f6',
-            borderRadius: '2px',
             zIndex: 999,
-            boxShadow: '0 0 8px rgba(59, 130, 246, 0.5)',
-            animation: 'pulse 1.5s ease-in-out infinite'
+            boxShadow: '0 0 8px hsl(var(--primary) / 0.5)',
           }}
         />
       )}
@@ -372,14 +369,10 @@ function TreeNode({
       {/* 拖动目标指示器 - 放入文件夹内部 */}
       {isDropTarget && dropPosition === 'inside' && isFolder && (
         <div
-          className="absolute inset-0 pointer-events-none"
+          className="absolute inset-0 pointer-events-none border-2 border-primary bg-primary/15 rounded-md animate-pulse"
           style={{
-            border: '2px solid #3b82f6',
-            backgroundColor: 'rgba(59, 130, 246, 0.15)',
-            borderRadius: '6px',
             zIndex: 999,
-            boxShadow: '0 0 12px rgba(59, 130, 246, 0.3)',
-            animation: 'pulse 1.5s ease-in-out infinite'
+            boxShadow: '0 0 12px hsl(var(--primary) / 0.3)',
           }}
         />
       )}
@@ -387,15 +380,12 @@ function TreeNode({
       {/* 拖动目标指示器 - 插入到下方 */}
       {isDropTarget && dropPosition === 'after' && (
         <div
-          className="absolute left-0 right-0 pointer-events-none"
+          className="absolute left-0 right-0 pointer-events-none bg-primary rounded-sm animate-pulse"
           style={{
             bottom: '-2px',
             height: '3px',
-            backgroundColor: '#3b82f6',
-            borderRadius: '2px',
             zIndex: 999,
-            boxShadow: '0 0 8px rgba(59, 130, 246, 0.5)',
-            animation: 'pulse 1.5s ease-in-out infinite'
+            boxShadow: '0 0 8px hsl(var(--primary) / 0.5)',
           }}
         />
       )}

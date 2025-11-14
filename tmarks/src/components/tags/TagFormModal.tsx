@@ -35,7 +35,7 @@ export function TagFormModal({
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60" onClick={onCancel} />
+      <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={onCancel} />
       <div className="relative w-full max-w-sm card p-5 space-y-4 animate-scale-in border border-border shadow-2xl rounded-xl">
         <div>
           <h3 className="text-base font-semibold mb-1">{title}</h3>

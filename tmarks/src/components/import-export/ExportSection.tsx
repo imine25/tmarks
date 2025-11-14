@@ -139,17 +139,17 @@ export function ExportSection({ onExport }: ExportSectionProps) {
     <div className="space-y-4 sm:space-y-6">
       {/* 标题 */}
       <div>
-        <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
+        <h3 className="text-base sm:text-lg font-semibold text-foreground">
           导出书签
         </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           将您的书签数据导出为文件，支持多种格式
         </p>
       </div>
 
       {/* 格式选择 */}
       <div className="space-y-3">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="block text-sm font-medium text-foreground">
           导出格式
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -160,25 +160,25 @@ export function ExportSection({ onExport }: ExportSectionProps) {
                 key={format.value}
                 className={`relative rounded-lg border p-3 sm:p-4 cursor-pointer transition-all touch-manipulation ${
                   selectedFormat === format.value
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    ? 'border-primary bg-primary/10'
+                    : 'border-border hover:border-border/80'
                 }`}
                 onClick={() => setSelectedFormat(format.value)}
               >
                 <div className="flex items-start space-x-3">
-                  <Icon className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <Icon className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2">
-                      <span className="font-medium text-gray-900 dark:text-gray-100 text-sm sm:text-base">
+                      <span className="font-medium text-foreground text-sm sm:text-base">
                         {format.label}
                       </span>
                       {format.recommended && (
-                        <span className="px-2 py-0.5 text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 rounded flex-shrink-0">
+                        <span className="px-2 py-0.5 text-xs bg-success/10 text-success rounded flex-shrink-0">
                           推荐
                         </span>
                       )}
                     </div>
-                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                       {format.description}
                     </p>
                   </div>
@@ -188,7 +188,7 @@ export function ExportSection({ onExport }: ExportSectionProps) {
                     value={format.value}
                     checked={selectedFormat === format.value}
                     onChange={() => setSelectedFormat(format.value)}
-                    className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 flex-shrink-0 mt-0.5"
+                    className="h-4 w-4 text-primary border-border focus:ring-primary flex-shrink-0 mt-0.5"
                   />
                 </div>
               </div>
@@ -199,10 +199,10 @@ export function ExportSection({ onExport }: ExportSectionProps) {
 
       {/* 导出选项 */}
       <div className="space-y-4">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="block text-sm font-medium text-foreground">
           导出选项
         </label>
-        
+
         <div className="space-y-3">
           <label className="flex items-center space-x-3">
             <input
@@ -212,9 +212,9 @@ export function ExportSection({ onExport }: ExportSectionProps) {
                 ...prev,
                 include_tags: e.target.checked
               }))}
-              className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="h-4 w-4 text-primary border-border rounded focus:ring-primary"
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">
+            <span className="text-sm text-foreground">
               包含标签信息
             </span>
           </label>
@@ -227,9 +227,9 @@ export function ExportSection({ onExport }: ExportSectionProps) {
                 ...prev,
                 include_metadata: e.target.checked
               }))}
-              className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="h-4 w-4 text-primary border-border rounded focus:ring-primary"
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">
+            <span className="text-sm text-foreground">
               包含元数据
             </span>
           </label>
@@ -247,9 +247,9 @@ export function ExportSection({ onExport }: ExportSectionProps) {
                       pretty_print: e.target.checked
                     }
                   }))}
-                  className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="h-4 w-4 text-primary border-border rounded focus:ring-primary"
                 />
-                <span className="text-sm text-gray-700 dark:text-gray-300">
+                <span className="text-sm text-foreground">
                   格式化 JSON（便于阅读）
                 </span>
               </label>
@@ -265,9 +265,9 @@ export function ExportSection({ onExport }: ExportSectionProps) {
                       include_click_stats: e.target.checked
                     }
                   }))}
-                  className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="h-4 w-4 text-primary border-border rounded focus:ring-primary"
                 />
-                <span className="text-sm text-gray-700 dark:text-gray-300">
+                <span className="text-sm text-foreground">
                   包含点击统计
                 </span>
               </label>
@@ -278,40 +278,40 @@ export function ExportSection({ onExport }: ExportSectionProps) {
 
       {/* 预览信息 */}
       {exportStats && (
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 sm:p-4">
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
+        <div className="bg-muted rounded-lg p-3 sm:p-4">
+          <h4 className="text-sm font-semibold text-foreground mb-3">
             导出预览
           </h4>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             <div className="text-center sm:text-left">
-              <div className="text-lg sm:text-xl font-bold text-blue-600 dark:text-blue-400">
+              <div className="text-lg sm:text-xl font-bold text-primary">
                 {exportStats.total_bookmarks}
               </div>
-              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <div className="text-xs sm:text-sm text-muted-foreground mt-1">
                 书签数量
               </div>
             </div>
             <div className="text-center sm:text-left">
-              <div className="text-lg sm:text-xl font-bold text-green-600 dark:text-green-400">
+              <div className="text-lg sm:text-xl font-bold text-success">
                 {exportStats.total_tags}
               </div>
-              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <div className="text-xs sm:text-sm text-muted-foreground mt-1">
                 标签数量
               </div>
             </div>
             <div className="text-center sm:text-left">
-              <div className="text-lg sm:text-xl font-bold text-purple-600 dark:text-purple-400">
+              <div className="text-lg sm:text-xl font-bold text-warning">
                 {exportStats.pinned_bookmarks}
               </div>
-              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <div className="text-xs sm:text-sm text-muted-foreground mt-1">
                 置顶书签
               </div>
             </div>
             <div className="text-center sm:text-left">
-              <div className="text-lg sm:text-xl font-bold text-orange-600 dark:text-orange-400">
+              <div className="text-lg sm:text-xl font-bold text-foreground">
                 {formatFileSize(exportStats.estimated_size)}
               </div>
-              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <div className="text-xs sm:text-sm text-muted-foreground mt-1">
                 预计大小
               </div>
             </div>
@@ -351,7 +351,7 @@ export function ExportSection({ onExport }: ExportSectionProps) {
         <button
           onClick={fetchExportPreview}
           disabled={isExporting}
-          className="w-full sm:w-auto px-4 py-3 sm:py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+          className="w-full sm:w-auto px-4 py-3 sm:py-2 text-sm font-medium text-foreground bg-card border border-border rounded-md hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
         >
           预览信息
         </button>
@@ -359,7 +359,7 @@ export function ExportSection({ onExport }: ExportSectionProps) {
         <button
           onClick={handleExport}
           disabled={isExporting}
-          className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-3 sm:py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+          className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-3 sm:py-2 text-sm font-medium text-primary-foreground bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
         >
           {isExporting ? (
             <Loader2 className="h-4 w-4 animate-spin" />

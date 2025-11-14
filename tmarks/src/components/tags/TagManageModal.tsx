@@ -91,7 +91,7 @@ export function TagManageModal({ tags, onClose }: TagManageModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4 animate-fade-in bg-black/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4 animate-fade-in bg-background/80 backdrop-blur-sm">
       {/* 背景遮罩 - 用于点击关闭 */}
       <div
         className="absolute inset-0"

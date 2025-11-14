@@ -410,7 +410,7 @@ export function PublicSharePage() {
               onClick={() => handleVisibilityChange(option)}
               className={`w-full px-3 py-2 text-sm flex items-center gap-2 transition-colors ${visibilityFilter === option
                 ? 'bg-primary/10 text-primary font-medium'
-                : 'text-base-content/80 hover:bg-base-200/60'
+                : 'text-muted-foreground hover:bg-muted'
                 }`}
             >
               <VisibilityIcon filter={option} />
@@ -446,7 +446,7 @@ export function PublicSharePage() {
               onClick={() => handleViewModeChange(modeOption)}
               className={`w-full px-3 py-2 text-sm flex items-center gap-2 transition-colors ${viewMode === modeOption
                 ? 'bg-primary/10 text-primary font-medium'
-                : 'text-base-content/80 hover:bg-base-200/60'
+                : 'text-muted-foreground hover:bg-muted'
                 }`}
             >
               <ViewModeIcon mode={modeOption} />
@@ -472,11 +472,11 @@ export function PublicSharePage() {
       {viewMenuPortal}
       <div className="w-full mx-auto py-3 sm:py-4 md:py-6 px-3 sm:px-4 md:px-6">
         {shareQuery.isLoading && (
-          <div className="text-center text-base-content/60 py-24">正在加载公开书签...</div>
+          <div className="text-center text-muted-foreground py-24">正在加载公开书签...</div>
         )}
 
         {shareQuery.isError && !shareQuery.isLoading && (
-          <div className="text-center text-base-content/60 py-24">分享链接无效或内容已下线。</div>
+          <div className="text-center text-muted-foreground py-24">分享链接无效或内容已下线。</div>
         )}
 
         {!shareQuery.isLoading && !shareQuery.isError && (
@@ -506,12 +506,12 @@ export function PublicSharePage() {
                         {shareInfo?.title || `${shareInfo?.username || '访客'}的书签精选`}
                       </h1>
                       {shareInfo?.description && (
-                        <p className="text-sm text-base-content/70 mt-1">{shareInfo.description}</p>
+                        <p className="text-sm text-muted-foreground mt-1">{shareInfo.description}</p>
                       )}
                     </div>
                     {/* 统计信息 */}
                     {allBookmarks.length > 0 && (
-                      <div className="text-sm text-base-content/60">
+                      <div className="text-sm text-muted-foreground">
                         {allFilteredBookmarks.length === allBookmarks.length ? (
                           <span>共 {allBookmarks.length} 个书签</span>
                         ) : (
@@ -543,7 +543,7 @@ export function PublicSharePage() {
 
                       {/* 搜索框 */}
                       <div className="relative flex-1">
-                        <svg className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-base-content/40 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                         <input
@@ -571,7 +571,7 @@ export function PublicSharePage() {
                             ref={visibilityMenuButtonRef}
                             onClick={toggleVisibilityMenu}
                             className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all shadow-float touch-manipulation ${visibilityFilter === 'all'
-                              ? 'bg-base-200 text-base-content/80 hover:bg-base-300'
+                              ? 'bg-muted text-foreground hover:bg-muted/80'
                               : visibilityFilter === 'public'
                                 ? 'bg-success/10 text-success hover:bg-success/20'
                                 : 'bg-warning/10 text-warning hover:bg-warning/20'
@@ -588,7 +588,7 @@ export function PublicSharePage() {
                           <button
                             ref={viewMenuButtonRef}
                             onClick={toggleViewMenu}
-                            className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all shadow-float bg-base-200 text-base-content/80 hover:bg-base-300 touch-manipulation"
+                            className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all shadow-float bg-muted text-foreground hover:bg-muted/80 touch-manipulation"
                             title="切换视图"
                             aria-label="切换视图"
                             type="button"
@@ -621,7 +621,7 @@ export function PublicSharePage() {
                   </>
                 ) : !shareQuery.isLoading && allBookmarks.length > 0 ? (
                   <div className="card text-center py-12">
-                    <div className="text-base-content/40 mb-2">
+                    <div className="text-muted-foreground mb-2">
                       <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
@@ -640,7 +640,7 @@ export function PublicSharePage() {
           <div className="fixed inset-0 z-50 lg:hidden">
             {/* 背景遮罩 */}
             <div
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              className="absolute inset-0 bg-background/80 backdrop-blur-sm"
               onClick={() => setIsTagSidebarOpen(false)}
             />
 

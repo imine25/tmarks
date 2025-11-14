@@ -50,7 +50,7 @@ export function TabGroupCard({
       case '蓝色': return 'border-l-blue-500'
       case '紫色': return 'border-l-purple-500'
       case '粉色': return 'border-l-pink-500'
-      default: return 'border-l-gray-200'
+      default: return 'border-l-border'
     }
   }
 

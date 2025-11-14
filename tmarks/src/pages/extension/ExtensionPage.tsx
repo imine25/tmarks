@@ -184,9 +184,9 @@ export function ExtensionPage() {
       </div>
 
       {/* 使用提示 */}
-      <div className="card shadow-float bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20 mb-8">
+      <div className="card shadow-float bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 mb-8">
         <div className="flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0 text-blue-500" />
+          <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0 text-primary" />
           <div>
             <h3 className="font-medium mb-2" style={{ color: 'var(--foreground)' }}>
               💡 使用提示

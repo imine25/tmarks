@@ -581,7 +581,7 @@ export function TabGroupsPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <p className="text-red-500 mb-4">{error}</p>
+          <p className="text-destructive mb-4">{error}</p>
           <button
             onClick={loadTabGroups}
             className="px-4 py-2 rounded-lg border border-border hover:bg-muted/50 transition-colors"
@@ -686,7 +686,7 @@ export function TabGroupsPage() {
               return (
                 <div
                   key={group.id}
-                  className="card border-l-4 border-l-primary p-6 hover:shadow-xl transition-all duration-200"
+                  className="card border-l-[3px] border-l-primary p-6 hover:shadow-xl transition-all duration-200"
                 >
                 {/* Header */}
                 <TabGroupHeader

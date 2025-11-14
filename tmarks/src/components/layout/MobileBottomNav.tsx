@@ -194,32 +194,32 @@ export function MobileModal({
   return (
     <div className="fixed inset-0 z-50 sm:hidden">
       {/* 背景遮罩 */}
-      <div 
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+      <div
+        className="fixed inset-0 bg-background/80 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
-      
+
       {/* 模态框内容 */}
-      <div 
-        className="fixed inset-x-0 bottom-0 bg-white dark:bg-gray-800 rounded-t-xl shadow-xl transition-transform"
+      <div
+        className="fixed inset-x-0 bottom-0 bg-card rounded-t-xl shadow-xl transition-transform"
         style={{ maxHeight }}
       >
         {/* 拖拽手柄 */}
         {showHandle && (
           <div className="flex justify-center pt-3 pb-2">
-            <div className="w-12 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
+            <div className="w-12 h-1 bg-border rounded-full" />
           </div>
         )}
-        
+
         {/* 标题栏 */}
         {title && (
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <h3 className="text-lg font-medium text-foreground">
               {title}
             </h3>
             <button
               onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-md"
+              className="p-2 text-muted-foreground hover:text-foreground rounded-md"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
