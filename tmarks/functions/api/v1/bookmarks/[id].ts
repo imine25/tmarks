@@ -11,6 +11,7 @@ interface UpdateBookmarkRequest {
   url?: string
   description?: string
   cover_image?: string
+  favicon?: string
   tag_ids?: string[]
   is_pinned?: boolean
   is_archived?: boolean
@@ -64,6 +65,11 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
       if (body.cover_image !== undefined) {
         updates.push('cover_image = ?')
         values.push(body.cover_image ? sanitizeString(body.cover_image, 2000) : null)
+      }
+
+      if (body.favicon !== undefined) {
+        updates.push('favicon = ?')
+        values.push(body.favicon ? sanitizeString(body.favicon, 2000) : null)
       }
 
       if (body.is_pinned !== undefined) {

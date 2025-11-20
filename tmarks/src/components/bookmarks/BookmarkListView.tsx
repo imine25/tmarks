@@ -144,12 +144,16 @@ const BookmarkListItem = memo(function BookmarkListItem({
     }
   }
 
-  const fallbackFaviconUrl = getFaviconUrl(bookmark.url)
+  const googleFaviconUrl = getFaviconUrl(bookmark.url)
   
-  // 决定显示什么图片
+  // 决定显示什么图片 - 三级回退策略
+  // 1. cover_image (封面图)
+  // 2. favicon (网站图标，从插件获取)
+  // 3. Google Favicon API (最终回退)
   const hasCoverImage = bookmark.cover_image && !coverImageError
-  const shouldShowFallback = !hasCoverImage && fallbackFaviconUrl && !faviconError
-  const shouldShowImage = hasCoverImage || shouldShowFallback
+  const hasFavicon = !hasCoverImage && bookmark.favicon && !faviconError
+  const shouldShowGoogleFavicon = !hasCoverImage && !hasFavicon && googleFaviconUrl && !faviconError
+  const shouldShowImage = hasCoverImage || hasFavicon || shouldShowGoogleFavicon
 
   const handleVisit = () => {
     // 记录点击统计
@@ -211,7 +215,7 @@ const BookmarkListItem = memo(function BookmarkListItem({
       <div className="flex flex-col gap-2">
         {/* 第一行：图标 + 标题/URL/状态标签 */}
         <div className="flex flex-row gap-3 sm:gap-4">
-          {/* 封面图 */}
+          {/* 封面图/图标 - 三级回退 */}
           {shouldShowImage && (
             <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-base-200 flex items-center justify-center">
               {hasCoverImage ? (
@@ -221,9 +225,16 @@ const BookmarkListItem = memo(function BookmarkListItem({
                   className="w-full h-full object-cover"
                   onError={() => setCoverImageError(true)}
                 />
-              ) : shouldShowFallback ? (
+              ) : hasFavicon ? (
                 <img
-                  src={fallbackFaviconUrl}
+                  src={bookmark.favicon!}
+                  alt={bookmark.title}
+                  className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+                  onError={() => setFaviconError(true)}
+                />
+              ) : shouldShowGoogleFavicon ? (
+                <img
+                  src={googleFaviconUrl}
                   alt={bookmark.title}
                   className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
                   onError={() => setFaviconError(true)}

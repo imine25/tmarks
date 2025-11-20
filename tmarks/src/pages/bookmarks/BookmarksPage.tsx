@@ -568,8 +568,8 @@ export function BookmarksPage() {
     <>
       {visibilityMenuPortal}
       {viewMenuPortal}
-      <div className="w-full max-w-full mx-auto py-3 sm:py-4 md:py-6 px-3 sm:px-4 md:px-6 overflow-x-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 md:gap-6 max-w-full">
+      <div className="w-full h-[calc(100vh-4rem)] sm:h-[calc(100vh-5rem)] flex flex-col overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-6 w-full h-full overflow-hidden">
           {/* 左侧：标签侧边栏 - 桌面端显示 */}
           <aside className="hidden lg:block lg:col-span-3 order-2 lg:order-1 fixed top-[calc(5rem+0.75rem)] sm:top-[calc(5rem+1rem)] md:top-[calc(5rem+1.5rem)] left-3 sm:left-4 md:left-6 bottom-3 w-[calc(25%-1.5rem)] z-40 flex flex-col overflow-hidden">
             <TagSidebar
@@ -583,13 +583,14 @@ export function BookmarksPage() {
           </aside>
 
           {/* 右侧：书签列表 */}
-          <main className="lg:col-span-9 lg:col-start-4 order-1 lg:order-2">
-            <div className="space-y-3 sm:space-y-4 md:space-y-5">
+          <main className="lg:col-span-9 lg:col-start-4 order-1 lg:order-2 flex flex-col h-full overflow-hidden w-full min-w-0">
+            {/* 固定的顶部操作栏 */}
+            <div className="flex-shrink-0 px-3 sm:px-4 md:px-6 pt-3 sm:pt-4 md:pt-6 pb-3 sm:pb-4 w-full">
               {/* 顶部操作栏 */}
-              <div className="card shadow-float">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <div className="card shadow-float w-full">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full">
                   {/* 移动端标签抽屉按钮 + 搜索框 */}
-                  <div className="flex items-center gap-3 flex-1 w-full sm:min-w-[280px]">
+                  <div className="flex items-center gap-3 flex-1 min-w-0 w-full sm:min-w-[280px]">
                     {/* 标签抽屉按钮 - 仅移动端显示 */}
                     <button
                       onClick={() => setIsTagSidebarOpen(true)}
@@ -603,15 +604,15 @@ export function BookmarksPage() {
                     </button>
 
                     {/* 搜索框 */}
-                    <div className="flex-1">
-                      <div className="relative">
+                    <div className="flex-1 min-w-0">
+                      <div className="relative w-full">
                         <svg className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                         <input
                           type="text"
                           className="input w-full pl-10 sm:pl-12 h-11 sm:h-auto text-sm sm:text-base"
-                          placeholder="搜索书签标题、描述或URL..."
+                          placeholder="搜索书签..."
                           value={searchKeyword}
                           onChange={(e) => setSearchKeyword(e.target.value)}
                         />
@@ -620,7 +621,7 @@ export function BookmarksPage() {
                   </div>
 
                   {/* 排序选择、视图切换和新增按钮 */}
-                  <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1">
+                  <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto overflow-x-auto scrollbar-hide pb-1 sm:pb-0">
                     <div className="relative flex-shrink-0">
                       <SortSelector
                         value={sortBy}
@@ -699,33 +700,33 @@ export function BookmarksPage() {
 
               {/* 批量操作提示栏 */}
               {batchMode && (
-                <div className="card bg-primary/10 border border-primary/20 mb-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <span className="text-sm font-medium text-foreground">
+                <div className="card bg-primary/10 border border-primary/20 mt-3 sm:mt-4 w-full">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
+                      <span className="font-medium text-foreground whitespace-nowrap">
                         {selectedIds.length > 0
-                          ? `已选择 ${selectedIds.length} 个书签`
-                          : '请选择要操作的书签'}
+                          ? `已选择 ${selectedIds.length} 个`
+                          : '请选择书签'}
                       </span>
                       {selectedIds.length < filteredBookmarks.length && (
                         <>
-                          <span className="text-border">|</span>
+                          <span className="text-border hidden sm:inline">|</span>
                           <button
                             onClick={handleSelectAll}
-                            className="text-sm text-primary hover:text-primary/80 transition-colors"
+                            className="text-primary hover:text-primary/80 transition-colors whitespace-nowrap"
                           >
-                            全选当前页 ({filteredBookmarks.length})
+                            全选 ({filteredBookmarks.length})
                           </button>
                         </>
                       )}
                       {selectedIds.length > 0 && (
                         <>
-                          <span className="text-border">|</span>
+                          <span className="text-border hidden sm:inline">|</span>
                           <button
                             onClick={handleClearSelection}
-                            className="text-sm text-primary hover:text-primary/80 transition-colors"
+                            className="text-primary hover:text-primary/80 transition-colors whitespace-nowrap"
                           >
-                            取消选择
+                            取消
                           </button>
                         </>
                       )}
@@ -733,29 +734,34 @@ export function BookmarksPage() {
                   </div>
                 </div>
               )}
+            </div>
 
-              {/* 书签列表 */}
-              <BookmarkListContainer
-                bookmarks={filteredBookmarks}
-                isLoading={isInitialLoading || isFetchingExisting}
-                viewMode={viewMode}
-                onEdit={handleOpenForm}
-                previousCount={previousCountRef.current}
-                batchMode={batchMode}
-                selectedIds={selectedIds}
-                onToggleSelect={handleToggleSelect}
-              />
-
-              {/* 分页控制 */}
-              {!isInitialLoading && filteredBookmarks.length > 0 && (
-                <PaginationFooter
-                  hasMore={hasMore}
-                  isLoading={bookmarksQuery.isFetchingNextPage}
-                  onLoadMore={handleLoadMore}
-                  currentCount={filteredBookmarks.length}
-                  totalLoaded={filteredBookmarks.length}
+            {/* 可滚动的书签列表区域 */}
+            <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4 md:px-6 pb-20 sm:pb-4 md:pb-6 w-full">
+              <div className="space-y-3 sm:space-y-4 md:space-y-5 w-full min-w-0">
+                {/* 书签列表 */}
+                <BookmarkListContainer
+                  bookmarks={filteredBookmarks}
+                  isLoading={isInitialLoading || isFetchingExisting}
+                  viewMode={viewMode}
+                  onEdit={handleOpenForm}
+                  previousCount={previousCountRef.current}
+                  batchMode={batchMode}
+                  selectedIds={selectedIds}
+                  onToggleSelect={handleToggleSelect}
                 />
-              )}
+
+                {/* 分页控制 */}
+                {!isInitialLoading && filteredBookmarks.length > 0 && (
+                  <PaginationFooter
+                    hasMore={hasMore}
+                    isLoading={bookmarksQuery.isFetchingNextPage}
+                    onLoadMore={handleLoadMore}
+                    currentCount={filteredBookmarks.length}
+                    totalLoaded={filteredBookmarks.length}
+                  />
+                )}
+              </div>
             </div>
           </main>
         </div>

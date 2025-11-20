@@ -94,6 +94,8 @@ export interface PageInfo {
   description?: string;
   content?: string;
   thumbnail?: string;
+  thumbnails?: string[];
+  favicon?: string;
 }
 
 // ============ AI Request/Response ============

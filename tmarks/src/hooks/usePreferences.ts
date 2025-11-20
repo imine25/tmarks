@@ -30,6 +30,7 @@ function getDefaultPreferences(): UserPreferences {
     tag_selection_auto_clear_seconds: 30,
     enable_search_auto_clear: true,
     enable_tag_selection_auto_clear: false,
+    default_bookmark_icon: 'bookmark',
     updated_at: new Date().toISOString(),
   }
 }

@@ -8,12 +8,15 @@ class PageContentExtractor {
    * Extract page information
    */
   extract(): PageInfo {
+    const thumbnails = this.getAllThumbnails();
     return {
       title: this.getTitle(),
       url: window.location.href,
       description: this.getDescription(),
       content: this.getMainContent(),
-      thumbnail: this.getThumbnail()
+      thumbnail: thumbnails[0] || '',
+      thumbnails: thumbnails,
+      favicon: this.getFavicon()
     };
   }
 
@@ -73,9 +76,146 @@ class PageContentExtractor {
   }
 
   /**
-   * Get page thumbnail/cover image
+   * Get website favicon/logo
    */
-  private getThumbnail(): string {
+  private getFavicon(): string {
+    // 辅助函数：安全地解析URL
+    const safeParseUrl = (urlString: string, baseUrl?: string): string => {
+      if (!urlString || typeof urlString !== 'string') return '';
+      
+      try {
+        urlString = urlString.trim();
+        if (!urlString) return '';
+        
+        const absoluteUrl = new URL(urlString, baseUrl || window.location.href);
+        
+        if (absoluteUrl.protocol !== 'http:' && absoluteUrl.protocol !== 'https:') {
+          return '';
+        }
+        
+        return absoluteUrl.href;
+      } catch (e) {
+        return '';
+      }
+    };
+
+    // 1. 尝试获取高清的 Apple Touch Icon (通常是180x180或更大)
+    try {
+      const appleTouchIcons = Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="apple-touch-icon"]'));
+      if (appleTouchIcons.length > 0) {
+        // 优先选择带sizes属性的最大尺寸
+        let largestIcon: HTMLLinkElement | undefined;
+        let maxSize = 0;
+
+        for (const icon of appleTouchIcons) {
+          if (icon.href) {
+            const sizes = icon.getAttribute('sizes');
+            if (sizes) {
+              const size = parseInt(sizes.split('x')[0]);
+              if (!isNaN(size) && size > maxSize) {
+                maxSize = size;
+                largestIcon = icon;
+              }
+            } else if (!largestIcon) {
+              largestIcon = icon;
+            }
+          }
+        }
+
+        if (largestIcon && largestIcon.href) {
+          const url = safeParseUrl(largestIcon.href);
+          if (url) {
+            console.log('[ContentScript] Found apple-touch-icon:', url);
+            return url;
+          }
+        }
+      }
+    } catch (e) {
+      console.error('[ContentScript] Error reading apple-touch-icon:', e);
+    }
+
+    // 2. 尝试获取标准的 icon 或 shortcut icon
+    try {
+      const iconLinks = Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel*="icon"]'));
+      if (iconLinks.length > 0) {
+        // 优先选择PNG/SVG格式，然后是最大尺寸
+        let bestIcon: HTMLLinkElement | undefined;
+        let maxSize = 0;
+
+        for (const icon of iconLinks) {
+          if (icon.href) {
+            const type = icon.getAttribute('type') || '';
+            const sizes = icon.getAttribute('sizes');
+            const href = icon.href.toLowerCase();
+
+            // SVG优先（矢量图，无损缩放）
+            if (type.includes('svg') || href.endsWith('.svg')) {
+              bestIcon = icon;
+              break;
+            }
+
+            // PNG次之
+            if (type.includes('png') || href.endsWith('.png')) {
+              if (sizes) {
+                const size = parseInt(sizes.split('x')[0]);
+                if (!isNaN(size) && size > maxSize) {
+                  maxSize = size;
+                  bestIcon = icon;
+                }
+              } else if (!bestIcon || maxSize === 0) {
+                bestIcon = icon;
+              }
+            }
+
+            // 如果还没找到，接受任何icon
+            if (!bestIcon) {
+              bestIcon = icon;
+            }
+          }
+        }
+
+        if (bestIcon && bestIcon.href) {
+          const url = safeParseUrl(bestIcon.href);
+          if (url) {
+            console.log('[ContentScript] Found icon:', url);
+            return url;
+          }
+        }
+      }
+    } catch (e) {
+      console.error('[ContentScript] Error reading icon:', e);
+    }
+
+    // 3. 使用Chrome的favicon API（高清版本）
+    try {
+      const domain = window.location.origin;
+      // Chrome的favicon API支持高清图标，size参数可以是16, 32, 64等
+      // @2x表示Retina屏幕的2倍分辨率
+      const chromeIconUrl = `chrome://favicon/size/64@2x/${domain}`;
+      console.log('[ContentScript] Using Chrome favicon API:', chromeIconUrl);
+      return chromeIconUrl;
+    } catch (e) {
+      console.error('[ContentScript] Error using Chrome favicon API:', e);
+    }
+
+    // 4. 回退到标准favicon.ico路径
+    try {
+      const faviconUrl = new URL('/favicon.ico', window.location.origin).href;
+      console.log('[ContentScript] Fallback to favicon.ico:', faviconUrl);
+      return faviconUrl;
+    } catch (e) {
+      console.error('[ContentScript] Error constructing favicon.ico URL:', e);
+    }
+
+    return '';
+  }
+
+  /**
+   * Get all possible page thumbnails/cover images
+   */
+  private getAllThumbnails(): string[] {
+    const thumbnails: string[] = [];
+    
     // 辅助函数：安全地解析URL
     const safeParseUrl = (urlString: string, baseUrl?: string): string => {
       if (!urlString || typeof urlString !== 'string') return '';
@@ -90,13 +230,11 @@ class PageContentExtractor {
         
         // 验证协议（只接受http/https）
         if (absoluteUrl.protocol !== 'http:' && absoluteUrl.protocol !== 'https:') {
-          console.warn('[ContentScript] Invalid image protocol:', absoluteUrl.protocol);
           return '';
         }
         
         return absoluteUrl.href;
       } catch (e) {
-        console.warn('[ContentScript] Failed to parse URL:', urlString, e);
         return '';
       }
     };
@@ -106,9 +244,9 @@ class PageContentExtractor {
       const ogImage = document.querySelector('meta[property="og:image"]');
       if (ogImage instanceof HTMLMetaElement && ogImage.content) {
         const url = safeParseUrl(ogImage.content);
-        if (url) {
+        if (url && !thumbnails.includes(url)) {
           console.log('[ContentScript] Found og:image:', url);
-          return url;
+          thumbnails.push(url);
         }
       }
     } catch (e) {
@@ -120,18 +258,17 @@ class PageContentExtractor {
       const twitterImage = document.querySelector('meta[name="twitter:image"]');
       if (twitterImage instanceof HTMLMetaElement && twitterImage.content) {
         const url = safeParseUrl(twitterImage.content);
-        if (url) {
+        if (url && !thumbnails.includes(url)) {
           console.log('[ContentScript] Found twitter:image:', url);
-          return url;
+          thumbnails.push(url);
         }
       }
     } catch (e) {
       console.error('[ContentScript] Error reading twitter:image:', e);
     }
 
-    // 3. 尝试在页面中查找最大的图片
+    // 3. 尝试在页面中查找多个大图片
     try {
-      // 优先搜索主内容区，如果找不到再搜索整个页面
       const searchAreas = [
         document.querySelector('main'),
         document.querySelector('[role="main"]'),
@@ -139,28 +276,22 @@ class PageContentExtractor {
         document.body
       ].filter(Boolean) as HTMLElement[];
 
+      const foundImages: Array<{ url: string; area: number }> = [];
+
       for (const area of searchAreas) {
         if (!area) continue;
 
         const images = area.querySelectorAll('img');
-        let largestImage: HTMLImageElement | null = null;
-        let maxArea = 0;
 
         for (const img of images) {
           try {
-            // 跳过没有src的图片
             if (!img.src) continue;
-
-            // 跳过data URL和blob URL（通常是临时图片）
             if (img.src.startsWith('data:') || img.src.startsWith('blob:')) continue;
 
-            // 获取图片尺寸
             let width = img.naturalWidth;
             let height = img.naturalHeight;
 
-            // 如果图片还没加载完成，尝试使用其他方式获取尺寸
             if (width === 0 || height === 0) {
-              // 方法1: 检查HTML属性
               const attrWidth = img.getAttribute('width');
               const attrHeight = img.getAttribute('height');
               
@@ -173,46 +304,44 @@ class PageContentExtractor {
                 }
               }
               
-              // 方法2: 使用CSS计算尺寸
               if (width === 0 || height === 0) {
                 width = img.width || img.offsetWidth || img.clientWidth;
                 height = img.height || img.offsetHeight || img.clientHeight;
               }
             }
 
-            // 过滤掉太小的图片（可能是图标、按钮、广告等）
-            // 同时过滤掉异常大的图片（可能是背景图）
             if (width > 200 && height > 200 && width < 5000 && height < 5000) {
-              const area = width * height;
-              if (area > maxArea) {
-                maxArea = area;
-                largestImage = img;
+              const url = safeParseUrl(img.src);
+              if (url && !foundImages.some(item => item.url === url)) {
+                foundImages.push({ url, area: width * height });
               }
             }
           } catch (imgError) {
-            // 单个图片处理失败不影响其他图片
             console.warn('[ContentScript] Error processing image:', imgError);
             continue;
           }
         }
+      }
 
-        // 如果在当前区域找到了合适的图片，验证并返回
-        if (largestImage && largestImage.src) {
-          const url = safeParseUrl(largestImage.src);
-          if (url) {
-            console.log('[ContentScript] Found largest image:', url, `(${Math.round(Math.sqrt(maxArea))}px)`);
-            return url;
-          }
+      // 按面积排序，取前5张
+      foundImages.sort((a, b) => b.area - a.area);
+      const topImages = foundImages.slice(0, 5);
+      
+      for (const { url } of topImages) {
+        if (!thumbnails.includes(url)) {
+          console.log('[ContentScript] Found large image:', url);
+          thumbnails.push(url);
         }
       }
     } catch (e) {
-      console.error('[ContentScript] Error finding largest image:', e);
+      console.error('[ContentScript] Error finding large images:', e);
     }
 
-    // 4. 如果都没找到，返回空字符串
-    console.log('[ContentScript] No suitable thumbnail found');
-    return '';
+    console.log('[ContentScript] Total thumbnails found:', thumbnails.length);
+    return thumbnails;
   }
+
+
 
   /**
    * Get meta tag content

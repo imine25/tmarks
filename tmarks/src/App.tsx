@@ -1,11 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter } from 'react-router-dom'
 import { useEffect, useRef } from 'react'
-import { AppRouter } from './routes'
-import { useAuthStore } from './stores/authStore'
-import { ToastContainer } from './components/common/Toast'
-import { useToastStore } from './stores/toastStore'
-import { useThemeStore } from './stores/themeStore'
+import { AppRouter } from '@/routes'
+import { useAuthStore } from '@/stores/authStore'
+import { ToastContainer } from '@/components/common/Toast'
+import { useToastStore } from '@/stores/toastStore'
+import { useThemeStore } from '@/stores/themeStore'
 
 const queryClient = new QueryClient({
   defaultOptions: {

@@ -21,6 +21,7 @@ export interface TMarksBookmark {
   url: string;
   description?: string;
   cover_image?: string;
+  favicon?: string;
   is_public: boolean;
   is_pinned: boolean;
   is_archived: boolean;
@@ -61,6 +62,7 @@ export interface CreateBookmarkInput {
   url: string;
   description?: string;
   cover_image?: string;
+  favicon?: string;
   tag_ids?: string[];
   is_public?: boolean;
   is_pinned?: boolean;
@@ -72,6 +74,7 @@ export interface UpdateBookmarkInput {
   url?: string;
   description?: string;
   cover_image?: string;
+  favicon?: string;
   tag_ids?: string[];
   is_public?: boolean;
   is_pinned?: boolean;

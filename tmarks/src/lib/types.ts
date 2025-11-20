@@ -70,6 +70,7 @@ export interface Bookmark {
   url: string
   description: string | null
   cover_image: string | null
+  favicon: string | null
   is_pinned: boolean
   is_archived: boolean
   is_public: boolean
@@ -85,6 +86,7 @@ export interface CreateBookmarkRequest {
   url: string
   description?: string
   cover_image?: string
+  favicon?: string
   tag_ids?: string[]
   is_pinned?: boolean
   is_archived?: boolean
@@ -96,6 +98,7 @@ export interface UpdateBookmarkRequest {
   url?: string
   description?: string | null
   cover_image?: string | null
+  favicon?: string | null
   tag_ids?: string[]
   is_pinned?: boolean
   is_archived?: boolean
@@ -143,6 +146,8 @@ export interface TagsResponse {
 export type TagLayoutPreference = 'grid' | 'masonry'
 export type SortByPreference = 'created' | 'updated' | 'pinned' | 'popular'
 
+export type DefaultBookmarkIcon = 'bookmark' | 'star' | 'heart' | 'link' | 'globe' | 'folder'
+
 export interface UserPreferences {
   user_id?: string
   theme: 'light' | 'dark' | 'system'
@@ -156,6 +161,8 @@ export interface UserPreferences {
   tag_selection_auto_clear_seconds: number
   enable_search_auto_clear: boolean
   enable_tag_selection_auto_clear: boolean
+  // 默认书签图标
+  default_bookmark_icon: DefaultBookmarkIcon
   updated_at: string
 }
 
@@ -178,6 +185,9 @@ export interface UpdatePreferencesRequest {
   mobile_edit_auto_cancel_seconds?: number
   double_click_delay_ms?: number
   enable_edit_confirmation?: boolean
+  
+  // 3. 默认书签图标
+  default_bookmark_icon?: DefaultBookmarkIcon
   
   // 3. 动画和性能相关
   enable_animations?: boolean

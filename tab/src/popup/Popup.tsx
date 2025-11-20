@@ -432,6 +432,11 @@ export function Popup() {
                 url={currentPage.url}
                 description={currentPage.description}
                 thumbnail={includeThumbnail ? currentPage.thumbnail : undefined}
+                thumbnails={includeThumbnail ? currentPage.thumbnails : undefined}
+                favicon={currentPage.favicon}
+                onThumbnailChange={(newThumbnail) => {
+                  setCurrentPage({ ...currentPage, thumbnail: newThumbnail });
+                }}
               />
             </section>
           )}

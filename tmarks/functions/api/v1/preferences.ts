@@ -15,6 +15,7 @@ interface UserPreferences {
   tag_selection_auto_clear_seconds?: number
   enable_search_auto_clear?: number
   enable_tag_selection_auto_clear?: number
+  default_bookmark_icon?: string
   updated_at: string
 }
 
@@ -29,6 +30,7 @@ interface UpdatePreferencesRequest {
   tag_selection_auto_clear_seconds?: number
   enable_search_auto_clear?: boolean
   enable_tag_selection_auto_clear?: boolean
+  default_bookmark_icon?: string
 }
 
 async function hasTagLayoutColumn(db: D1Database): Promise<boolean> {
@@ -84,6 +86,7 @@ export const onRequestGet: PagesFunction<Env, RouteParams, AuthContext>[] = [
           tag_selection_auto_clear_seconds: preferences.tag_selection_auto_clear_seconds ?? 30,
           enable_search_auto_clear: preferences.enable_search_auto_clear === 1,
           enable_tag_selection_auto_clear: preferences.enable_tag_selection_auto_clear === 1,
+          default_bookmark_icon: preferences.default_bookmark_icon ?? 'bookmark',
           updated_at: preferences.updated_at,
         },
       })
@@ -135,6 +138,10 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
 
       if (body.tag_selection_auto_clear_seconds !== undefined && (body.tag_selection_auto_clear_seconds < 10 || body.tag_selection_auto_clear_seconds > 300)) {
         return badRequest('Tag selection auto clear seconds must be between 10 and 300')
+      }
+
+      if (body.default_bookmark_icon && !['bookmark', 'star', 'heart', 'link', 'globe', 'folder'].includes(body.default_bookmark_icon)) {
+        return badRequest('Invalid default bookmark icon value')
       }
 
       // 构建更新语句
@@ -191,6 +198,11 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
         values.push(body.enable_tag_selection_auto_clear ? 1 : 0)
       }
 
+      if (body.default_bookmark_icon !== undefined) {
+        updates.push('default_bookmark_icon = ?')
+        values.push(body.default_bookmark_icon)
+      }
+
       if (updates.length === 0) {
         if ((body.tag_layout !== undefined && !tagLayoutSupported) ||
             (body.sort_by !== undefined && !sortBySupported)) {
@@ -216,6 +228,7 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
               tag_selection_auto_clear_seconds: preferences.tag_selection_auto_clear_seconds ?? 30,
               enable_search_auto_clear: preferences.enable_search_auto_clear === 1,
               enable_tag_selection_auto_clear: preferences.enable_tag_selection_auto_clear === 1,
+              default_bookmark_icon: preferences.default_bookmark_icon ?? 'bookmark',
               updated_at: preferences.updated_at,
             },
           })
@@ -260,6 +273,7 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
           tag_selection_auto_clear_seconds: preferences.tag_selection_auto_clear_seconds ?? 30,
           enable_search_auto_clear: preferences.enable_search_auto_clear === 1,
           enable_tag_selection_auto_clear: preferences.enable_tag_selection_auto_clear === 1,
+          default_bookmark_icon: preferences.default_bookmark_icon ?? 'bookmark',
           updated_at: preferences.updated_at,
         },
       })

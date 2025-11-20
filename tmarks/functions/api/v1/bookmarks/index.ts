@@ -13,6 +13,7 @@ interface CreateBookmarkRequest {
   url: string
   description?: string
   cover_image?: string
+  favicon?: string
   tag_ids?: string[]
   is_pinned?: boolean
   is_archived?: boolean
@@ -219,6 +220,7 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
       const url = sanitizeString(body.url, 2000)
       const description = body.description ? sanitizeString(body.description, 1000) : null
       const coverImage = body.cover_image ? sanitizeString(body.cover_image, 2000) : null
+      const favicon = body.favicon ? sanitizeString(body.favicon, 2000) : null
 
       // 检查URL是否已存在（包括已删除的）
       const existing = await context.env.DB.prepare(
@@ -243,7 +245,7 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
         bookmarkId = existing.id
         await context.env.DB.prepare(
           `UPDATE bookmarks
-           SET title = ?, description = ?, cover_image = ?,
+           SET title = ?, description = ?, cover_image = ?, favicon = ?,
                is_pinned = ?, is_archived = ?, is_public = ?,
                deleted_at = NULL, updated_at = ?
            WHERE id = ?`
@@ -252,6 +254,7 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
             title,
             description,
             coverImage,
+            favicon,
             isPinned,
             isArchived,
             isPublic,
@@ -270,8 +273,8 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
         bookmarkId = bookmarkUuid
 
         await context.env.DB.prepare(
-          `INSERT INTO bookmarks (id, user_id, title, url, description, cover_image, is_pinned, is_archived, is_public, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          `INSERT INTO bookmarks (id, user_id, title, url, description, cover_image, favicon, is_pinned, is_archived, is_public, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         )
           .bind(
             bookmarkUuid,
@@ -280,6 +283,7 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
             url,
             description,
             coverImage,
+            favicon,
             isPinned,
             isArchived,
             isPublic,

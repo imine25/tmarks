@@ -209,6 +209,7 @@ export class BookmarkAPIClient {
         url: bookmark.url,
         description: bookmark.description,
         cover_image: bookmark.thumbnail,
+        favicon: bookmark.favicon,
         tag_ids: tagIds,
         is_public: bookmark.isPublic ?? false
       });

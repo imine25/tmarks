@@ -1,36 +1,54 @@
 import { useState, useEffect } from 'react'
-import { Save, RotateCcw } from 'lucide-react'
+import { Save, RotateCcw, Settings, Zap, Palette, Chrome, Key, Share2, Database } from 'lucide-react'
 import { usePreferences, useUpdatePreferences } from '@/hooks/usePreferences'
 import { useToastStore } from '@/stores/toastStore'
+import type { UserPreferences } from '@/lib/types'
+import { SettingsTabs } from '@/components/settings/SettingsTabs'
+import { BasicSettingsTab } from '@/components/settings/tabs/BasicSettingsTab'
+import { AutomationSettingsTab } from '@/components/settings/tabs/AutomationSettingsTab'
+import { AppearanceSettingsTab } from '@/components/settings/tabs/AppearanceSettingsTab'
+import { BrowserSettingsTab } from '@/components/settings/tabs/BrowserSettingsTab'
+import { ApiSettingsTab } from '@/components/settings/tabs/ApiSettingsTab'
+import { ShareSettingsTab } from '@/components/settings/tabs/ShareSettingsTab'
+import { DataSettingsTab } from '@/components/settings/tabs/DataSettingsTab'
 
 export function GeneralSettingsPage() {
   const { data: preferences, isLoading } = usePreferences()
   const updatePreferences = useUpdatePreferences()
   const { addToast } = useToastStore()
 
-  // 1. 搜索和筛选相关
-  const [searchAutoClearSeconds, setSearchAutoClearSeconds] = useState(15)
-  const [tagSelectionAutoClearSeconds, setTagSelectionAutoClearSeconds] = useState(30)
-  const [enableSearchAutoClear, setEnableSearchAutoClear] = useState(true)
-  const [enableTagSelectionAutoClear, setEnableTagSelectionAutoClear] = useState(false)
+  const [activeTab, setActiveTab] = useState('basic')
+  const [localPreferences, setLocalPreferences] = useState<UserPreferences | null>(null)
 
   // 从服务器加载设置
   useEffect(() => {
     if (preferences) {
-      setSearchAutoClearSeconds(preferences.search_auto_clear_seconds || 15)
-      setTagSelectionAutoClearSeconds(preferences.tag_selection_auto_clear_seconds || 30)
-      setEnableSearchAutoClear(preferences.enable_search_auto_clear ?? true)
-      setEnableTagSelectionAutoClear(preferences.enable_tag_selection_auto_clear ?? false)
+      setLocalPreferences(preferences)
     }
   }, [preferences])
 
+  const handleUpdate = (updates: Partial<UserPreferences>) => {
+    if (localPreferences) {
+      setLocalPreferences({ ...localPreferences, ...updates })
+    }
+  }
+
   const handleSave = async () => {
+    if (!localPreferences) return
+    
     try {
       await updatePreferences.mutateAsync({
-        search_auto_clear_seconds: searchAutoClearSeconds,
-        tag_selection_auto_clear_seconds: tagSelectionAutoClearSeconds,
-        enable_search_auto_clear: enableSearchAutoClear,
-        enable_tag_selection_auto_clear: enableTagSelectionAutoClear,
+        theme: localPreferences.theme,
+        page_size: localPreferences.page_size,
+        view_mode: localPreferences.view_mode,
+        density: localPreferences.density,
+        tag_layout: localPreferences.tag_layout,
+        sort_by: localPreferences.sort_by,
+        search_auto_clear_seconds: localPreferences.search_auto_clear_seconds,
+        tag_selection_auto_clear_seconds: localPreferences.tag_selection_auto_clear_seconds,
+        enable_search_auto_clear: localPreferences.enable_search_auto_clear,
+        enable_tag_selection_auto_clear: localPreferences.enable_tag_selection_auto_clear,
+        default_bookmark_icon: localPreferences.default_bookmark_icon,
       })
       addToast('success', '设置已保存')
     } catch {
@@ -39,13 +57,13 @@ export function GeneralSettingsPage() {
   }
 
   const handleReset = () => {
-    setSearchAutoClearSeconds(15)
-    setTagSelectionAutoClearSeconds(30)
-    setEnableSearchAutoClear(true)
-    setEnableTagSelectionAutoClear(false)
+    if (preferences) {
+      setLocalPreferences(preferences)
+      addToast('info', '已重置为上次保存的设置')
+    }
   }
 
-  if (isLoading) {
+  if (isLoading || !localPreferences) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -53,9 +71,20 @@ export function GeneralSettingsPage() {
     )
   }
 
+  const tabs = [
+    { id: 'basic', label: '基础', icon: <Settings className="w-4 h-4" /> },
+    { id: 'automation', label: '自动化', icon: <Zap className="w-4 h-4" /> },
+    { id: 'appearance', label: '外观', icon: <Palette className="w-4 h-4" /> },
+    { id: 'browser', label: '浏览器', icon: <Chrome className="w-4 h-4" /> },
+    { id: 'api', label: 'API', icon: <Key className="w-4 h-4" /> },
+    { id: 'share', label: '分享', icon: <Share2 className="w-4 h-4" /> },
+    { id: 'data', label: '数据', icon: <Database className="w-4 h-4" /> },
+  ]
+
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="max-w-5xl mx-auto p-6 space-y-6">
+      {/* 页面标题和操作按钮 */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">通用设置</h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -68,7 +97,7 @@ export function GeneralSettingsPage() {
             className="btn btn-secondary flex items-center gap-2"
           >
             <RotateCcw className="w-4 h-4" />
-            重置
+            <span className="hidden sm:inline">重置</span>
           </button>
           <button
             onClick={handleSave}
@@ -81,129 +110,46 @@ export function GeneralSettingsPage() {
         </div>
       </div>
 
-      <div className="card p-6 space-y-6">
-        {/* 搜索框自动清空设置 */}
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-lg font-semibold text-foreground">搜索框自动清空</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              设置搜索框在无操作后自动清空的时间
-            </p>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={enableSearchAutoClear}
-                onChange={(e) => setEnableSearchAutoClear(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-              />
-              <span className="text-sm text-foreground">启用搜索框自动清空</span>
-            </label>
-          </div>
-
-          {enableSearchAutoClear && (
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-foreground">
-                自动清空时间（秒）
-              </label>
-              <div className="flex items-center gap-4">
-                <input
-                  type="range"
-                  min="5"
-                  max="60"
-                  step="5"
-                  value={searchAutoClearSeconds}
-                  onChange={(e) => setSearchAutoClearSeconds(Number(e.target.value))}
-                  className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                />
-                <input
-                  type="number"
-                  min="5"
-                  max="60"
-                  value={searchAutoClearSeconds}
-                  onChange={(e) => setSearchAutoClearSeconds(Number(e.target.value))}
-                  className="w-20 px-3 py-2 border border-border rounded-lg text-sm text-foreground bg-background"
-                />
-                <span className="text-sm text-muted-foreground">秒</span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                搜索框在 {searchAutoClearSeconds} 秒无操作后会自动清空
-              </p>
-            </div>
+      {/* 标签页容器 */}
+      <div className="card p-6">
+        <SettingsTabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab}>
+          {activeTab === 'basic' && (
+            <BasicSettingsTab
+              preferences={localPreferences}
+              onUpdate={handleUpdate}
+            />
           )}
-        </div>
 
-        <div className="border-t border-border"></div>
-
-        {/* 标签选中自动清空设置 */}
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-lg font-semibold text-foreground">标签选中自动清空</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              设置标签选中状态在无操作后自动清空的时间
-            </p>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={enableTagSelectionAutoClear}
-                onChange={(e) => setEnableTagSelectionAutoClear(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-              />
-              <span className="text-sm text-foreground">启用标签选中自动清空</span>
-            </label>
-          </div>
-
-          {enableTagSelectionAutoClear && (
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-foreground">
-                自动清空时间（秒）
-              </label>
-              <div className="flex items-center gap-4">
-                <input
-                  type="range"
-                  min="10"
-                  max="120"
-                  step="10"
-                  value={tagSelectionAutoClearSeconds}
-                  onChange={(e) => setTagSelectionAutoClearSeconds(Number(e.target.value))}
-                  className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                />
-                <input
-                  type="number"
-                  min="10"
-                  max="120"
-                  value={tagSelectionAutoClearSeconds}
-                  onChange={(e) => setTagSelectionAutoClearSeconds(Number(e.target.value))}
-                  className="w-20 px-3 py-2 border border-border rounded-lg text-sm text-foreground bg-background"
-                />
-                <span className="text-sm text-muted-foreground">秒</span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                标签选中状态在 {tagSelectionAutoClearSeconds} 秒无操作后会自动清空
-              </p>
-            </div>
+          {activeTab === 'automation' && (
+            <AutomationSettingsTab
+              searchEnabled={localPreferences.enable_search_auto_clear}
+              searchSeconds={localPreferences.search_auto_clear_seconds}
+              tagEnabled={localPreferences.enable_tag_selection_auto_clear}
+              tagSeconds={localPreferences.tag_selection_auto_clear_seconds}
+              onSearchEnabledChange={(enabled) => handleUpdate({ enable_search_auto_clear: enabled })}
+              onSearchSecondsChange={(seconds) => handleUpdate({ search_auto_clear_seconds: seconds })}
+              onTagEnabledChange={(enabled) => handleUpdate({ enable_tag_selection_auto_clear: enabled })}
+              onTagSecondsChange={(seconds) => handleUpdate({ tag_selection_auto_clear_seconds: seconds })}
+            />
           )}
-        </div>
 
-        <div className="border-t border-border"></div>
+          {activeTab === 'appearance' && (
+            <AppearanceSettingsTab
+              defaultIcon={localPreferences.default_bookmark_icon}
+              tagLayout={localPreferences.tag_layout}
+              onIconChange={(icon) => handleUpdate({ default_bookmark_icon: icon })}
+              onTagLayoutChange={(layout) => handleUpdate({ tag_layout: layout })}
+            />
+          )}
 
-        {/* 说明信息 */}
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-          <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
-            💡 使用提示
-          </h4>
-          <ul className="text-xs text-blue-800 dark:text-blue-200 space-y-1">
-            <li>• 搜索框自动清空可以帮助你快速回到全部内容视图</li>
-            <li>• 标签选中自动清空可以避免长时间保持筛选状态</li>
-            <li>• 你可以根据使用习惯调整自动清空的时间</li>
-            <li>• 如果不需要自动清空功能，可以关闭对应的开关</li>
-          </ul>
-        </div>
+          {activeTab === 'browser' && <BrowserSettingsTab />}
+
+          {activeTab === 'api' && <ApiSettingsTab />}
+
+          {activeTab === 'share' && <ShareSettingsTab />}
+
+          {activeTab === 'data' && <DataSettingsTab />}
+        </SettingsTabs>
       </div>
     </div>
   )

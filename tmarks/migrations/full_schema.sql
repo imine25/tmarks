@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS bookmarks (
   url TEXT NOT NULL,
   description TEXT,
   cover_image TEXT,
+  favicon TEXT,
   is_pinned INTEGER NOT NULL DEFAULT 0,
   is_archived INTEGER NOT NULL DEFAULT 0,
   is_public INTEGER NOT NULL DEFAULT 0,
