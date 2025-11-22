@@ -62,20 +62,15 @@ export const onRequestGet: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[] 
       const isV2 = htmlContent.includes('/api/snapshot-images/')
       
       if (isV2) {
-        // V2 格式：检查图片 URL 是否已经包含参数
-        const hasParams = htmlContent.includes('/api/snapshot-images/') && htmlContent.includes('?u=')
+        const version = (snapshot as any).version || 1
         
-        if (!hasParams) {
-          // 如果还没有参数，添加必要的参数（兼容旧数据）
-          const version = (snapshot as any).version || 1
-          htmlContent = htmlContent.replace(
-            /\/api\/snapshot-images\/([^"'\s?]+)/g,
-            `/api/snapshot-images/$1?u=${userId}&b=${bookmarkId}&v=${version}`
-          )
-          console.log(`[Snapshot API] V2 format detected, added image URL parameters`)
-        } else {
-          console.log(`[Snapshot API] V2 format with parameters already present`)
-        }
+        // 替换所有没有参数的图片 URL
+        // 匹配 /api/snapshot-images/{hash} 但不包含已有参数的
+        htmlContent = htmlContent.replace(
+          /\/api\/snapshot-images\/([^"'\s?&]+)(?!\?u=)/g,
+          `/api/snapshot-images/$1?u=${userId}&b=${bookmarkId}&v=${version}`
+        )
+        console.log(`[Snapshot API] V2 format detected, added image URL parameters`)
       }
 
       return new Response(htmlContent, {
