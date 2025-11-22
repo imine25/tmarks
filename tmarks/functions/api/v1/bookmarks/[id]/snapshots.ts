@@ -240,13 +240,31 @@ export const onRequestPost: PagesFunction<Env, 'id', AuthContext>[] = [
       // 检查并清理旧快照
       await cleanupOldSnapshots(db, bucket, bookmarkId, userId)
 
+      // 生成签名 URL（24 小时有效）
+      const { signature, expires } = await generateSignedUrl(
+        {
+          userId,
+          resourceId: snapshotId,
+          expiresIn: 24 * 3600,
+          action: 'view',
+        },
+        context.env.JWT_SECRET
+      )
+
+      // 构建签名 URL
+      const baseUrl = new URL(context.request.url).origin
+      const viewUrl = `${baseUrl}/api/v1/bookmarks/${bookmarkId}/snapshots/${snapshotId}/view?sig=${signature}&exp=${expires}&u=${userId}`
+
       return success({
         snapshot: {
           id: snapshotId,
           version,
           file_size: htmlBytes.length,
           content_hash: contentHash,
+          snapshot_title: title,
+          is_latest: true,
           created_at: now,
+          view_url: viewUrl,
         },
         message: 'Snapshot created successfully',
       })

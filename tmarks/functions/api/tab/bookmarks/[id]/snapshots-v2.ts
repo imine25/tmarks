@@ -7,6 +7,7 @@ import type { PagesFunction } from '@cloudflare/workers-types'
 import type { Env } from '../../../../lib/types'
 import { success, badRequest, notFound, internalError } from '../../../../lib/response'
 import { requireApiKeyAuth, ApiKeyAuthContext } from '../../../../middleware/api-key-auth-pages'
+import { generateSignedUrl } from '../../../../lib/signed-url'
 
 function generateNanoId(): string {
   const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
@@ -116,6 +117,8 @@ export const onRequestPost: PagesFunction<Env, 'id', ApiKeyAuthContext>[] = [
       const uploadedImages: string[] = []
       let totalImageSize = 0
 
+      console.log(`[Snapshot V2 API] Starting to upload ${images.length} images...`)
+
       for (const image of images) {
         try {
           // 解码 base64
@@ -129,10 +132,13 @@ export const onRequestPost: PagesFunction<Env, 'id', ApiKeyAuthContext>[] = [
           const imageSize = bytes.length
           totalImageSize += imageSize
 
-          if (imageSize > MAX_IMAGE_SIZE) {
-            console.warn(`[Snapshot V2 API] Image too large: ${image.hash}, ${(imageSize / 1024).toFixed(1)}KB`)
-            continue
-          }
+          // 不再检查图片大小限制，允许所有图片上传
+          // if (imageSize > MAX_IMAGE_SIZE) {
+          //   console.warn(`[Snapshot V2 API] Image too large: ${image.hash}, ${(imageSize / 1024).toFixed(1)}KB`)
+          //   continue
+          // }
+          
+          console.log(`[Snapshot V2 API] Processing image: ${image.hash}, ${(imageSize / 1024 / 1024).toFixed(2)}MB`)
 
           // 上传到 R2: {userId}/{bookmarkId}/v{version}/images/{hash}
           const imageKey = `${userId}/${bookmarkId}/v${version}/images/${image.hash}`
@@ -150,13 +156,13 @@ export const onRequestPost: PagesFunction<Env, 'id', ApiKeyAuthContext>[] = [
           })
 
           uploadedImages.push(image.hash)
-          console.log(`[Snapshot V2 API] Image uploaded: ${image.hash}, ${(imageSize / 1024).toFixed(1)}KB`)
+          console.log(`[Snapshot V2 API] ✅ Image uploaded successfully: ${image.hash}, ${(imageSize / 1024 / 1024).toFixed(2)}MB, key: ${imageKey}`)
         } catch (error) {
-          console.error(`[Snapshot V2 API] Failed to upload image ${image.hash}:`, error)
+          console.error(`[Snapshot V2 API] ❌ Failed to upload image ${image.hash}:`, error)
         }
       }
 
-      console.log(`[Snapshot V2 API] Uploaded ${uploadedImages.length}/${images.length} images, total: ${(totalImageSize / 1024).toFixed(1)}KB`)
+      console.log(`[Snapshot V2 API] Upload complete: ${uploadedImages.length}/${images.length} images, total: ${(totalImageSize / 1024 / 1024).toFixed(2)}MB`)
 
       // 2. 替换 HTML 中的图片 URL 为带参数的完整 URL
       let processedHtml = html_content
@@ -232,6 +238,21 @@ export const onRequestPost: PagesFunction<Env, 'id', ApiKeyAuthContext>[] = [
 
       await db.batch(batch)
 
+      // 生成签名 URL（24 小时有效）
+      const { signature, expires } = await generateSignedUrl(
+        {
+          userId,
+          resourceId: snapshotId,
+          expiresIn: 24 * 3600,
+          action: 'view',
+        },
+        context.env.JWT_SECRET
+      )
+
+      // 构建签名 URL
+      const baseUrl = new URL(context.request.url).origin
+      const viewUrl = `${baseUrl}/api/v1/bookmarks/${bookmarkId}/snapshots/${snapshotId}/view?sig=${signature}&exp=${expires}&u=${userId}`
+
       return success({
         snapshot: {
           id: snapshotId,
@@ -239,7 +260,10 @@ export const onRequestPost: PagesFunction<Env, 'id', ApiKeyAuthContext>[] = [
           file_size: totalSize,
           image_count: uploadedImages.length,
           content_hash: contentHash,
+          snapshot_title: title,
+          is_latest: true,
           created_at: now,
+          view_url: viewUrl,
         },
         message: 'Snapshot created successfully (V2)',
       })
