@@ -117,7 +117,7 @@ export async function hashRefreshToken(token: string): Promise<string> {
 }
 
 /**
- * 生成 UUID v4
+ * 生成 UUID v4（标准格式，36 字符）
  */
 export function generateUUID(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(16))
@@ -126,6 +126,38 @@ export function generateUUID(): string {
 
   const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
+}
+
+/**
+ * 生成短 UUID（22 字符，Base64 编码）
+ * 与标准 UUID 安全性相同，但更短，适合 URL
+ */
+export function generateShortUUID(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(16))
+  bytes[6] = (bytes[6] & 0x0f) | 0x40 // Version 4
+  bytes[8] = (bytes[8] & 0x3f) | 0x80 // Variant 10
+  
+  // Base64 URL 编码（移除 padding）
+  const binary = Array.from(bytes, b => String.fromCharCode(b)).join('')
+  const base64 = btoa(binary)
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
+}
+
+/**
+ * 生成 NanoID（默认 21 字符，URL 安全）
+ * 推荐用于公开 URL 中的 ID，比 UUID 更短更美观
+ */
+export function generateNanoId(length: number = 21): string {
+  // 使用 URL 安全的字符集（64 个字符）
+  const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-'
+  const randomValues = new Uint8Array(length)
+  crypto.getRandomValues(randomValues)
+  
+  let id = ''
+  for (let i = 0; i < length; i++) {
+    id += alphabet[randomValues[i] % alphabet.length]
+  }
+  return id
 }
 
 /**

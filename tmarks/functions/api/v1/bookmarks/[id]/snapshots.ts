@@ -8,20 +8,8 @@ import type { PagesFunction } from '@cloudflare/workers-types'
 import type { Env } from '../../../../lib/types'
 import { success, badRequest, notFound, internalError } from '../../../../lib/response'
 import { requireAuth, AuthContext } from '../../../../middleware/auth'
-
-// 生成 nanoid 风格的短 ID（21 字符）
-function generateNanoId(): string {
-  const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-  const length = 21
-  const randomValues = new Uint8Array(length)
-  crypto.getRandomValues(randomValues)
-  
-  let id = ''
-  for (let i = 0; i < length; i++) {
-    id += alphabet[randomValues[i] % alphabet.length]
-  }
-  return id
-}
+import { generateSignedUrl } from '../../../../lib/signed-url'
+import { generateNanoId } from '../../../../lib/crypto'
 
 // 使用 Web Crypto API 计算 SHA-256 哈希
 async function sha256(content: string): Promise<string> {
@@ -74,9 +62,34 @@ export const onRequestGet: PagesFunction<Env, 'id', AuthContext>[] = [
         .bind(bookmarkId, userId)
         .all()
 
+      // 为每个快照生成签名 URL
+      const snapshotsWithUrls = await Promise.all(
+        (snapshots.results || []).map(async (snapshot: any) => {
+          // 生成 24 小时有效的签名 URL
+          const { signature, expires } = await generateSignedUrl(
+            {
+              userId,
+              resourceId: snapshot.id,
+              expiresIn: 24 * 3600, // 24 小时
+              action: 'view',
+            },
+            context.env.JWT_SECRET
+          )
+
+          // 构建签名 URL
+          const baseUrl = new URL(context.request.url).origin
+          const viewUrl = `${baseUrl}/api/v1/bookmarks/${bookmarkId}/snapshots/${snapshot.id}/view?sig=${signature}&exp=${expires}&u=${userId}`
+
+          return {
+            ...snapshot,
+            view_url: viewUrl,
+          }
+        })
+      )
+
       return success({
-        snapshots: snapshots.results || [],
-        total: snapshots.results?.length || 0,
+        snapshots: snapshotsWithUrls,
+        total: snapshotsWithUrls.length,
       })
     } catch (error) {
       console.error('Get snapshots error:', error)
