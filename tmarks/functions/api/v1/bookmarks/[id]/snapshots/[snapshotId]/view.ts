@@ -110,6 +110,10 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         'X-Content-Type-Options': 'nosniff',
         // 放宽 CSP 以允许加载快照中的所有资源（用户自己保存的内容）
         'Content-Security-Policy': "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; img-src * data: blob:; font-src * data:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'; frame-src *; connect-src *;",
+        // 添加 CORS 头，允许跨域加载资源
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
       },
     })
   } catch (error) {

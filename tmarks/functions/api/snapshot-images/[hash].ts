@@ -8,7 +8,20 @@
 
 import type { PagesFunction } from '@cloudflare/workers-types'
 import type { Env } from '../../lib/types'
-import { notFound, internalError, forbidden } from '../../lib/response'
+import { notFound, internalError } from '../../lib/response'
+
+// OPTIONS /api/snapshot-images/:hash - CORS 预检
+export const onRequestOptions: PagesFunction<Env, 'hash'> = async () => {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Max-Age': '86400',
+    },
+  })
+}
 
 // GET /api/snapshot-images/:hash - 获取快照图片
 export const onRequestGet: PagesFunction<Env, 'hash'> = async (context) => {
@@ -27,8 +40,17 @@ export const onRequestGet: PagesFunction<Env, 'hash'> = async (context) => {
     const bookmarkId = url.searchParams.get('b')
     const version = url.searchParams.get('v')
 
+    console.log(`[Snapshot Image API] Request: hash=${hash}, u=${userId}, b=${bookmarkId}, v=${version}`)
+
     if (!userId || !bookmarkId || !version) {
-      return notFound('Missing required parameters')
+      console.warn(`[Snapshot Image API] Missing parameters: u=${userId}, b=${bookmarkId}, v=${version}`)
+      return new Response('Missing required parameters', {
+        status: 400,
+        headers: {
+          'Content-Type': 'text/plain',
+          'Access-Control-Allow-Origin': '*',
+        },
+      })
     }
 
     // 验证书签和快照的存在性及所有权
@@ -47,8 +69,8 @@ export const onRequestGet: PagesFunction<Env, 'hash'> = async (context) => {
       .first()
 
     if (!snapshot) {
-      console.warn(`[Snapshot Image API] Unauthorized access attempt: u=${userId}, b=${bookmarkId}, v=${version}`)
-      return forbidden('Access denied')
+      console.warn(`[Snapshot Image API] Snapshot not found or access denied: u=${userId}, b=${bookmarkId}, v=${version}, hash=${hash}`)
+      return notFound('Snapshot not found or access denied')
     }
 
     // 构建 R2 键
@@ -60,25 +82,41 @@ export const onRequestGet: PagesFunction<Env, 'hash'> = async (context) => {
     const r2Object = await bucket.get(imageKey)
 
     if (!r2Object) {
-      console.warn(`[Snapshot Image API] Image not found: ${imageKey}`)
-      return notFound('Image not found')
+      console.warn(`[Snapshot Image API] Image not found in R2: ${imageKey}`)
+      // 返回 404 而不是 500，避免连接关闭
+      return new Response('Image not found', {
+        status: 404,
+        headers: {
+          'Content-Type': 'text/plain',
+          'Access-Control-Allow-Origin': '*',
+        },
+      })
     }
 
     // 返回图片
     const imageData = await r2Object.arrayBuffer()
     const contentType = r2Object.httpMetadata?.contentType || 'image/jpeg'
 
-    console.log(`[Snapshot Image API] Serving: ${imageKey}, ${(imageData.byteLength / 1024).toFixed(1)}KB`)
+    console.log(`[Snapshot Image API] Serving: ${imageKey}, ${(imageData.byteLength / 1024).toFixed(1)}KB, type: ${contentType}`)
 
     return new Response(imageData, {
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'public, max-age=31536000, immutable', // 图片永久缓存
         'Access-Control-Allow-Origin': '*', // 允许跨域（因为可能从不同域名访问快照）
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
       },
     })
   } catch (error) {
     console.error('[Snapshot Image API] Error:', error)
-    return internalError('Failed to get image')
+    // 返回明确的错误响应，避免连接关闭
+    return new Response('Failed to load image', {
+      status: 500,
+      headers: {
+        'Content-Type': 'text/plain',
+        'Access-Control-Allow-Origin': '*',
+      },
+    })
   }
 }
