@@ -1,4 +1,4 @@
-import { Camera, Info, Trash2, Copy, CheckCircle } from 'lucide-react'
+import { Camera, Trash2, Copy, CheckCircle } from 'lucide-react'
 import { InfoBox } from '../InfoBox'
 
 interface SnapshotSettingsTabProps {

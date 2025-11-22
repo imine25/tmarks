@@ -1,7 +1,7 @@
 import type { Bookmark } from '@/lib/types'
 import { AdaptiveImage } from '@/components/common/AdaptiveImage'
 import { useRecordClick } from '@/hooks/useBookmarks'
-import { useState, useEffect, useRef, memo, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { ImageType } from '@/lib/image-utils'
 import { DefaultBookmarkIconComponent } from './DefaultBookmarkIcon'
 import { usePreferences } from '@/hooks/usePreferences'
@@ -176,7 +176,7 @@ function BookmarkCard({
   const [googleFaviconIsDefault, setGoogleFaviconIsDefault] = useState(false)
   const recordClick = useRecordClick()
   const { data: preferences } = usePreferences()
-  const defaultIcon = preferences?.default_bookmark_icon || 'bookmark'
+  const defaultIcon = preferences?.default_bookmark_icon || 'gradient-glow'
 
   // 生成Google Favicon URL作为最终fallback
   const getFaviconUrl = (url: string): string => {
