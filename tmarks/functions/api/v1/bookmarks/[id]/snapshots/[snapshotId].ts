@@ -76,13 +76,14 @@ export const onRequestGet: PagesFunction<Env, 'id' | 'snapshotId', AuthContext>[
         const version = (snapshot as any).version || 1
         const baseUrl = new URL(context.request.url).origin
         
-        // 处理图片 URL：兼容新旧数据，统一转换为绝对 URL + 参数
+        // 处理图片 URL：规范化所有图片 URL，确保参数正确
         let replacedCount = 0
         htmlContent = htmlContent.replace(
-          /(?:https?:\/\/[^\/]+)?\/api\/snapshot-images\/([a-zA-Z0-9._-]+?)(?:\?[^"\s)]*)?(?=["\s)]|$)/g,
+          /\/api\/snapshot-images\/([a-zA-Z0-9._-]+?)(?:\?[^"\s)]*)?(?=["\s)]|$)/g,
           (match, hash) => {
             replacedCount++
-            return `${baseUrl}/api/snapshot-images/${hash}?u=${userId}&b=${bookmarkId}&v=${version}`;
+            // 只替换路径部分，不包含域名（避免重复）
+            return `/api/snapshot-images/${hash}?u=${userId}&b=${bookmarkId}&v=${version}`;
           }
         )
         console.log(`[Snapshot API V1] V2 format detected, normalized ${replacedCount} image URLs`)

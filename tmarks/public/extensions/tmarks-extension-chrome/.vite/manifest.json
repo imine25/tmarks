@@ -5,8 +5,8 @@
     "src": "../../../../@crx/manifest",
     "isEntry": true
   },
-  "_SuccessMessage-WWcF4ZzJ.js": {
-    "file": "assets/SuccessMessage-WWcF4ZzJ.js",
+  "_SuccessMessage-CQdIk5YD.js": {
+    "file": "assets/SuccessMessage-CQdIk5YD.js",
     "name": "SuccessMessage",
     "imports": [
       "_index-DlUqGJ2w.js"
@@ -29,9 +29,9 @@
     "file": "assets/index-DlUqGJ2w.js",
     "name": "index"
   },
-  "_index.ts-loader-D5-rwtOH.js": {
-    "file": "assets/index.ts-loader-D5-rwtOH.js",
-    "src": "_index.ts-loader-D5-rwtOH.js"
+  "_index.ts-loader-jNPezfTT.js": {
+    "file": "assets/index.ts-loader-jNPezfTT.js",
+    "src": "_index.ts-loader-jNPezfTT.js"
   },
   "_preload-helper-BXl3LOEh.js": {
     "file": "assets/preload-helper-BXl3LOEh.js",
@@ -54,7 +54,7 @@
     ]
   },
   "src/content/index.ts": {
-    "file": "assets/index.ts-D-iSFp4_.js",
+    "file": "assets/index.ts-DLderptY.js",
     "name": "index.ts",
     "src": "src/content/index.ts",
     "isEntry": true,
@@ -67,7 +67,7 @@
     ]
   },
   "src/content/singlefile-capture-v2.ts": {
-    "file": "assets/singlefile-capture-v2-DaBRq8cZ.js",
+    "file": "assets/singlefile-capture-v2-BFkKbDqi.js",
     "name": "singlefile-capture-v2",
     "src": "src/content/singlefile-capture-v2.ts",
     "isDynamicEntry": true
@@ -79,12 +79,12 @@
     "isDynamicEntry": true
   },
   "src/options/index.html": {
-    "file": "assets/options-DuK12cDg.js",
+    "file": "assets/options-CJNU9hjL.js",
     "name": "options",
     "src": "src/options/index.html",
     "isEntry": true,
     "imports": [
-      "_SuccessMessage-WWcF4ZzJ.js",
+      "_SuccessMessage-CQdIk5YD.js",
       "_preload-helper-BXl3LOEh.js",
       "_index-DlUqGJ2w.js",
       "_prompts-CZcZabTo.js"
@@ -93,21 +93,21 @@
       "_index-B3uGW65S.js"
     ],
     "css": [
-      "assets/options-CRrVM_cx.css"
+      "assets/options-CVb2mx12.css"
     ]
   },
   "src/popup/index.html": {
-    "file": "assets/popup-BQvDj0mr.js",
+    "file": "assets/popup-n4KSaeT6.js",
     "name": "popup",
     "src": "src/popup/index.html",
     "isEntry": true,
     "imports": [
-      "_SuccessMessage-WWcF4ZzJ.js",
+      "_SuccessMessage-CQdIk5YD.js",
       "_index-DlUqGJ2w.js",
       "_index-AGxGDhI7.js"
     ],
     "css": [
-      "assets/popup-CeY-kGC6.css"
+      "assets/popup-BJwWDgEw.css"
     ]
   }
 }

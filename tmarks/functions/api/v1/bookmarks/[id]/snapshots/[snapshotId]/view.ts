@@ -87,17 +87,14 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       const version = (snapshot as any).version || 1
       const baseUrl = new URL(context.request.url).origin
       
-      // 处理图片 URL：
-      // 1. 如果是相对路径，转换为绝对路径
-      // 2. 如果缺少参数，添加参数
-      // 这样可以兼容新旧数据
+      // 处理图片 URL：规范化所有图片 URL，确保参数正确
       let replacedCount = 0
       htmlContent = htmlContent.replace(
-        /(?:https?:\/\/[^\/]+)?\/api\/snapshot-images\/([a-zA-Z0-9._-]+?)(?:\?[^"\s)]*)?(?=["\s)]|$)/g,
+        /\/api\/snapshot-images\/([a-zA-Z0-9._-]+?)(?:\?[^"\s)]*)?(?=["\s)]|$)/g,
         (match, hash) => {
           replacedCount++
-          // 统一生成完整的绝对 URL（包含域名和所有必要参数）
-          return `${baseUrl}/api/snapshot-images/${hash}?u=${userId}&b=${bookmarkId}&v=${version}`;
+          // 只替换路径部分，不包含域名（避免重复）
+          return `/api/snapshot-images/${hash}?u=${userId}&b=${bookmarkId}&v=${version}`;
         }
       )
       console.log(`[Snapshot View API] V2 format detected, normalized ${replacedCount} image URLs`)

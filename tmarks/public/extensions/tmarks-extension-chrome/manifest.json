@@ -36,7 +36,7 @@
   "content_scripts": [
     {
       "js": [
-        "assets/index.ts-loader-D5-rwtOH.js"
+        "assets/index.ts-loader-jNPezfTT.js"
       ],
       "matches": [
         "<all_urls>"
@@ -58,8 +58,8 @@
       "resources": [
         "assets/preload-helper-BXl3LOEh.js",
         "assets/singlefile-capture-CGqU8xAy.js",
-        "assets/singlefile-capture-v2-DaBRq8cZ.js",
-        "assets/index.ts-D-iSFp4_.js"
+        "assets/singlefile-capture-v2-BFkKbDqi.js",
+        "assets/index.ts-DLderptY.js"
       ],
       "use_dynamic_url": false
     }
