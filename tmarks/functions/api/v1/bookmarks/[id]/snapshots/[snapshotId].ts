@@ -66,10 +66,17 @@ export const onRequestGet: PagesFunction<Env, 'id' | 'snapshotId', AuthContext>[
         const version = (snapshot as any).version || 1
         
         // 替换所有没有参数的图片 URL
-        // 匹配 /api/snapshot-images/{hash} 但不包含已有参数的
+        // 使用更宽松的匹配，包括可能在属性值中的 URL
         htmlContent = htmlContent.replace(
-          /\/api\/snapshot-images\/([^"'\s?&]+)(?!\?u=)/g,
-          `/api/snapshot-images/$1?u=${userId}&b=${bookmarkId}&v=${version}`
+          /\/api\/snapshot-images\/([a-zA-Z0-9._-]+?)(?=["\s?&)]|$)/g,
+          (match, hash) => {
+            // 检查后面是否已经有参数
+            const nextChar = htmlContent[htmlContent.indexOf(match) + match.length];
+            if (nextChar === '?') {
+              return match; // 已经有参数，不替换
+            }
+            return `/api/snapshot-images/${hash}?u=${userId}&b=${bookmarkId}&v=${version}`;
+          }
         )
         console.log(`[Snapshot API V1] V2 format detected, added image URL parameters`)
       }
@@ -78,6 +85,9 @@ export const onRequestGet: PagesFunction<Env, 'id' | 'snapshotId', AuthContext>[
         headers: {
           'Content-Type': 'text/html; charset=utf-8',
           'Cache-Control': 'public, max-age=3600',
+          'X-Content-Type-Options': 'nosniff',
+          // 放宽 CSP 以允许加载快照中的资源
+          'Content-Security-Policy': "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; img-src 'self' data: blob: https: http:; font-src 'self' data: https:; style-src 'self' 'unsafe-inline' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; frame-src 'self' https:;",
         },
       })
     } catch (error) {
