@@ -1,6 +1,6 @@
 /**
  * 对外 API - 书签管理
- * 路径: /api/bookmarks
+ * 路径: /api/tab/bookmarks
  * 认证: API Key (X-API-Key header)
  */
 
