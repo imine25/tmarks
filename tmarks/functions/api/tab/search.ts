@@ -5,9 +5,9 @@
  */
 
 import type { PagesFunction } from '@cloudflare/workers-types'
-import type { Env, Bookmark, RouteParams } from '../../../lib/types'
-import { success, badRequest, internalError } from '../../../lib/response'
-import { requireApiKeyAuth, ApiKeyAuthContext } from '../../../middleware/api-key-auth-pages'
+import type { Env, Bookmark, RouteParams } from '../../lib/types'
+import { success, badRequest, internalError } from '../../lib/response'
+import { requireApiKeyAuth, ApiKeyAuthContext } from '../../middleware/api-key-auth-pages'
 
 // GET /api/search - 全局搜索书签和标签
 type BookmarkWithTags = Bookmark & {
