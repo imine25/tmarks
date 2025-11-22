@@ -86,8 +86,8 @@ export const onRequestGet: PagesFunction<Env, 'id' | 'snapshotId', AuthContext>[
           'Content-Type': 'text/html; charset=utf-8',
           'Cache-Control': 'public, max-age=3600',
           'X-Content-Type-Options': 'nosniff',
-          // 放宽 CSP 以允许加载快照中的资源
-          'Content-Security-Policy': "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; img-src 'self' data: blob: https: http:; font-src 'self' data: https:; style-src 'self' 'unsafe-inline' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; frame-src 'self' https:;",
+          // 放宽 CSP 以允许加载快照中的所有资源（用户自己保存的内容）
+          'Content-Security-Policy': "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; img-src * data: blob:; font-src * data:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'; frame-src *; connect-src *;",
         },
       })
     } catch (error) {
