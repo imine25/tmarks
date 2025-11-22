@@ -166,6 +166,7 @@ export const onRequestPost: PagesFunction<Env, 'id', ApiKeyAuthContext>[] = [
 
       // 2. 替换 HTML 中的图片 URL 为带参数的相对路径
       // 使用相对路径，避免域名重复问题
+      const baseUrl = new URL(context.request.url).origin
       let processedHtml = html_content
       for (const imageHash of uploadedImages) {
         // 简单替换：只替换占位符路径
@@ -273,7 +274,10 @@ export const onRequestPost: PagesFunction<Env, 'id', ApiKeyAuthContext>[] = [
       })
     } catch (error) {
       console.error('[Snapshot V2 API] Error:', error)
-      return internalError('Failed to create snapshot')
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      const errorStack = error instanceof Error ? error.stack : ''
+      console.error('[Snapshot V2 API] Error details:', { errorMessage, errorStack })
+      return internalError(`Failed to create snapshot: ${errorMessage}`)
     }
   },
 ]
