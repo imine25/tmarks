@@ -1,14 +1,13 @@
 /**
- * 单个快照操作 API
+ * 单个快照操作 API (V1 - JWT Auth)
  * 路径: /api/v1/bookmarks/:id/snapshots/:snapshotId
  * 认证: JWT Token
  */
 
 import type { PagesFunction } from '@cloudflare/workers-types'
 import type { Env } from '../../../../../lib/types'
-import { success, notFound, internalError, unauthorized } from '../../../../../lib/response'
+import { notFound, internalError } from '../../../../../lib/response'
 import { requireAuth, AuthContext } from '../../../../../middleware/auth'
-import { verifyJWT } from '../../../../../lib/jwt'
 
 interface RouteParams {
   id: string
@@ -16,32 +15,13 @@ interface RouteParams {
 }
 
 // GET /api/v1/bookmarks/:id/snapshots/:snapshotId - 获取快照
-export const onRequestGet: PagesFunction<Env, RouteParams>[] = [
+export const onRequestGet: PagesFunction<Env, 'id' | 'snapshotId', AuthContext>[] = [
+  requireAuth,
   async (context) => {
     try {
-      // 尝试从 header 或 URL 参数获取 token
-      let token = context.request.headers.get('Authorization')?.replace('Bearer ', '')
-      
-      if (!token) {
-        const url = new URL(context.request.url)
-        token = url.searchParams.get('token') || null
-      }
-
-      if (!token) {
-        return unauthorized('Missing authorization token')
-      }
-
-      // 验证 token 并获取 user_id
-      let userId: string
-      try {
-        const payload = await verifyJWT(token, context.env.JWT_SECRET)
-        userId = payload.sub
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Invalid token'
-        return unauthorized(message)
-      }
-
-      const { id: bookmarkId, snapshotId } = context.params
+      const userId = context.data.user_id
+      const bookmarkId = context.params.id as string
+      const snapshotId = context.params.snapshotId as string
       const db = context.env.DB
       const bucket = context.env.SNAPSHOTS_BUCKET
 
@@ -72,7 +52,25 @@ export const onRequestGet: PagesFunction<Env, RouteParams>[] = [
       }
 
       // 直接读取 HTML 内容
-      const htmlContent = await r2Object.text()
+      let htmlContent = await r2Object.text()
+      
+      // 统计 data URL 的数量（用于调试）
+      const dataUrlCount = (htmlContent.match(/src="data:/g) || []).length
+      const htmlSize = new Blob([htmlContent]).size
+      console.log(`[Snapshot API V1] Retrieved from R2: ${(htmlSize / 1024).toFixed(1)}KB, data URLs: ${dataUrlCount}`)
+
+      // 检查是否是 V2 格式（包含 /api/snapshot-images/ 路径）
+      const isV2 = htmlContent.includes('/api/snapshot-images/')
+      
+      if (isV2) {
+        // V2 格式：替换图片 URL，添加必要的参数
+        const version = (snapshot as any).version || 1
+        htmlContent = htmlContent.replace(
+          /\/api\/snapshot-images\/([^"'\s]+)/g,
+          `/api/snapshot-images/$1?u=${userId}&b=${bookmarkId}&v=${version}`
+        )
+        console.log(`[Snapshot API V1] V2 format detected, replaced image URLs with parameters`)
+      }
 
       return new Response(htmlContent, {
         headers: {
@@ -81,18 +79,19 @@ export const onRequestGet: PagesFunction<Env, RouteParams>[] = [
         },
       })
     } catch (error) {
-      console.error('Get snapshot error:', error)
+      console.error('[Snapshot API V1] Get snapshot error:', error)
       return internalError('Failed to get snapshot')
     }
   },
 ]
 
 // DELETE /api/v1/bookmarks/:id/snapshots/:snapshotId - 删除快照
-export const onRequestDelete: PagesFunction<Env, RouteParams, AuthContext>[] = [
+export const onRequestDelete: PagesFunction<Env, 'id' | 'snapshotId', AuthContext>[] = [
   requireAuth,
   async (context) => {
     const userId = context.data.user_id
-    const { id: bookmarkId, snapshotId } = context.params
+    const bookmarkId = context.params.id as string
+    const snapshotId = context.params.snapshotId as string
 
     try {
       const db = context.env.DB
@@ -105,7 +104,7 @@ export const onRequestDelete: PagesFunction<Env, RouteParams, AuthContext>[] = [
       // 获取快照信息
       const snapshot = await db
         .prepare(
-          `SELECT id, r2_key, is_latest
+          `SELECT id, r2_key, is_latest, version
            FROM bookmark_snapshots
            WHERE id = ? AND bookmark_id = ? AND user_id = ?`
         )
@@ -116,8 +115,29 @@ export const onRequestDelete: PagesFunction<Env, RouteParams, AuthContext>[] = [
         return notFound('Snapshot not found')
       }
 
-      // 删除 R2 文件
+      const version = (snapshot as any).version || 1
+
+      // 删除 R2 HTML 文件
       await bucket.delete(snapshot.r2_key as string)
+
+      // 删除 V2 格式的图片（如果存在）
+      try {
+        // 列出该版本的所有图片
+        const imagePrefix = `${userId}/${bookmarkId}/v${version}/images/`
+        const imageList = await bucket.list({ prefix: imagePrefix })
+        
+        if (imageList.objects && imageList.objects.length > 0) {
+          console.log(`[Snapshot API V1] Deleting ${imageList.objects.length} images for version ${version}`)
+          
+          // 删除所有图片
+          for (const obj of imageList.objects) {
+            await bucket.delete(obj.key)
+          }
+        }
+      } catch (error) {
+        console.warn('[Snapshot API V1] Failed to delete images:', error)
+        // 继续执行，不影响主流程
+      }
 
       // 删除数据库记录
       await db
@@ -171,9 +191,14 @@ export const onRequestDelete: PagesFunction<Env, RouteParams, AuthContext>[] = [
         }
       }
 
-      return success({ message: 'Snapshot deleted successfully' })
+      return new Response(JSON.stringify({ 
+        success: true,
+        data: { message: 'Snapshot deleted successfully' }
+      }), {
+        headers: { 'Content-Type': 'application/json' }
+      })
     } catch (error) {
-      console.error('Delete snapshot error:', error)
+      console.error('[Snapshot API V1] Delete snapshot error:', error)
       return internalError('Failed to delete snapshot')
     }
   },

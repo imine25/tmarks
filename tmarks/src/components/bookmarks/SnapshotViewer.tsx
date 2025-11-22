@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { Camera, ExternalLink, Clock } from 'lucide-react';
+import { Camera, ExternalLink, Clock, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { useAuthStore } from '@/stores/authStore';
+import { useToastStore } from '@/stores/toastStore';
+import { useQueryClient } from '@tanstack/react-query';
+import { BOOKMARKS_QUERY_KEY } from '@/hooks/useBookmarks';
 
 interface Snapshot {
   id: string;
@@ -22,7 +25,10 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const accessToken = useAuthStore(state => state.accessToken);
+  const { addToast } = useToastStore();
+  const queryClient = useQueryClient();
 
   const loadSnapshots = async () => {
     setIsLoading(true);
@@ -59,7 +65,7 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
     loadSnapshots();
   };
 
-  const handleView = (snapshotId: string) => {
+  const handleView = (snapshotId: string, version: number) => {
     // 构建带 token 的 URL
     const url = new URL(`/api/v1/bookmarks/${bookmarkId}/snapshots/${snapshotId}`, window.location.origin);
     
@@ -67,7 +73,51 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
       url.searchParams.set('token', accessToken);
     }
     
+    // 添加版本信息（用于 V2 图片加载）
+    url.searchParams.set('v', version.toString());
+    
     window.open(url.toString(), '_blank');
+  };
+
+  const handleDelete = async (snapshotId: string, version: number, e: React.MouseEvent) => {
+    e.stopPropagation(); // 防止触发查看操作
+    
+    if (!confirm(`确定要删除版本 ${version} 的快照吗？`)) {
+      return;
+    }
+
+    setDeletingId(snapshotId);
+    try {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+      }
+
+      const response = await fetch(`/api/v1/bookmarks/${bookmarkId}/snapshots/${snapshotId}`, {
+        method: 'DELETE',
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // 从列表中移除
+      setSnapshots(prev => prev.filter(s => s.id !== snapshotId));
+      
+      // 刷新书签列表（更新快照计数）
+      queryClient.invalidateQueries({ queryKey: [BOOKMARKS_QUERY_KEY] });
+      
+      addToast('success', '快照已删除');
+    } catch (error) {
+      console.error('Failed to delete snapshot:', error);
+      addToast('error', '删除快照失败');
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   if (!isOpen) {
@@ -120,22 +170,39 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
           ) : (
             <div className="space-y-1.5">
               {snapshots.map((snapshot) => (
-                <button
+                <div
                   key={snapshot.id}
-                  onClick={() => handleView(snapshot.id)}
-                  className="w-full flex items-center justify-between gap-3 p-2.5 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-200 dark:hover:border-blue-800 border border-transparent transition-all text-left"
+                  className="flex items-center gap-2 p-2.5 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-transparent hover:border-blue-200 dark:hover:border-blue-800 transition-all group"
                 >
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                      版本 {snapshot.version}
+                  <button
+                    onClick={() => handleView(snapshot.id, snapshot.version)}
+                    className="flex-1 flex items-center justify-between gap-3 text-left min-w-0"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                        版本 {snapshot.version}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {format(new Date(snapshot.created_at), 'yyyy-MM-dd HH:mm', { locale: zhCN })}
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {format(new Date(snapshot.created_at), 'yyyy-MM-dd HH:mm', { locale: zhCN })}
-                    </div>
-                  </div>
+                    
+                    <ExternalLink className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                  </button>
                   
-                  <ExternalLink className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
-                </button>
+                  <button
+                    onClick={(e) => handleDelete(snapshot.id, snapshot.version, e)}
+                    disabled={deletingId === snapshot.id}
+                    className="p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50"
+                    title="删除快照"
+                  >
+                    {deletingId === snapshot.id ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-500"></div>
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
               ))}
             </div>
           )}

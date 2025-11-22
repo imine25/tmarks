@@ -107,6 +107,10 @@ export const onRequestPost: PagesFunction<Env, 'id', ApiKeyAuthContext>[] = [
           `Snapshot too large (${(originalSize / 1024 / 1024).toFixed(2)}MB). Maximum size is ${MAX_SNAPSHOT_SIZE / 1024 / 1024}MB.`
         )
       }
+      
+      // 统计 data URL 的数量（用于调试）
+      const dataUrlCount = (html_content.match(/src="data:/g) || []).length
+      console.log(`[Snapshot API] Received HTML: ${(originalSize / 1024).toFixed(1)}KB, data URLs: ${dataUrlCount}`)
 
       const db = context.env.DB
       const bucket = context.env.SNAPSHOTS_BUCKET
@@ -166,6 +170,8 @@ export const onRequestPost: PagesFunction<Env, 'id', ApiKeyAuthContext>[] = [
       const encoder = new TextEncoder()
       const htmlBytes = encoder.encode(html_content)
       
+      console.log(`[Snapshot API] Encoded to UTF-8: ${(htmlBytes.length / 1024).toFixed(1)}KB`)
+      
       // 上传 UTF-8 编码的字节数组到 R2
       await bucket.put(r2Key, htmlBytes, {
         httpMetadata: {
@@ -177,8 +183,11 @@ export const onRequestPost: PagesFunction<Env, 'id', ApiKeyAuthContext>[] = [
           version: version.toString(),
           title,
           fileSize: htmlBytes.length.toString(),
+          dataUrlCount: dataUrlCount.toString(),
         },
       })
+      
+      console.log(`[Snapshot API] Uploaded to R2: ${r2Key}`)
       const snapshotId = generateNanoId()
       const now = new Date().toISOString()
 

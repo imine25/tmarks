@@ -51,7 +51,25 @@ export const onRequestGet: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[] 
       }
 
       // 直接读取 HTML 内容
-      const htmlContent = await r2Object.text()
+      let htmlContent = await r2Object.text()
+      
+      // 统计 data URL 的数量（用于调试）
+      const dataUrlCount = (htmlContent.match(/src="data:/g) || []).length
+      const htmlSize = new Blob([htmlContent]).size
+      console.log(`[Snapshot API] Retrieved from R2: ${(htmlSize / 1024).toFixed(1)}KB, data URLs: ${dataUrlCount}`)
+
+      // 检查是否是 V2 格式（包含 /api/snapshot-images/ 路径）
+      const isV2 = htmlContent.includes('/api/snapshot-images/')
+      
+      if (isV2) {
+        // V2 格式：替换图片 URL，添加必要的参数
+        const version = (snapshot as any).version || 1
+        htmlContent = htmlContent.replace(
+          /\/api\/snapshot-images\/([^"'\s]+)/g,
+          `/api/snapshot-images/$1?u=${userId}&b=${bookmarkId}&v=${version}`
+        )
+        console.log(`[Snapshot API] V2 format detected, replaced image URLs with parameters`)
+      }
 
       return new Response(htmlContent, {
         headers: {
