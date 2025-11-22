@@ -58,26 +58,33 @@ export const onRequestGet: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[] 
       const htmlSize = new Blob([htmlContent]).size
       console.log(`[Snapshot API] Retrieved from R2: ${(htmlSize / 1024).toFixed(1)}KB, data URLs: ${dataUrlCount}`)
 
+      // 注入宽松的 CSP meta 标签到 HTML head 中（覆盖任何默认设置）
+      const cspMetaTag = '<meta http-equiv="Content-Security-Policy" content="default-src * \'unsafe-inline\' \'unsafe-eval\' data: blob:; img-src * data: blob:; font-src * data:; style-src * \'unsafe-inline\'; script-src * \'unsafe-inline\' \'unsafe-eval\'; frame-src *; connect-src *;">';
+      if (htmlContent.includes('<head>')) {
+        htmlContent = htmlContent.replace('<head>', `<head>${cspMetaTag}`);
+        console.log(`[Snapshot API] Injected CSP meta tag`);
+      } else if (htmlContent.includes('<HEAD>')) {
+        htmlContent = htmlContent.replace('<HEAD>', `<HEAD>${cspMetaTag}`);
+        console.log(`[Snapshot API] Injected CSP meta tag`);
+      }
+
       // 检查是否是 V2 格式（包含 /api/snapshot-images/ 路径）
       const isV2 = htmlContent.includes('/api/snapshot-images/')
       
       if (isV2) {
         const version = (snapshot as any).version || 1
+        const baseUrl = new URL(context.request.url).origin
         
-        // 替换所有没有参数的图片 URL
-        // 使用更宽松的匹配，包括可能在属性值中的 URL
+        // 处理图片 URL：兼容新旧数据，统一转换为绝对 URL + 参数
+        let replacedCount = 0
         htmlContent = htmlContent.replace(
-          /\/api\/snapshot-images\/([a-zA-Z0-9._-]+?)(?=["\s?&)]|$)/g,
+          /(?:https?:\/\/[^\/]+)?\/api\/snapshot-images\/([a-zA-Z0-9._-]+?)(?:\?[^"\s)]*)?(?=["\s)]|$)/g,
           (match, hash) => {
-            // 检查后面是否已经有参数
-            const nextChar = htmlContent[htmlContent.indexOf(match) + match.length];
-            if (nextChar === '?') {
-              return match; // 已经有参数，不替换
-            }
-            return `/api/snapshot-images/${hash}?u=${userId}&b=${bookmarkId}&v=${version}`;
+            replacedCount++
+            return `${baseUrl}/api/snapshot-images/${hash}?u=${userId}&b=${bookmarkId}&v=${version}`;
           }
         )
-        console.log(`[Snapshot API] V2 format detected, added image URL parameters`)
+        console.log(`[Snapshot API] V2 format detected, normalized ${replacedCount} image URLs`)
       }
 
       return new Response(htmlContent, {

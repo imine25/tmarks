@@ -164,15 +164,17 @@ export const onRequestPost: PagesFunction<Env, 'id', ApiKeyAuthContext>[] = [
 
       console.log(`[Snapshot V2 API] Upload complete: ${uploadedImages.length}/${images.length} images, total: ${(totalImageSize / 1024 / 1024).toFixed(2)}MB`)
 
-      // 2. 替换 HTML 中的图片 URL 为带参数的完整 URL
+      // 2. 替换 HTML 中的图片 URL 为带参数的完整绝对 URL
+      // 使用绝对 URL 确保无论在哪里打开都能正确加载
+      const baseUrl = new URL(context.request.url).origin
       let processedHtml = html_content
       for (const imageHash of uploadedImages) {
         const placeholderUrl = `/api/snapshot-images/${imageHash}`
-        const fullUrl = `/api/snapshot-images/${imageHash}?u=${userId}&b=${bookmarkId}&v=${version}`
+        const fullUrl = `${baseUrl}/api/snapshot-images/${imageHash}?u=${userId}&b=${bookmarkId}&v=${version}`
         processedHtml = processedHtml.replace(new RegExp(placeholderUrl, 'g'), fullUrl)
       }
 
-      console.log(`[Snapshot V2 API] Replaced ${uploadedImages.length} image URLs with auth parameters`)
+      console.log(`[Snapshot V2 API] Replaced ${uploadedImages.length} image URLs with absolute URLs and auth parameters`)
 
       // 3. 上传 HTML 到 R2
       const htmlKey = `${userId}/${bookmarkId}/snapshot-${timestamp}-v${version}.html`
