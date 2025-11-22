@@ -51,12 +51,23 @@ export const onRequestGet: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[] 
         .bind(bookmarkId)
         .all<{ id: string; name: string; color: string | null }>()
 
+      // 获取快照数量
+      const snapshotCountResult = await context.env.DB.prepare(
+        `SELECT COUNT(*) as count FROM bookmark_snapshots WHERE bookmark_id = ? AND user_id = ?`
+      )
+        .bind(bookmarkId, userId)
+        .first<{ count: number }>()
+
+      const snapshotCount = snapshotCountResult?.count || 0
+
       await invalidatePublicShareCache(context.env, userId)
 
       return success({
         bookmark: {
           ...normalizeBookmark(bookmarkRow),
           tags: tags || [],
+          snapshot_count: snapshotCount,
+          has_snapshot: snapshotCount > 0,
         },
       })
     } catch (error) {
