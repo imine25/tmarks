@@ -373,14 +373,14 @@ function BookmarkCard({
         )}
 
         {/* 标签和快照 */}
-        {(bookmark.tags && bookmark.tags.length > 0) || bookmark.has_snapshot ? (
+        {(bookmark.tags && bookmark.tags.length > 0) || (bookmark.has_snapshot && (bookmark.snapshot_count ?? 0) > 0) ? (
           <div className="flex flex-wrap items-center gap-1.5 mt-1">
-            {/* 快照图标 */}
-            {bookmark.has_snapshot && (
+            {/* 快照图标 - 只在有快照且数量大于0时显示 */}
+            {bookmark.has_snapshot && (bookmark.snapshot_count ?? 0) > 0 && (
               <SnapshotViewer 
                 bookmarkId={bookmark.id} 
                 bookmarkTitle={bookmark.title}
-                snapshotCount={bookmark.snapshot_count || 0}
+                snapshotCount={bookmark.snapshot_count ?? 0}
               />
             )}
             

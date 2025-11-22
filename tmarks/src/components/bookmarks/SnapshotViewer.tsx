@@ -112,12 +112,17 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
     }
   };
 
+  // 如果没有快照，不显示任何内容
+  if (!isOpen && snapshotCount === 0) {
+    return null;
+  }
+
   if (!isOpen) {
     return (
       <button
         onClick={handleOpen}
         className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
-        title="查看快照"
+        title={`查看 ${snapshotCount} 个快照`}
       >
         <Camera className="w-3 h-3" strokeWidth={2} />
         <span className="font-medium">{snapshotCount}</span>
