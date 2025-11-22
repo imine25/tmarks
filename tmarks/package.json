@@ -20,7 +20,6 @@
     "db:auto-migrate": "node scripts/auto-migrate.js",
     "db:auto-migrate:local": "node scripts/auto-migrate.js --local",
     "deploy": "pwsh scripts/deploy.ps1",
-    "postinstall": "node scripts/check-migrations.js",
     "prepare": "husky"
   },
   "dependencies": {
