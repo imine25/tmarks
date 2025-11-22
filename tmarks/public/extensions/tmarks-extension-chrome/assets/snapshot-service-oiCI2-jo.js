@@ -1,0 +1,1 @@
+async function r(t){try{const e=await chrome.scripting.executeScript({target:{tabId:t},func:()=>document.documentElement.outerHTML});if(e&&e[0]&&e[0].result)return e[0].result;throw new Error("Failed to capture page content")}catch(e){throw console.error("[SnapshotService] Failed to capture page:",e),e}}export{r as capturePageSnapshot};
