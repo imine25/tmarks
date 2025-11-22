@@ -14,10 +14,15 @@ export const securityHeaders: PagesFunction = async (context) => {
   // 创建新的响应头
   const newHeaders = new Headers(response.headers)
   
+  // 检查是否是快照查看路径（这些路径需要宽松的 CSP）
+  const url = new URL(context.request.url)
+  const isSnapshotView = url.pathname.includes('/snapshots/') && 
+                         (url.pathname.includes('/view') || url.searchParams.has('sig'))
+  
   // 安全头配置
   const securityHeaders = {
-    // 防止点击劫持
-    'X-Frame-Options': 'DENY',
+    // 防止点击劫持（快照查看除外）
+    ...(!isSnapshotView && { 'X-Frame-Options': 'DENY' }),
     
     // 防止 MIME 类型嗅探
     'X-Content-Type-Options': 'nosniff',
@@ -31,18 +36,20 @@ export const securityHeaders: PagesFunction = async (context) => {
     // 权限策略
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=()',
     
-    // 内容安全策略
-    'Content-Security-Policy': [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // React 需要 unsafe-inline
-      "style-src 'self' 'unsafe-inline'", // Tailwind 需要 unsafe-inline
-      "img-src 'self' data: https:",
-      "font-src 'self' data:",
-      "connect-src 'self' https:",
-      "frame-ancestors 'none'",
-      "base-uri 'self'",
-      "form-action 'self'"
-    ].join('; '),
+    // 内容安全策略（快照查看使用宽松策略）
+    ...(!isSnapshotView && {
+      'Content-Security-Policy': [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // React 需要 unsafe-inline
+        "style-src 'self' 'unsafe-inline'", // Tailwind 需要 unsafe-inline
+        "img-src 'self' data: https:",
+        "font-src 'self' data:",
+        "connect-src 'self' https:",
+        "frame-ancestors 'none'",
+        "base-uri 'self'",
+        "form-action 'self'"
+      ].join('; ')
+    }),
     
     // HSTS (仅在 HTTPS 环境下)
     ...(context.request.url.startsWith('https://') && {
@@ -50,7 +57,7 @@ export const securityHeaders: PagesFunction = async (context) => {
     })
   }
   
-  // 添加安全头
+  // 添加安全头（跳过 undefined 值）
   Object.entries(securityHeaders).forEach(([key, value]) => {
     if (value) {
       newHeaders.set(key, value)
