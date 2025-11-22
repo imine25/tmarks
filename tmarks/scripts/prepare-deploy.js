@@ -40,24 +40,8 @@ console.log('⚡ 复制Functions...');
 const targetFunctionsDir = path.join(deployDir, 'functions');
 copyDir(functionsDir, targetFunctionsDir);
 
-// 复制lib目录（Functions依赖）
-console.log('📚 复制共享库...');
-const libDir = path.join(__dirname, '../lib');
-const targetLibDir = path.join(targetFunctionsDir, 'lib');
-if (fs.existsSync(libDir)) {
-  copyDir(libDir, targetLibDir);
-}
-
-// 复制middleware目录（Functions依赖）
-console.log('🔐 复制中间件...');
-const middlewareDir = path.join(__dirname, '../middleware');
-const targetMiddlewareDir = path.join(targetFunctionsDir, 'middleware');
-if (fs.existsSync(middlewareDir)) {
-  copyDir(middlewareDir, targetMiddlewareDir);
-}
-
 console.log('✅ 部署准备完成!');
-console.log(`📁 部署目录: ${deployDir}`);
+console.log(`� 部署目录库: ${deployDir}`);
 
 /**
  * 递归复制目录

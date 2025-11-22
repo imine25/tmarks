@@ -29,9 +29,9 @@
     "file": "assets/index-DlUqGJ2w.js",
     "name": "index"
   },
-  "_index.ts-loader-DC8MEBFN.js": {
-    "file": "assets/index.ts-loader-DC8MEBFN.js",
-    "src": "_index.ts-loader-DC8MEBFN.js"
+  "_index.ts-loader-BDZZwb1j.js": {
+    "file": "assets/index.ts-loader-BDZZwb1j.js",
+    "src": "_index.ts-loader-BDZZwb1j.js"
   },
   "_preload-helper-BXl3LOEh.js": {
     "file": "assets/preload-helper-BXl3LOEh.js",
@@ -42,7 +42,7 @@
     "name": "prompts"
   },
   "src/background/index.ts": {
-    "file": "assets/index.ts-Bij8N4WG.js",
+    "file": "assets/index.ts-CZdsZAw1.js",
     "name": "index.ts",
     "src": "src/background/index.ts",
     "isEntry": true,
@@ -54,7 +54,7 @@
     ]
   },
   "src/content/index.ts": {
-    "file": "assets/index.ts-C5IX5NiN.js",
+    "file": "assets/index.ts-DL1fYHkw.js",
     "name": "index.ts",
     "src": "src/content/index.ts",
     "isEntry": true,
@@ -62,11 +62,18 @@
       "_preload-helper-BXl3LOEh.js"
     ],
     "dynamicImports": [
-      "src/content/singlefile-capture.ts"
+      "src/content/singlefile-capture.ts",
+      "src/content/singlefile-capture-v2.ts"
     ]
   },
+  "src/content/singlefile-capture-v2.ts": {
+    "file": "assets/singlefile-capture-v2-Drw5JioJ.js",
+    "name": "singlefile-capture-v2",
+    "src": "src/content/singlefile-capture-v2.ts",
+    "isDynamicEntry": true
+  },
   "src/content/singlefile-capture.ts": {
-    "file": "assets/singlefile-capture-BTS1DLau.js",
+    "file": "assets/singlefile-capture-CGqU8xAy.js",
     "name": "singlefile-capture",
     "src": "src/content/singlefile-capture.ts",
     "isDynamicEntry": true

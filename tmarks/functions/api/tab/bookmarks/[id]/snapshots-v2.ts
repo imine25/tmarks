@@ -158,10 +158,20 @@ export const onRequestPost: PagesFunction<Env, 'id', ApiKeyAuthContext>[] = [
 
       console.log(`[Snapshot V2 API] Uploaded ${uploadedImages.length}/${images.length} images, total: ${(totalImageSize / 1024).toFixed(1)}KB`)
 
-      // 2. 上传 HTML 到 R2
+      // 2. 替换 HTML 中的图片 URL 为带参数的完整 URL
+      let processedHtml = html_content
+      for (const imageHash of uploadedImages) {
+        const placeholderUrl = `/api/snapshot-images/${imageHash}`
+        const fullUrl = `/api/snapshot-images/${imageHash}?u=${userId}&b=${bookmarkId}&v=${version}`
+        processedHtml = processedHtml.replace(new RegExp(placeholderUrl, 'g'), fullUrl)
+      }
+
+      console.log(`[Snapshot V2 API] Replaced ${uploadedImages.length} image URLs with auth parameters`)
+
+      // 3. 上传 HTML 到 R2
       const htmlKey = `${userId}/${bookmarkId}/snapshot-${timestamp}-v${version}.html`
       const encoder = new TextEncoder()
-      const htmlBytes = encoder.encode(html_content)
+      const htmlBytes = encoder.encode(processedHtml)
 
       await bucket.put(htmlKey, htmlBytes, {
         httpMetadata: {
@@ -179,7 +189,7 @@ export const onRequestPost: PagesFunction<Env, 'id', ApiKeyAuthContext>[] = [
 
       console.log(`[Snapshot V2 API] HTML uploaded: ${htmlKey}, ${(htmlBytes.length / 1024).toFixed(1)}KB`)
 
-      // 3. 保存到数据库
+      // 4. 保存到数据库
       const snapshotId = generateNanoId()
       const now = new Date().toISOString()
       const totalSize = htmlBytes.length + totalImageSize
