@@ -168,13 +168,13 @@ export const onRequestPost: PagesFunction<Env, 'id', ApiKeyAuthContext>[] = [
       // 使用相对路径，避免域名重复问题
       let processedHtml = html_content
       for (const imageHash of uploadedImages) {
-        // 匹配所有形式的图片 URL（相对路径或绝对路径）
-        const urlPattern = new RegExp(
-          `(?:https?://[^/]+)?/api/snapshot-images/${imageHash}(?:\\?[^"\\s)]*)?`,
-          'g'
-        )
+        // 简单替换：只替换占位符路径
+        const placeholderUrl = `/api/snapshot-images/${imageHash}`
         const newUrl = `/api/snapshot-images/${imageHash}?u=${userId}&b=${bookmarkId}&v=${version}`
-        processedHtml = processedHtml.replace(urlPattern, newUrl)
+        
+        // 使用全局替换，但要转义特殊字符
+        const escapedPlaceholder = placeholderUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        processedHtml = processedHtml.replace(new RegExp(escapedPlaceholder, 'g'), newUrl)
       }
 
       console.log(`[Snapshot V2 API] Replaced ${uploadedImages.length} image URLs with auth parameters`)
