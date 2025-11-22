@@ -1,13 +1,13 @@
 /**
  * 对外 API - 单个标签页组操作
  * 路径: /api/v1/tab-groups/:id
- * 认证: API Key (X-API-Key header)
+ * 认证: JWT Token
  */
 
 import type { PagesFunction } from '@cloudflare/workers-types'
 import type { Env, RouteParams } from '../../../lib/types'
 import { success, badRequest, notFound, noContent, internalError } from '../../../lib/response'
-import { requireApiKeyAuth, ApiKeyAuthContext } from '../../../middleware/api-key-auth-pages'
+import { requireAuth, AuthContext } from '../../../middleware/auth'
 import { sanitizeString } from '../../../lib/validation'
 
 interface TabGroupRow {
@@ -35,8 +35,8 @@ interface UpdateTabGroupRequest {
 }
 
 // GET /api/v1/tab-groups/:id - 获取单个标签页组详情
-export const onRequestGet: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[] = [
-  requireApiKeyAuth('bookmarks.read'),
+export const onRequestGet: PagesFunction<Env, RouteParams, AuthContext>[] = [
+  requireAuth,
   async (context) => {
     const userId = context.data.user_id
     const groupId = context.params.id
@@ -79,8 +79,8 @@ export const onRequestGet: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[] 
 ]
 
 // PATCH /api/v1/tab-groups/:id - 更新标签页组
-export const onRequestPatch: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[] = [
-  requireApiKeyAuth('bookmarks.update'),
+export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
+  requireAuth,
   async (context) => {
     const userId = context.data.user_id
     const groupId = context.params.id
@@ -159,8 +159,8 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[
 ]
 
 // DELETE /api/v1/tab-groups/:id - 删除标签页组
-export const onRequestDelete: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[] = [
-  requireApiKeyAuth('bookmarks.delete'),
+export const onRequestDelete: PagesFunction<Env, RouteParams, AuthContext>[] = [
+  requireAuth,
   async (context) => {
     const userId = context.data.user_id
     const groupId = context.params.id

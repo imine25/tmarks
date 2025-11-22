@@ -1,13 +1,13 @@
 /**
  * 对外 API - 标签页组操作
  * 路径: /api/v1/tab-groups
- * 认证: API Key (X-API-Key header)
+ * 认证: JWT Token 或 API Key (双重认证)
  */
 
 import type { PagesFunction } from '@cloudflare/workers-types'
 import type { Env, RouteParams, SQLParam } from '../../../lib/types'
 import { success, badRequest, created, internalError } from '../../../lib/response'
-import { requireApiKeyAuth, ApiKeyAuthContext } from '../../../middleware/api-key-auth-pages'
+import { requireDualAuth, DualAuthContext } from '../../../middleware/dual-auth'
 import { sanitizeString } from '../../../lib/validation'
 import { generateUUID } from '../../../lib/crypto'
 
@@ -41,8 +41,8 @@ interface CreateTabGroupRequest {
 }
 
 // GET /api/v1/tab-groups - 获取标签页组列表
-export const onRequestGet: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[] = [
-  requireApiKeyAuth('bookmarks.read'),
+export const onRequestGet: PagesFunction<Env, RouteParams, AuthContext>[] = [
+  requireAuth,
   async (context) => {
     const userId = context.data.user_id
     const url = new URL(context.request.url)
@@ -107,8 +107,8 @@ export const onRequestGet: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[] 
 ]
 
 // POST /api/v1/tab-groups - 创建标签页组
-export const onRequestPost: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[] = [
-  requireApiKeyAuth('bookmarks.create'),
+export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
+  requireAuth,
   async (context) => {
     const userId = context.data.user_id
 
