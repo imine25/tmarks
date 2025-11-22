@@ -1,13 +1,13 @@
 /**
  * 对外 API - 标签页组操作
  * 路径: /api/v1/tab-groups
- * 认证: JWT Token 或 API Key (双重认证)
+ * 认证: JWT Token
  */
 
 import type { PagesFunction } from '@cloudflare/workers-types'
 import type { Env, RouteParams, SQLParam } from '../../../lib/types'
 import { success, badRequest, created, internalError } from '../../../lib/response'
-import { requireDualAuth, DualAuthContext } from '../../../middleware/dual-auth'
+import { requireAuth, AuthContext } from '../../../middleware/auth'
 import { sanitizeString } from '../../../lib/validation'
 import { generateUUID } from '../../../lib/crypto'
 
