@@ -2,6 +2,8 @@ import type { PagesFunction } from '@cloudflare/workers-types'
 import type { Env, RouteParams } from '../../../lib/types'
 import { requireAuth, type AuthContext } from '../../../middleware/auth'
 import { invalidatePublicShareCache } from '../../shared/cache'
+import { CacheService } from '../../../lib/cache'
+import { createBookmarkCacheManager } from '../../../lib/cache/bookmark-cache'
 
 // Batch action types
 type BatchActionType = 'delete' | 'update_tags' | 'pin' | 'unpin' | 'archive' | 'unarchive'
@@ -164,7 +166,7 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
           .bind(...bookmark_ids, userId)
           .all<{ id: string }>()
 
-        const validBookmarkIds = verifyResult.results.map((row: any) => row.id)
+        const validBookmarkIds = verifyResult.results.map((row: { id: string }) => row.id)
 
         if (validBookmarkIds.length === 0) {
           return new Response(
@@ -206,7 +208,7 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
             .bind(...add_tag_ids, userId)
             .all<{ id: string }>()
 
-          const validTagIds = tagsResult.results.map((row: any) => row.id)
+          const validTagIds = tagsResult.results.map((row: { id: string }) => row.id)
 
           if (validTagIds.length > 0) {
             // Insert bookmark_tags (ignore duplicates)
@@ -298,6 +300,11 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
     if (errors.length > 0) {
       response.errors = errors
     }
+
+    // 使用缓存管理器处理批量操作后的缓存
+    const cache = new CacheService(context.env)
+    const bookmarkCache = createBookmarkCacheManager(cache)
+    await bookmarkCache.handleBatchOperation(userId)
 
     await invalidatePublicShareCache(context.env, userId)
 

@@ -1,12 +1,11 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
-import { createPortal } from 'react-dom'
 import { CheckCircle } from 'lucide-react'
 import { TagSidebar } from '@/components/tags/TagSidebar'
 import { BookmarkListContainer } from '@/components/bookmarks/BookmarkListContainer'
 import { BookmarkForm } from '@/components/bookmarks/BookmarkForm'
 import { BatchActionBar } from '@/components/bookmarks/BatchActionBar'
 import { PaginationFooter } from '@/components/common/PaginationFooter'
-import { SortSelector, type SortOption } from '@/components/common/SortSelector'
+import type { SortOption } from '@/components/common/SortSelector'
 import { useInfiniteBookmarks } from '@/hooks/useBookmarks'
 import { useTags } from '@/hooks/useTags'
 import { usePreferences, useUpdatePreferences } from '@/hooks/usePreferences'
@@ -20,11 +19,7 @@ const VIEW_MODES = ['list', 'card', 'minimal', 'title'] as const
 type ViewMode = typeof VIEW_MODES[number]
 type VisibilityFilter = 'all' | 'public' | 'private'
 
-interface MenuPosition {
-  top: number
-  left: number
-  width?: number
-}
+const SORT_OPTIONS: SortOption[] = ['created', 'updated', 'pinned', 'popular']
 
 const VISIBILITY_LABELS: Record<VisibilityFilter, string> = {
   all: '全部书签',
@@ -32,7 +27,12 @@ const VISIBILITY_LABELS: Record<VisibilityFilter, string> = {
   private: '仅私密',
 }
 
-const VISIBILITY_OPTIONS: VisibilityFilter[] = ['all', 'public', 'private']
+const SORT_LABELS: Record<SortOption, string> = {
+  created: '按创建时间',
+  updated: '按更新时间',
+  pinned: '置顶优先',
+  popular: '按热门程度',
+}
 
 
 
@@ -122,11 +122,45 @@ function VisibilityIcon({ filter }: { filter: VisibilityFilter }) {
   )
 }
 
+function SortIcon({ sort }: { sort: SortOption }) {
+  if (sort === 'created') {
+    return (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16 2v4M8 2v4M3 10h18" />
+      </svg>
+    )
+  }
+
+  if (sort === 'updated') {
+    return (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+      </svg>
+    )
+  }
+
+  if (sort === 'pinned') {
+    return (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+      </svg>
+    )
+  }
+
+  return (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+    </svg>
+  )
+}
+
 export function BookmarksPage() {
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [debouncedSelectedTags, setDebouncedSelectedTags] = useState<string[]>([])
   const [searchKeyword, setSearchKeyword] = useState('')
   const [debouncedSearchKeyword, setDebouncedSearchKeyword] = useState('')
+  const [searchMode, setSearchMode] = useState<'bookmark' | 'tag'>('bookmark')  // 搜索模式
   const [sortBy, setSortBy] = useState<SortOption>('popular')
   const [viewMode, setViewMode] = useState<ViewMode>(() => getStoredViewMode() ?? 'card')
   const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('all')
@@ -141,23 +175,6 @@ export function BookmarksPage() {
   const autoCleanupTimerRef = useRef<NodeJS.Timeout | null>(null)
   const searchCleanupTimerRef = useRef<NodeJS.Timeout | null>(null)
   const tagDebounceTimerRef = useRef<NodeJS.Timeout | null>(null)
-  const viewMenuButtonRef = useRef<HTMLButtonElement>(null)
-  const visibilityMenuButtonRef = useRef<HTMLButtonElement>(null)
-  const viewMenuContentRef = useRef<HTMLDivElement | null>(null)
-  const visibilityMenuContentRef = useRef<HTMLDivElement | null>(null)
-  const [viewMenuPosition, setViewMenuPosition] = useState<MenuPosition | null>(null)
-  const [visibilityMenuPosition, setVisibilityMenuPosition] = useState<MenuPosition | null>(null)
-  const [isViewMenuOpen, setIsViewMenuOpen] = useState(false)
-  const [isVisibilityMenuOpen, setIsVisibilityMenuOpen] = useState(false)
-
-  const closeMenus = () => {
-    setIsViewMenuOpen(false)
-    setIsVisibilityMenuOpen(false)
-    setViewMenuPosition(null)
-    setVisibilityMenuPosition(null)
-    viewMenuContentRef.current = null
-    visibilityMenuContentRef.current = null
-  }
 
   // 获取用户偏好设置
   const { data: preferences } = usePreferences()
@@ -189,10 +206,15 @@ export function BookmarksPage() {
     return () => clearTimeout(timer)
   }, [searchKeyword])
 
-  // 初始化视图模式和排序方式
+  // 初始化视图模式和排序方式 - 优化：立即从localStorage读取，不等待API
   useEffect(() => {
+    // 立即从localStorage读取，避免等待API
+    const storedMode = getStoredViewMode()
+    if (storedMode && !preferences) {
+      setViewMode(storedMode)
+    }
+
     if (preferences?.view_mode && isValidViewMode(preferences.view_mode)) {
-      const storedMode = getStoredViewMode()
       const storedUpdatedAt = getStoredViewModeUpdatedAt()
       const serverUpdatedAt = preferences.updated_at ? new Date(preferences.updated_at).getTime() : 0
 
@@ -214,36 +236,14 @@ export function BookmarksPage() {
     }
   }, [preferences, sortByInitialized])
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node
-      if (
-        isViewMenuOpen &&
-        !viewMenuButtonRef.current?.contains(target) &&
-        !viewMenuContentRef.current?.contains(target)
-      ) {
-        setIsViewMenuOpen(false)
-        setViewMenuPosition(null)
-      }
-      if (
-        isVisibilityMenuOpen &&
-        !visibilityMenuButtonRef.current?.contains(target) &&
-        !visibilityMenuContentRef.current?.contains(target)
-      ) {
-        setIsVisibilityMenuOpen(false)
-        setVisibilityMenuPosition(null)
-      }
-    }
 
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [isViewMenuOpen, isVisibilityMenuOpen])
 
   // 构建查询参数（使用防抖后的值）
   const queryParams = useMemo<BookmarkQueryParams>(() => {
     const params: BookmarkQueryParams = {}
 
-    if (debouncedSearchKeyword.trim()) {
+    // 只在书签搜索模式下传递关键词
+    if (searchMode === 'bookmark' && debouncedSearchKeyword.trim()) {
       params.keyword = debouncedSearchKeyword.trim()
     }
 
@@ -254,7 +254,7 @@ export function BookmarksPage() {
     params.sort = sortBy
 
     return params
-  }, [debouncedSearchKeyword, debouncedSelectedTags, sortBy])
+  }, [searchMode, debouncedSearchKeyword, debouncedSelectedTags, sortBy])
 
   const bookmarksQuery = useInfiniteBookmarks(queryParams)
   const { refetch: refetchTags } = useTags()
@@ -293,7 +293,7 @@ export function BookmarksPage() {
     }
   }, [filteredBookmarks.length])
 
-  // 标签自动清空逻辑 - 30秒后自动清除选中状态
+  // 标签自动清空逻辑 - 根据用户设置自动清除选中状态
   useEffect(() => {
     // 清除之前的定时器
     if (autoCleanupTimerRef.current) {
@@ -301,12 +301,16 @@ export function BookmarksPage() {
       autoCleanupTimerRef.current = null
     }
 
-    // 如果有选中的标签，设置30秒后自动清空
-    if (selectedTags.length > 0) {
+    // 检查是否启用标签选中自动清空
+    const enableAutoClear = preferences?.enable_tag_selection_auto_clear ?? false
+    const clearSeconds = preferences?.tag_selection_auto_clear_seconds ?? 30
+
+    // 如果启用了自动清空且有选中的标签，设置定时器
+    if (enableAutoClear && selectedTags.length > 0) {
       autoCleanupTimerRef.current = setTimeout(() => {
         setSelectedTags([])
         setDebouncedSelectedTags([])
-      }, 30000) // 30秒
+      }, clearSeconds * 1000)
     }
 
     // 清理函数
@@ -316,9 +320,9 @@ export function BookmarksPage() {
         autoCleanupTimerRef.current = null
       }
     }
-  }, [selectedTags])
+  }, [selectedTags, preferences?.enable_tag_selection_auto_clear, preferences?.tag_selection_auto_clear_seconds])
 
-  // 搜索关键词自动清空逻辑 - 20秒后自动清除搜索内容
+  // 搜索关键词自动清空逻辑 - 根据用户设置自动清除搜索内容
   useEffect(() => {
     // 清除之前的定时器
     if (searchCleanupTimerRef.current) {
@@ -326,12 +330,16 @@ export function BookmarksPage() {
       searchCleanupTimerRef.current = null
     }
 
-    // 如果有搜索关键词，设置15秒后自动清空
-    if (searchKeyword.trim()) {
+    // 检查是否启用搜索自动清空
+    const enableAutoClear = preferences?.enable_search_auto_clear ?? true
+    const clearSeconds = preferences?.search_auto_clear_seconds ?? 15
+
+    // 如果启用了自动清空且有搜索关键词，设置定时器
+    if (enableAutoClear && searchKeyword.trim()) {
       searchCleanupTimerRef.current = setTimeout(() => {
         setSearchKeyword('')
         setDebouncedSearchKeyword('')
-      }, 15000) // 15秒
+      }, clearSeconds * 1000)
     }
 
     // 清理函数
@@ -341,11 +349,10 @@ export function BookmarksPage() {
         searchCleanupTimerRef.current = null
       }
     }
-  }, [searchKeyword])
+  }, [searchKeyword, preferences?.enable_search_auto_clear, preferences?.search_auto_clear_seconds])
 
   const hasMore = Boolean(bookmarksQuery.hasNextPage)
   const handleOpenForm = (bookmark?: Bookmark) => {
-    closeMenus()
     if (bookmark) {
       setEditingBookmark(bookmark)
     } else {
@@ -370,71 +377,15 @@ export function BookmarksPage() {
     }
   }
 
-  const handleViewModeChange = (mode: ViewMode) => {
-    setViewMode(mode)
-    setStoredViewMode(mode)
+  const handleViewModeChange = () => {
+    // 循环切换：列表 -> 卡片 -> 极简 -> 标题 -> 列表
+    const currentIndex = VIEW_MODES.indexOf(viewMode)
+    const nextIndex = (currentIndex + 1) % VIEW_MODES.length
+    const nextMode = VIEW_MODES[nextIndex]!
+    setViewMode(nextMode)
+    setStoredViewMode(nextMode)
     // 保存到用户偏好设置
-    updatePreferences.mutate({ view_mode: mode })
-    setIsViewMenuOpen(false)
-    setViewMenuPosition(null)
-    viewMenuContentRef.current = null
-  }
-
-  const handleVisibilityChange = (filter: VisibilityFilter) => {
-    setVisibilityFilter(filter)
-    setIsVisibilityMenuOpen(false)
-    setVisibilityMenuPosition(null)
-    visibilityMenuContentRef.current = null
-  }
-
-
-
-  const toggleVisibilityMenu = () => {
-    setIsVisibilityMenuOpen((prev) => {
-      const next = !prev
-      if (next) {
-        if (visibilityMenuButtonRef.current) {
-          const rect = visibilityMenuButtonRef.current.getBoundingClientRect()
-          const width = Math.max(rect.width + 100, 160)
-          const maxLeft = window.scrollX + window.innerWidth - width - 12
-          const left = Math.min(rect.left + window.scrollX, maxLeft)
-          setVisibilityMenuPosition({
-            top: rect.bottom + window.scrollY + 8,
-            left,
-            width,
-          })
-        }
-        setIsViewMenuOpen(false)
-        setViewMenuPosition(null)
-      } else {
-        setVisibilityMenuPosition(null)
-      }
-      return next
-    })
-  }
-
-  const toggleViewMenu = () => {
-    setIsViewMenuOpen((prev) => {
-      const next = !prev
-      if (next) {
-        if (viewMenuButtonRef.current) {
-          const rect = viewMenuButtonRef.current.getBoundingClientRect()
-          const width = Math.max(rect.width + 110, 180)
-          const maxLeft = window.scrollX + window.innerWidth - width - 12
-          const left = Math.min(rect.left + window.scrollX, maxLeft)
-          setViewMenuPosition({
-            top: rect.bottom + window.scrollY + 8,
-            left,
-            width,
-          })
-        }
-        setIsVisibilityMenuOpen(false)
-        setVisibilityMenuPosition(null)
-      } else {
-        setViewMenuPosition(null)
-      }
-      return next
-    })
+    updatePreferences.mutate({ view_mode: nextMode })
   }
 
 
@@ -444,10 +395,14 @@ export function BookmarksPage() {
     updatePreferences.mutate({ tag_layout: layout })
   }
 
-  const handleSortByChange = (sort: SortOption) => {
-    setSortBy(sort)
+  const handleSortByChange = () => {
+    // 循环切换：创建时间 -> 更新时间 -> 置顶优先 -> 热门程度 -> 创建时间
+    const currentIndex = SORT_OPTIONS.indexOf(sortBy)
+    const nextIndex = (currentIndex + 1) % SORT_OPTIONS.length
+    const nextSort = SORT_OPTIONS[nextIndex]!
+    setSortBy(nextSort)
     // 保存到用户偏好设置
-    updatePreferences.mutate({ sort_by: sort })
+    updatePreferences.mutate({ sort_by: nextSort })
   }
 
   const handleToggleSelect = (bookmarkId: string) => {
@@ -474,94 +429,21 @@ export function BookmarksPage() {
     refetchTags()
   }
 
-  const visibilityMenuPortal =
-    typeof document !== 'undefined' && isVisibilityMenuOpen && visibilityMenuPosition
-      ? createPortal(
-        <div
-          ref={(node) => {
-            visibilityMenuContentRef.current = node
-          }}
-          className="rounded-lg border border-border shadow-lg overflow-hidden"
-          style={{
-            position: 'absolute',
-            top: visibilityMenuPosition.top,
-            left: visibilityMenuPosition.left,
-            width: visibilityMenuPosition.width ?? 180,
-            backgroundColor: 'var(--card)',
-            zIndex: 1000,
-          }}
-        >
-          {VISIBILITY_OPTIONS.map((option) => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => handleVisibilityChange(option)}
-              className={`w-full px-3 py-2 text-sm flex items-center gap-2 transition-colors ${visibilityFilter === option
-                ? 'bg-primary/10 text-primary font-medium'
-                : 'text-muted-foreground hover:bg-muted'
-                }`}
-            >
-              <VisibilityIcon filter={option} />
-              <span>{VISIBILITY_LABELS[option]}</span>
-            </button>
-          ))}
-        </div>,
-        document.body,
-      )
-      : null
-
-  const viewMenuPortal =
-    typeof document !== 'undefined' && isViewMenuOpen && viewMenuPosition
-      ? createPortal(
-        <div
-          ref={(node) => {
-            viewMenuContentRef.current = node
-          }}
-          className="rounded-lg border border-border shadow-lg overflow-hidden"
-          style={{
-            position: 'absolute',
-            top: viewMenuPosition.top,
-            left: viewMenuPosition.left,
-            width: viewMenuPosition.width ?? 200,
-            backgroundColor: 'var(--card)',
-            zIndex: 1000,
-          }}
-        >
-          {VIEW_MODES.map((modeOption) => (
-            <button
-              key={modeOption}
-              type="button"
-              onClick={() => handleViewModeChange(modeOption)}
-              className={`w-full px-3 py-2 text-sm flex items-center gap-2 transition-colors ${viewMode === modeOption
-                ? 'bg-primary/10 text-primary font-medium'
-                : 'text-muted-foreground hover:bg-muted'
-                }`}
-            >
-              <ViewModeIcon mode={modeOption} />
-              <span>
-                {modeOption === 'list'
-                  ? '列表视图'
-                  : modeOption === 'card'
-                    ? '卡片视图'
-                    : modeOption === 'minimal'
-                      ? '极简列表'
-                      : '标题瀑布'}
-              </span>
-            </button>
-          ))}
-        </div>,
-        document.body,
-      )
-      : null
 
 
+  const getViewModeLabel = (mode: ViewMode) => {
+    switch (mode) {
+      case 'list': return '列表视图'
+      case 'card': return '卡片视图'
+      case 'minimal': return '极简列表'
+      case 'title': return '标题瀑布'
+    }
+  }
 
   return (
     <>
-      {visibilityMenuPortal}
-      {viewMenuPortal}
-      <div className="w-full max-w-full mx-auto py-3 sm:py-4 md:py-6 px-3 sm:px-4 md:px-6 overflow-x-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 md:gap-6 max-w-full">
+      <div className="w-full h-[calc(100vh-4rem)] sm:h-[calc(100vh-5rem)] flex flex-col overflow-hidden touch-none">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-6 w-full h-full overflow-hidden touch-none">
           {/* 左侧：标签侧边栏 - 桌面端显示 */}
           <aside className="hidden lg:block lg:col-span-3 order-2 lg:order-1 fixed top-[calc(5rem+0.75rem)] sm:top-[calc(5rem+1rem)] md:top-[calc(5rem+1.5rem)] left-3 sm:left-4 md:left-6 bottom-3 w-[calc(25%-1.5rem)] z-40 flex flex-col overflow-hidden">
             <TagSidebar
@@ -571,17 +453,19 @@ export function BookmarksPage() {
               onTagLayoutChange={handleTagLayoutChange}
               bookmarks={filteredBookmarks}
               isLoadingBookmarks={isInitialLoading || isFetchingExisting}
+              searchQuery={searchMode === 'tag' ? debouncedSearchKeyword : ''}
             />
           </aside>
 
           {/* 右侧：书签列表 */}
-          <main className="lg:col-span-9 lg:col-start-4 order-1 lg:order-2">
-            <div className="space-y-3 sm:space-y-4 md:space-y-5">
+          <main className="lg:col-span-9 lg:col-start-4 order-1 lg:order-2 flex flex-col h-full overflow-hidden w-full min-w-0">
+            {/* 固定的顶部操作栏 */}
+            <div className="flex-shrink-0 px-3 sm:px-4 md:px-6 pt-3 sm:pt-4 md:pt-6 pb-3 sm:pb-4 w-full">
               {/* 顶部操作栏 */}
-              <div className="card shadow-float">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <div className="card shadow-float w-full">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full">
                   {/* 移动端标签抽屉按钮 + 搜索框 */}
-                  <div className="flex items-center gap-3 flex-1 w-full sm:min-w-[280px]">
+                  <div className="flex items-center gap-3 flex-1 min-w-0 w-full sm:min-w-[280px]">
                     {/* 标签抽屉按钮 - 仅移动端显示 */}
                     <button
                       onClick={() => setIsTagSidebarOpen(true)}
@@ -595,15 +479,38 @@ export function BookmarksPage() {
                     </button>
 
                     {/* 搜索框 */}
-                    <div className="flex-1">
-                      <div className="relative">
-                        <svg className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="flex-1 min-w-0">
+                      <div className="relative w-full">
+                        {/* 搜索模式切换按钮 - 内部左侧 */}
+                        <button
+                          onClick={() => setSearchMode(searchMode === 'bookmark' ? 'tag' : 'bookmark')}
+                          className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center transition-all hover:text-primary"
+                          title={searchMode === 'bookmark' ? '切换到标签搜索' : '切换到书签搜索'}
+                          aria-label={searchMode === 'bookmark' ? '切换到标签搜索' : '切换到书签搜索'}
+                        >
+                          {searchMode === 'bookmark' ? (
+                            // 书签图标
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                            </svg>
+                          ) : (
+                            // 标签图标
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                            </svg>
+                          )}
+                        </button>
+
+                        {/* 搜索图标 */}
+                        <svg className="absolute left-10 sm:left-12 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
+
+                        {/* 搜索输入框 */}
                         <input
                           type="text"
-                          className="input w-full pl-10 sm:pl-12 h-11 sm:h-auto text-sm sm:text-base"
-                          placeholder="搜索书签标题、描述或URL..."
+                          className="input w-full !pl-16 sm:!pl-[4.5rem] h-11 sm:h-auto text-sm sm:text-base"
+                          placeholder={searchMode === 'bookmark' ? '搜索书签...' : '搜索标签...'}
                           value={searchKeyword}
                           onChange={(e) => setSearchKeyword(e.target.value)}
                         />
@@ -612,33 +519,53 @@ export function BookmarksPage() {
                   </div>
 
                   {/* 排序选择、视图切换和新增按钮 */}
-                  <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1">
-                    <div className="relative flex-shrink-0">
-                      <SortSelector
-                        value={sortBy}
-                        onChange={handleSortByChange}
-                        className="w-auto"
-                      />
-                    </div>
-
+                  <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto overflow-x-auto scrollbar-hide pb-1 sm:pb-0">
                     <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-                      <div className="relative">
-                        <button
-                          ref={visibilityMenuButtonRef}
-                          onClick={toggleVisibilityMenu}
-                          className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all shadow-float touch-manipulation flex-shrink-0 ${visibilityFilter === 'all'
-                            ? 'bg-muted text-foreground hover:bg-muted/80'
-                            : visibilityFilter === 'public'
-                              ? 'bg-success/10 text-success hover:bg-success/20'
-                              : 'bg-warning/10 text-warning hover:bg-warning/20'
-                            }`}
-                          title={`${VISIBILITY_LABELS[visibilityFilter]}筛选`}
-                          aria-label={`${VISIBILITY_LABELS[visibilityFilter]}筛选`}
-                          type="button"
-                        >
-                          <VisibilityIcon filter={visibilityFilter} />
-                        </button>
-                      </div>
+                      {/* 排序按钮 - 点击循环切换 */}
+                      <button
+                        onClick={handleSortByChange}
+                        className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all shadow-float bg-muted text-foreground hover:bg-muted/80 touch-manipulation flex-shrink-0"
+                        title={`${SORT_LABELS[sortBy]} (点击切换)`}
+                        aria-label={`${SORT_LABELS[sortBy]} (点击切换)`}
+                        type="button"
+                      >
+                        <SortIcon sort={sortBy} />
+                      </button>
+
+                      {/* 可见性筛选按钮 - 点击循环切换 */}
+                      <button
+                        onClick={() => {
+                          // 循环切换：全部 -> 公开 -> 私密 -> 全部
+                          const nextFilter = visibilityFilter === 'all' 
+                            ? 'public' 
+                            : visibilityFilter === 'public' 
+                              ? 'private' 
+                              : 'all'
+                          setVisibilityFilter(nextFilter)
+                        }}
+                        className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all shadow-float touch-manipulation flex-shrink-0 ${visibilityFilter === 'all'
+                          ? 'bg-muted text-foreground hover:bg-muted/80'
+                          : visibilityFilter === 'public'
+                            ? 'bg-success/10 text-success hover:bg-success/20'
+                            : 'bg-warning/10 text-warning hover:bg-warning/20'
+                          }`}
+                        title={`${VISIBILITY_LABELS[visibilityFilter]} (点击切换)`}
+                        aria-label={`${VISIBILITY_LABELS[visibilityFilter]} (点击切换)`}
+                        type="button"
+                      >
+                        <VisibilityIcon filter={visibilityFilter} />
+                      </button>
+
+                      {/* 视图模式按钮 - 点击循环切换 */}
+                      <button
+                        onClick={handleViewModeChange}
+                        className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all shadow-float bg-muted text-foreground hover:bg-muted/80 touch-manipulation flex-shrink-0"
+                        title={`${getViewModeLabel(viewMode)} (点击切换)`}
+                        aria-label={`${getViewModeLabel(viewMode)} (点击切换)`}
+                        type="button"
+                      >
+                        <ViewModeIcon mode={viewMode} />
+                      </button>
 
                       {/* 批量操作按钮 */}
                       <button
@@ -659,19 +586,6 @@ export function BookmarksPage() {
                         <CheckCircle className="w-5 h-5" />
                       </button>
 
-                      <div className="relative">
-                        <button
-                          ref={viewMenuButtonRef}
-                          onClick={toggleViewMenu}
-                          className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all shadow-float bg-muted text-foreground hover:bg-muted/80 touch-manipulation flex-shrink-0"
-                          title="切换视图"
-                          aria-label="切换视图"
-                          type="button"
-                        >
-                          <ViewModeIcon mode={viewMode} />
-                        </button>
-                      </div>
-
                       <button
                         onClick={() => handleOpenForm()}
                         className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-primary to-secondary text-primary-content flex items-center justify-center shadow-float hover:shadow-xl transition-all hover:scale-105 active:scale-95 touch-manipulation flex-shrink-0"
@@ -691,33 +605,33 @@ export function BookmarksPage() {
 
               {/* 批量操作提示栏 */}
               {batchMode && (
-                <div className="card bg-primary/10 border border-primary/20 mb-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <span className="text-sm font-medium text-foreground">
+                <div className="card bg-primary/10 border border-primary/20 mt-3 sm:mt-4 w-full">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
+                      <span className="font-medium text-foreground whitespace-nowrap">
                         {selectedIds.length > 0
-                          ? `已选择 ${selectedIds.length} 个书签`
-                          : '请选择要操作的书签'}
+                          ? `已选择 ${selectedIds.length} 个`
+                          : '请选择书签'}
                       </span>
                       {selectedIds.length < filteredBookmarks.length && (
                         <>
-                          <span className="text-border">|</span>
+                          <span className="text-border hidden sm:inline">|</span>
                           <button
                             onClick={handleSelectAll}
-                            className="text-sm text-primary hover:text-primary/80 transition-colors"
+                            className="text-primary hover:text-primary/80 transition-colors whitespace-nowrap"
                           >
-                            全选当前页 ({filteredBookmarks.length})
+                            全选 ({filteredBookmarks.length})
                           </button>
                         </>
                       )}
                       {selectedIds.length > 0 && (
                         <>
-                          <span className="text-border">|</span>
+                          <span className="text-border hidden sm:inline">|</span>
                           <button
                             onClick={handleClearSelection}
-                            className="text-sm text-primary hover:text-primary/80 transition-colors"
+                            className="text-primary hover:text-primary/80 transition-colors whitespace-nowrap"
                           >
-                            取消选择
+                            取消
                           </button>
                         </>
                       )}
@@ -725,29 +639,34 @@ export function BookmarksPage() {
                   </div>
                 </div>
               )}
+            </div>
 
-              {/* 书签列表 */}
-              <BookmarkListContainer
-                bookmarks={filteredBookmarks}
-                isLoading={isInitialLoading || isFetchingExisting}
-                viewMode={viewMode}
-                onEdit={handleOpenForm}
-                previousCount={previousCountRef.current}
-                batchMode={batchMode}
-                selectedIds={selectedIds}
-                onToggleSelect={handleToggleSelect}
-              />
-
-              {/* 分页控制 */}
-              {!isInitialLoading && filteredBookmarks.length > 0 && (
-                <PaginationFooter
-                  hasMore={hasMore}
-                  isLoading={bookmarksQuery.isFetchingNextPage}
-                  onLoadMore={handleLoadMore}
-                  currentCount={filteredBookmarks.length}
-                  totalLoaded={filteredBookmarks.length}
+            {/* 可滚动的书签列表区域 */}
+            <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4 md:px-6 pb-20 sm:pb-4 md:pb-6 w-full overscroll-contain touch-auto">
+              <div className="space-y-3 sm:space-y-4 md:space-y-5 w-full min-w-0">
+                {/* 书签列表 */}
+                <BookmarkListContainer
+                  bookmarks={filteredBookmarks}
+                  isLoading={isInitialLoading || isFetchingExisting}
+                  viewMode={viewMode}
+                  onEdit={handleOpenForm}
+                  previousCount={previousCountRef.current}
+                  batchMode={batchMode}
+                  selectedIds={selectedIds}
+                  onToggleSelect={handleToggleSelect}
                 />
-              )}
+
+                {/* 分页控制 */}
+                {!isInitialLoading && filteredBookmarks.length > 0 && (
+                  <PaginationFooter
+                    hasMore={hasMore}
+                    isLoading={bookmarksQuery.isFetchingNextPage}
+                    onLoadMore={handleLoadMore}
+                    currentCount={filteredBookmarks.length}
+                    totalLoaded={filteredBookmarks.length}
+                  />
+                )}
+              </div>
             </div>
           </main>
         </div>
@@ -778,7 +697,7 @@ export function BookmarksPage() {
               </div>
 
               {/* 抽屉内容区域 */}
-              <div className="flex-1 overflow-y-auto p-4 bg-background min-h-0">
+              <div className="flex-1 overflow-y-auto p-4 bg-background min-h-0 overscroll-contain touch-auto">
                 <TagSidebar
                   selectedTags={selectedTags}
                   onTagsChange={(tags) => {
@@ -792,6 +711,7 @@ export function BookmarksPage() {
                   onTagLayoutChange={handleTagLayoutChange}
                   bookmarks={filteredBookmarks}
                   isLoadingBookmarks={isInitialLoading || isFetchingExisting}
+                  searchQuery={searchMode === 'tag' ? debouncedSearchKeyword : ''}
                 />
               </div>
             </div>

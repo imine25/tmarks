@@ -2,6 +2,8 @@ import type { PagesFunction } from '@cloudflare/workers-types'
 import type { Env, BookmarkRow, PublicProfile } from '../../lib/types'
 import { notFound, success, internalError } from '../../lib/response'
 import { normalizeBookmark } from '../bookmarks/utils'
+import { CacheService } from '../../lib/cache'
+import { generateCacheKey } from '../../lib/cache/strategies'
 
 interface PublicSharePayload {
   profile: {
@@ -32,8 +34,7 @@ interface PublicSharePaginatedPayload {
   }
 }
 
-const CACHE_PREFIX = 'public-share:'
-const CACHE_TAGS_PREFIX = 'public-share-tags:'
+
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   const slug = (context.params.slug as string | undefined)?.toLowerCase()
@@ -49,10 +50,11 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   // 如果没有分页参数，返回旧版本的完整数据（向后兼容）
   const usePagination = url.searchParams.has('page_size') || url.searchParams.has('page_cursor')
 
+  // 初始化缓存服务
+  const cache = new CacheService(context.env)
   const cacheKey = usePagination
-    ? `${CACHE_PREFIX}${slug}:page:${pageCursor || 'first'}:${pageSize}`
-    : `${CACHE_PREFIX}${slug}`
-  const tagsCacheKey = `${CACHE_TAGS_PREFIX}${slug}`
+    ? generateCacheKey('publicShare', slug, { page_cursor: pageCursor || 'first', page_size: pageSize })
+    : generateCacheKey('publicShare', slug)
 
   try {
     // 验证用户和分享设置
@@ -68,20 +70,13 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       return notFound('Share link not found')
     }
 
-    // 如果使用分页，检查分页缓存
-    if (usePagination && context.env.PUBLIC_SHARE_KV) {
-      const cached = await context.env.PUBLIC_SHARE_KV.get(cacheKey, 'json')
-      if (cached) {
-        return success(cached as PublicSharePaginatedPayload)
-      }
-    }
-
-    // 如果不使用分页，检查完整数据缓存
-    if (!usePagination && context.env.PUBLIC_SHARE_KV) {
-      const cached = await context.env.PUBLIC_SHARE_KV.get(cacheKey, 'json')
-      if (cached) {
-        return success(cached as PublicSharePayload)
-      }
+    // 尝试从缓存获取
+    const cached = await cache.get<PublicSharePayload | PublicSharePaginatedPayload>('publicShare', cacheKey)
+    if (cached) {
+      return success({
+        ...cached,
+        _cached: true, // 标记为缓存数据
+      })
     }
 
     // 构建书签查询
@@ -222,14 +217,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         },
       }
 
-      // 缓存分页数据（5分钟）
-      if (context.env.PUBLIC_SHARE_KV) {
-        await context.env.PUBLIC_SHARE_KV.put(
-          cacheKey,
-          JSON.stringify(paginatedPayload),
-          { expirationTtl: 300 }
-        )
-      }
+      // 异步写入缓存 (30分钟 TTL, Level 0 配置)
+      await cache.set('publicShare', cacheKey, paginatedPayload, { async: true })
 
       return success(paginatedPayload)
     } else {
@@ -245,14 +234,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         generated_at: new Date().toISOString(),
       }
 
-      // 缓存完整数据（10分钟）
-      if (context.env.PUBLIC_SHARE_KV) {
-        await context.env.PUBLIC_SHARE_KV.put(
-          cacheKey,
-          JSON.stringify(payload),
-          { expirationTtl: 600 }
-        )
-      }
+      // 异步写入缓存 (30分钟 TTL, Level 0 配置)
+      await cache.set('publicShare', cacheKey, payload, { async: true })
 
       return success(payload)
     }

@@ -7,12 +7,16 @@ import { filterRateLimiter } from '../../../lib/rate-limit'
 import { generateUUID } from '../../../lib/crypto'
 import { normalizeBookmark } from '../../bookmarks/utils'
 import { invalidatePublicShareCache } from '../../shared/cache'
+import { CacheService } from '../../../lib/cache'
+import { createBookmarkCacheManager } from '../../../lib/cache/bookmark-cache'
+import type { QueryParams } from '../../../lib/cache/types'
 
 interface CreateBookmarkRequest {
   title: string
   url: string
   description?: string
   cover_image?: string
+  favicon?: string
   tag_ids?: string[]
   is_pinned?: boolean
   is_archived?: boolean
@@ -40,6 +44,29 @@ export const onRequestGet: PagesFunction<Env, RouteParams, AuthContext>[] = [
       const sortBy = url.searchParams.get('sort') || 'created' // created, updated, pinned
       const isArchived = url.searchParams.get('archived') === 'true'
       const isPinned = url.searchParams.get('pinned') === 'true'
+
+      // 初始化缓存服务
+      const cache = new CacheService(context.env)
+      const bookmarkCache = createBookmarkCacheManager(cache)
+
+      // 构建查询参数对象
+      const queryParams: QueryParams = {
+        keyword: keyword || undefined,
+        tags: tagIds.length > 0 ? tagIds : undefined,
+        archived: isArchived || undefined,
+        pinned: isPinned || undefined,
+        sort: sortBy !== 'created' ? sortBy : undefined,
+        page_cursor: pageCursor || undefined,
+      }
+
+      // 尝试从缓存获取 (只缓存默认列表查询)
+      const cached = await bookmarkCache.getBookmarkList(userId, queryParams)
+      if (cached) {
+        return success({
+          ...cached,
+          _cached: true, // 标记为缓存数据
+        })
+      }
 
       // 记录标签点击统计(异步执行,不阻塞主查询)
       if (tagIds.length > 0) {
@@ -176,13 +203,38 @@ export const onRequestGet: PagesFunction<Env, RouteParams, AuthContext>[] = [
         }
       }
 
+      // 一次性获取所有书签的快照数量
+      const snapshotCounts = new Map<string, number>()
+      
+      if (bookmarkIds.length > 0) {
+        try {
+          const placeholders = bookmarkIds.map(() => '?').join(',')
+          const { results: countResults } = await context.env.DB.prepare(
+            `SELECT bookmark_id, COUNT(*) as count
+             FROM bookmark_snapshots
+             WHERE bookmark_id IN (${placeholders})
+             GROUP BY bookmark_id`
+          )
+            .bind(...bookmarkIds)
+            .all<{ bookmark_id: string; count: number }>()
+
+          for (const row of countResults || []) {
+            snapshotCounts.set(row.bookmark_id, row.count)
+          }
+        } catch (snapshotError) {
+          // 如果快照表不存在，忽略错误（向后兼容）
+          console.warn('Failed to fetch snapshot counts (table may not exist):', snapshotError)
+        }
+      }
+
       // 组装书签和标签数据
       const bookmarksWithTags: BookmarkWithTags[] = bookmarks.map(bookmark => ({
         ...normalizeBookmark(bookmark),
         tags: tagsByBookmarkId.get(bookmark.id) || [],
+        snapshot_count: snapshotCounts.get(bookmark.id) || 0,
       }))
 
-      return success({
+      const responseData = {
         bookmarks: bookmarksWithTags,
         meta: {
           page_size: pageSize,
@@ -190,7 +242,12 @@ export const onRequestGet: PagesFunction<Env, RouteParams, AuthContext>[] = [
           next_cursor: nextCursor,
           has_more: hasMore,
         },
-      })
+      }
+
+      // 异步写入缓存 (不阻塞响应)
+      await bookmarkCache.setBookmarkList(userId, queryParams, responseData, { async: true })
+
+      return success(responseData)
     } catch (error) {
       console.error('Get bookmarks error:', error)
       return internalError('Failed to get bookmarks')
@@ -219,6 +276,7 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
       const url = sanitizeString(body.url, 2000)
       const description = body.description ? sanitizeString(body.description, 1000) : null
       const coverImage = body.cover_image ? sanitizeString(body.cover_image, 2000) : null
+      const favicon = body.favicon ? sanitizeString(body.favicon, 2000) : null
 
       // 检查URL是否已存在（包括已删除的）
       const existing = await context.env.DB.prepare(
@@ -234,16 +292,46 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
       const isPublic = body.is_public ? 1 : 0
 
       if (existing) {
-        // 如果是未删除的书签，返回错误
+        bookmarkId = existing.id
+        
+        // 如果是未删除的书签
         if (!existing.deleted_at) {
-          return badRequest('Bookmark with this URL already exists')
+          // 返回现有书签信息，让前端可以为其创建快照
+          const bookmarkRow = await context.env.DB.prepare('SELECT * FROM bookmarks WHERE id = ?')
+            .bind(bookmarkId)
+            .first<BookmarkRow>()
+
+          const { results: tags } = await context.env.DB.prepare(
+            `SELECT t.id, t.name, t.color
+             FROM tags t
+             INNER JOIN bookmark_tags bt ON t.id = bt.tag_id
+             WHERE bt.bookmark_id = ?`
+          )
+            .bind(bookmarkId)
+            .all<{ id: string; name: string; color: string | null }>()
+
+          if (!bookmarkRow) {
+            return internalError('Failed to retrieve bookmark')
+          }
+
+          const bookmark = normalizeBookmark(bookmarkRow)
+
+          return success(
+            {
+              ...bookmark,
+              tags: tags || [],
+            },
+            {
+              message: 'Bookmark already exists',
+              code: 'BOOKMARK_EXISTS',
+            }
+          )
         }
 
         // 如果是已删除的书签，恢复并更新
-        bookmarkId = existing.id
         await context.env.DB.prepare(
           `UPDATE bookmarks
-           SET title = ?, description = ?, cover_image = ?,
+           SET title = ?, description = ?, cover_image = ?, favicon = ?,
                is_pinned = ?, is_archived = ?, is_public = ?,
                deleted_at = NULL, updated_at = ?
            WHERE id = ?`
@@ -252,6 +340,7 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
             title,
             description,
             coverImage,
+            favicon,
             isPinned,
             isArchived,
             isPublic,
@@ -270,8 +359,8 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
         bookmarkId = bookmarkUuid
 
         await context.env.DB.prepare(
-          `INSERT INTO bookmarks (id, user_id, title, url, description, cover_image, is_pinned, is_archived, is_public, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          `INSERT INTO bookmarks (id, user_id, title, url, description, cover_image, favicon, is_pinned, is_archived, is_public, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         )
           .bind(
             bookmarkUuid,
@@ -280,6 +369,7 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
             url,
             description,
             coverImage,
+            favicon,
             isPinned,
             isArchived,
             isPublic,
@@ -317,6 +407,11 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
       if (!bookmarkRow) {
         return internalError('Failed to load bookmark after creation')
       }
+
+      // 失效缓存
+      const cache = new CacheService(context.env)
+      const bookmarkCache = createBookmarkCacheManager(cache)
+      await bookmarkCache.invalidateUserBookmarks(userId)
 
       if (body.is_public) {
         await invalidatePublicShareCache(context.env, userId)

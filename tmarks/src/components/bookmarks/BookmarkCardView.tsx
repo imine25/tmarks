@@ -3,6 +3,9 @@ import { AdaptiveImage } from '@/components/common/AdaptiveImage'
 import { useRecordClick } from '@/hooks/useBookmarks'
 import { useState, useEffect, useRef } from 'react'
 import type { ImageType } from '@/lib/image-utils'
+import { DefaultBookmarkIconComponent } from './DefaultBookmarkIcon'
+import { usePreferences } from '@/hooks/usePreferences'
+import { SnapshotViewer } from './SnapshotViewer'
 
 interface BookmarkCardViewProps {
   bookmarks: Bookmark[]
@@ -29,7 +32,7 @@ export function BookmarkCardView({
   useEffect(() => {
     // 检测是否为移动端（宽度小于640px）
     const isMobile = window.innerWidth < 640
-    
+
     if (isMobile) {
       const timer = setTimeout(() => {
         setShowEditHint(false)
@@ -88,7 +91,7 @@ export function BookmarkCardView({
   const columnedBookmarks = (() => {
     // 创建 N 个空列数组
     const cols: Bookmark[][] = Array.from({ length: columns }, () => [])
-    
+
     // 1. 先将置顶书签按行分散到各列顶部
     for (let i = 0; i < pinnedBookmarks.length; i++) {
       const colIndex = i % columns
@@ -98,7 +101,7 @@ export function BookmarkCardView({
         col.push(bookmark)
       }
     }
-    
+
     // 2. 再将未置顶书签按列顺序分配
     for (let i = 0; i < unpinnedBookmarks.length; i++) {
       const colIndex = i % columns
@@ -108,27 +111,27 @@ export function BookmarkCardView({
         col.push(bookmark)
       }
     }
-    
+
     return cols
   })()
 
 
   return (
-    <div ref={containerRef} className="w-full">
+    <div ref={containerRef} className="w-full min-w-0">
       {/* CSS Grid 布局 - 并排显示各列 */}
       {columnedBookmarks.length > 0 && (
         <div
-          className="w-full"
+          className="w-full min-w-0"
           style={{
             display: 'grid',
-            gridTemplateColumns: `repeat(${columns}, 1fr)`,
+            gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
             gap: '1rem'
           } as React.CSSProperties}
         >
           {columnedBookmarks.map((col, colIndex) => (
-            <div key={`col-${colIndex}`}>
+            <div key={`col-${colIndex}`} className="min-w-0">
               {col.map((bookmark) => (
-                <div key={bookmark.id} className="mb-3 sm:mb-4">
+                <div key={bookmark.id} className="mb-3 sm:mb-4 w-full">
                   <BookmarkCard
                     bookmark={bookmark}
                     onEdit={onEdit ? () => onEdit(bookmark) : undefined}
@@ -170,9 +173,12 @@ function BookmarkCard({
   const [imageType, setImageType] = useState<ImageType>('unknown')
   const [coverImageError, setCoverImageError] = useState(false)
   const [faviconError, setFaviconError] = useState(false)
+  const [googleFaviconIsDefault, setGoogleFaviconIsDefault] = useState(false)
   const recordClick = useRecordClick()
+  const { data: preferences } = usePreferences()
+  const defaultIcon = preferences?.default_bookmark_icon || 'bookmark'
 
-  // 生成Google Favicon URL作为fallback
+  // 生成Google Favicon URL作为最终fallback
   const getFaviconUrl = (url: string): string => {
     try {
       const urlObj = new URL(url)
@@ -182,12 +188,27 @@ function BookmarkCard({
     }
   }
 
-  const fallbackFaviconUrl = getFaviconUrl(bookmark.url)
-  
-  // 决定显示什么图片
+  const googleFaviconUrl = getFaviconUrl(bookmark.url)
+
+  // 检测 Google Favicon 是否为默认灰色地球图标
+  const checkIfGoogleDefaultIcon = (img: HTMLImageElement) => {
+    // Google 的默认图标特征：
+    // 1. 图片很小（通常是 16x16 或更小）
+    // 2. 可以通过加载后检查图片尺寸来判断
+    if (img.naturalWidth <= 16 && img.naturalHeight <= 16) {
+      setGoogleFaviconIsDefault(true)
+    }
+  }
+
+  // 决定显示什么图片 - 改进的回退策略
+  // 1. cover_image (封面图)
+  // 2. favicon (网站图标，从插件获取)
+  // 3. Google Favicon API (但跳过默认灰色地球)
+  // 4. 用户自定义的 SVG 图标
   const hasCoverImage = bookmark.cover_image && bookmark.cover_image.trim() !== '' && !coverImageError
-  const shouldShowFallback = !hasCoverImage && fallbackFaviconUrl && !faviconError
-  const shouldShowImageArea = hasCoverImage || shouldShowFallback
+  const hasFavicon = !hasCoverImage && bookmark.favicon && bookmark.favicon.trim() !== '' && !faviconError
+  const shouldShowGoogleFavicon = !hasCoverImage && !hasFavicon && googleFaviconUrl && !faviconError && !googleFaviconIsDefault
+  const shouldShowImageArea = hasCoverImage || hasFavicon || shouldShowGoogleFavicon
 
   const handleVisit = () => {
     // 记录点击统计
@@ -209,9 +230,8 @@ function BookmarkCard({
 
   return (
     <div
-      className={`card hover:shadow-xl transition-all relative group flex flex-col cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/60 touch-manipulation ${
-        batchMode && isSelected ? 'ring-2 ring-primary' : ''
-      }`}
+      className={`card hover:shadow-xl transition-all relative group flex flex-col cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/60 touch-manipulation w-full min-w-0 ${batchMode && isSelected ? 'ring-2 ring-primary' : ''
+        }`}
       role="link"
       tabIndex={0}
       onClick={handleCardClick}
@@ -231,11 +251,10 @@ function BookmarkCard({
       {batchMode && onToggleSelect && (
         <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-10">
           <div
-            className={`w-6 h-6 rounded flex items-center justify-center transition-all ${
-              isSelected
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-card border-2 border-border'
-            }`}
+            className={`w-6 h-6 rounded flex items-center justify-center transition-all ${isSelected
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-card border-2 border-border'
+              }`}
           >
             {isSelected && (
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
@@ -253,9 +272,8 @@ function BookmarkCard({
             event.stopPropagation()
             onEdit()
           }}
-          className={`absolute top-2 right-2 sm:top-3 sm:right-3 w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110 z-10 touch-manipulation ${
-            showEditHint ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 active:opacity-100'
-          }`}
+          className={`absolute top-2 right-2 sm:top-3 sm:right-3 w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110 z-10 touch-manipulation ${showEditHint ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 active:opacity-100'
+            }`}
           title="编辑"
         >
           <svg className="w-4 h-4 text-base-content drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -264,14 +282,13 @@ function BookmarkCard({
         </button>
       )}
 
-      {/* 图片区域 - 优先显示cover_image，失败则显示favicon，都在顶部居中 */}
+      {/* 图片区域 - 三级回退：cover_image → favicon → Google Favicon API → 默认图标 */}
       {shouldShowImageArea && (
         <div
-          className={`relative bg-base-200 overflow-hidden flex-shrink-0 flex items-center justify-center ${
-            imageType === 'favicon' || shouldShowFallback 
-              ? 'h-24 sm:h-20' 
-              : 'h-40 sm:h-32'
-          }`}
+          className={`relative overflow-hidden flex-shrink-0 flex items-center justify-center ${imageType === 'favicon' || hasFavicon || shouldShowGoogleFavicon
+            ? 'h-24 sm:h-20 bg-gradient-to-br from-primary/5 to-secondary/5'
+            : 'h-40 sm:h-32 bg-gradient-to-br from-primary/10 to-secondary/10'
+            }`}
           style={{ borderTopLeftRadius: 'calc(var(--radius) * 1.5)', borderTopRightRadius: 'calc(var(--radius) * 1.5)' }}
         >
           {hasCoverImage ? (
@@ -286,14 +303,39 @@ function BookmarkCard({
               onTypeDetected={setImageType}
               onError={() => setCoverImageError(true)}
             />
-          ) : shouldShowFallback ? (
-            <img
-              src={fallbackFaviconUrl}
-              alt={bookmark.title}
-              className="w-14 h-14 sm:w-12 sm:h-12 object-contain"
-              onError={() => setFaviconError(true)}
-            />
+          ) : hasFavicon ? (
+            <div className="relative w-14 h-14 sm:w-12 sm:h-12 flex items-center justify-center">
+              <img
+                src={bookmark.favicon!}
+                alt={bookmark.title}
+                className="w-full h-full object-contain"
+                onError={() => setFaviconError(true)}
+              />
+            </div>
+          ) : shouldShowGoogleFavicon ? (
+            <div className="relative w-14 h-14 sm:w-12 sm:h-12 flex items-center justify-center">
+              <img
+                src={googleFaviconUrl}
+                alt={bookmark.title}
+                className="w-full h-full object-contain"
+                onLoad={(e) => {
+                  const img = e.target as HTMLImageElement
+                  checkIfGoogleDefaultIcon(img)
+                }}
+                onError={() => setFaviconError(true)}
+              />
+            </div>
           ) : null}
+        </div>
+      )}
+
+      {/* 没有任何图片时显示默认书签图标 */}
+      {!shouldShowImageArea && (
+        <div
+          className="relative h-24 sm:h-20 overflow-hidden flex-shrink-0 flex items-center justify-center bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5"
+          style={{ borderTopLeftRadius: 'calc(var(--radius) * 1.5)', borderTopRightRadius: 'calc(var(--radius) * 1.5)' }}
+        >
+          <DefaultBookmarkIconComponent icon={defaultIcon} />
         </div>
       )}
 
@@ -330,10 +372,20 @@ function BookmarkCard({
           </p>
         )}
 
-        {/* 标签 */}
-        {bookmark.tags && bookmark.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-1">
-            {bookmark.tags.slice(0, 4).map((tag) => (
+        {/* 标签和快照 */}
+        {(bookmark.tags && bookmark.tags.length > 0) || bookmark.has_snapshot ? (
+          <div className="flex flex-wrap items-center gap-1.5 mt-1">
+            {/* 快照图标 */}
+            {bookmark.has_snapshot && (
+              <SnapshotViewer 
+                bookmarkId={bookmark.id} 
+                bookmarkTitle={bookmark.title}
+                snapshotCount={bookmark.snapshot_count || 0}
+              />
+            )}
+            
+            {/* 标签 */}
+            {bookmark.tags && bookmark.tags.slice(0, 4).map((tag) => (
               <span
                 key={tag.id}
                 className="text-xs sm:text-[11px] px-2.5 sm:px-2 py-1 sm:py-0.5 rounded-full bg-primary/10 text-primary"
@@ -341,13 +393,13 @@ function BookmarkCard({
                 {tag.name}
               </span>
             ))}
-            {bookmark.tags.length > 4 && (
+            {bookmark.tags && bookmark.tags.length > 4 && (
               <span className="text-xs sm:text-[11px] text-base-content/60 flex items-center px-1">
                 +{bookmark.tags.length - 4}
               </span>
             )}
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   )

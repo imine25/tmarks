@@ -1,21 +1,12 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter } from 'react-router-dom'
 import { useEffect, useRef } from 'react'
-import { AppRouter } from './routes'
-import { useAuthStore } from './stores/authStore'
-import { ToastContainer } from './components/common/Toast'
-import { useToastStore } from './stores/toastStore'
-import { useThemeStore } from './stores/themeStore'
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-    },
-  },
-})
+import { AppRouter } from '@/routes'
+import { useAuthStore } from '@/stores/authStore'
+import { ToastContainer } from '@/components/common/Toast'
+import { useToastStore } from '@/stores/toastStore'
+import { useThemeStore } from '@/stores/themeStore'
+import { queryClient } from '@/lib/query-client'
 
 function App() {
   const { user, isAuthenticated, accessToken, refreshToken, clearAuth, refreshAccessToken } = useAuthStore()

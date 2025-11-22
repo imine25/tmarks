@@ -3,7 +3,8 @@ import { tabGroupsService } from '@/services/tab-groups'
 import { logger } from '@/lib/logger'
 import type { TabGroup, TabGroupItem } from '@/lib/types'
 import { ShareDialog } from '@/components/tab-groups/ShareDialog'
-import { sortTabGroups, type SortOption } from '@/components/tab-groups/SortSelector'
+import type { SortOption } from '@/components/tab-groups/sortUtils'
+import { sortTabGroups } from '@/components/tab-groups/sortUtils'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { SearchBar } from '@/components/tab-groups/SearchBar'
 import { BatchActionBar } from '@/components/tab-groups/BatchActionBar'
@@ -27,6 +28,7 @@ import { useTabGroupActions } from '@/hooks/useTabGroupActions'
 import { useBatchActions } from '@/hooks/useBatchActions'
 import { searchInFields } from '@/lib/search-utils'
 import { MoveItemDialog } from '@/components/tab-groups/MoveItemDialog'
+import { usePreferences } from '@/hooks/usePreferences'
 import { useIsMobile, useIsDesktop } from '@/hooks/useMediaQuery'
 import { Drawer } from '@/components/common/Drawer'
 import { BottomNav } from '@/components/common/BottomNav'
@@ -141,7 +143,10 @@ export function TabGroupsPage() {
     return () => clearTimeout(timer)
   }, [searchQuery])
 
-  // 搜索自动清空
+  // 获取用户偏好设置
+  const { data: preferences } = usePreferences()
+
+  // 搜索自动清空 - 根据用户设置
   useEffect(() => {
     // 清除之前的定时器
     if (searchCleanupTimerRef.current) {
@@ -149,12 +154,16 @@ export function TabGroupsPage() {
       searchCleanupTimerRef.current = null
     }
 
-    // 如果有搜索关键词，设置15秒后自动清空
-    if (searchQuery.trim()) {
+    // 检查是否启用搜索自动清空
+    const enableAutoClear = preferences?.enable_search_auto_clear ?? true
+    const clearSeconds = preferences?.search_auto_clear_seconds ?? 15
+
+    // 如果启用了自动清空且有搜索关键词，设置定时器
+    if (enableAutoClear && searchQuery.trim()) {
       searchCleanupTimerRef.current = setTimeout(() => {
         setSearchQuery('')
         setDebouncedSearchQuery('')
-      }, 15000) // 15秒
+      }, clearSeconds * 1000)
     }
 
     // 清理函数
@@ -164,7 +173,7 @@ export function TabGroupsPage() {
         searchCleanupTimerRef.current = null
       }
     }
-  }, [searchQuery])
+  }, [searchQuery, preferences?.enable_search_auto_clear, preferences?.search_auto_clear_seconds])
 
   const loadTabGroups = async () => {
     try {
@@ -280,7 +289,7 @@ export function TabGroupsPage() {
     }
   }
 
-  const handleItemClick = (item: TabGroupItem, e: React.MouseEvent) => {
+  const handleItemClick = (item: TabGroupItem, e: React.MouseEvent | React.ChangeEvent<HTMLInputElement>) => {
     if (batchMode) {
       e.preventDefault()
       const newSelected = new Set(selectedItems)
@@ -604,7 +613,8 @@ export function TabGroupsPage() {
   }
 
   return (
-    <div className={`flex ${isMobile ? 'flex-col' : ''} h-screen overflow-hidden bg-background`}>
+    <div className="w-full h-[calc(100vh-4rem)] sm:h-[calc(100vh-5rem)] flex flex-col overflow-hidden touch-none">
+      <div className={`flex ${isMobile ? 'flex-col' : ''} w-full h-full overflow-hidden touch-none`}>
       {/* 移动端顶部工具栏 */}
       {isMobile && (
         <MobileHeader
@@ -658,7 +668,7 @@ export function TabGroupsPage() {
 
       {/* 中间内容区域 */}
       <div className={`flex-1 overflow-y-auto bg-muted/30 ${isMobile ? 'min-h-0' : ''}`}>
-        <div className={`container mx-auto px-4 max-w-7xl ${isMobile ? 'py-4 pb-20' : 'py-6'}`}>
+        <div className={`w-full px-4 ${isMobile ? 'py-4 pb-20' : 'py-6'}`}>
           {/* Header */}
           <div className="mb-6">
             {/* Title and Search Bar in one row */}
@@ -834,6 +844,7 @@ export function TabGroupsPage() {
 
       {/* 移动端底部导航 */}
       {isMobile && <BottomNav />}
+      </div>
     </div>
   )
 }

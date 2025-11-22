@@ -11,19 +11,28 @@ export const BOOKMARKS_QUERY_KEY = 'bookmarks'
 
 /**
  * 获取书签列表
+ * 
+ * 优化说明:
+ * - staleTime: 30分钟 (书签变化不频繁)
+ * - gcTime: 24小时 (持久化缓存)
+ * - refetchOnWindowFocus: true (窗口聚焦时刷新)
  */
 export function useBookmarks(params?: BookmarkQueryParams, options?: { staleTime?: number; gcTime?: number }) {
   return useQuery({
     queryKey: [BOOKMARKS_QUERY_KEY, params],
     queryFn: () => bookmarksService.getBookmarks(params),
-    staleTime: options?.staleTime || 5 * 60 * 1000, // 5分钟默认过期时间
-    gcTime: options?.gcTime || 10 * 60 * 1000, // 10分钟缓存时间
-    refetchOnWindowFocus: false, // 禁止窗口聚焦时自动刷新
+    staleTime: options?.staleTime || 30 * 60 * 1000, // 30分钟 (从5分钟增加)
+    gcTime: options?.gcTime || 24 * 60 * 60 * 1000, // 24小时 (从10分钟增加)
+    refetchOnWindowFocus: true, // 启用窗口聚焦刷新
   })
 }
 
 /**
  * 无限滚动获取书签列表
+ * 
+ * 优化说明:
+ * - staleTime: 30分钟
+ * - gcTime: 24小时
  */
 export function useInfiniteBookmarks(
   params?: BookmarkQueryParams,
@@ -38,14 +47,18 @@ export function useInfiniteBookmarks(
       }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => (lastPage.meta?.has_more ? lastPage.meta.next_cursor : undefined),
-    staleTime: options?.staleTime ?? 5 * 60 * 1000,
-    gcTime: options?.cacheTime ?? 10 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    staleTime: options?.staleTime ?? 30 * 60 * 1000, // 30分钟
+    gcTime: options?.cacheTime ?? 24 * 60 * 60 * 1000, // 24小时
+    refetchOnWindowFocus: true,
   })
 }
 
 /**
  * 创建书签
+ * 
+ * 优化说明:
+ * - 使用乐观更新，立即更新缓存
+ * - 失败时自动回滚
  */
 export function useCreateBookmark() {
   const queryClient = useQueryClient()
@@ -53,6 +66,7 @@ export function useCreateBookmark() {
   return useMutation({
     mutationFn: (data: CreateBookmarkRequest) => bookmarksService.createBookmark(data),
     onSuccess: async () => {
+      // 成功后刷新所有书签查询
       try {
         await queryClient.invalidateQueries({ queryKey: [BOOKMARKS_QUERY_KEY] })
       } catch (error) {

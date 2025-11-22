@@ -14,9 +14,9 @@ export function useTags(
   return useQuery({
     queryKey: [TAGS_QUERY_KEY, params],
     queryFn: () => tagsService.getTags(params),
-    staleTime: options?.staleTime || 5 * 60 * 1000, // 5分钟默认过期时间，与书签保持一致
-    gcTime: options?.gcTime || 10 * 60 * 1000, // 10分钟缓存时间
-    refetchOnWindowFocus: false, // 禁止窗口聚焦时自动刷新
+    staleTime: options?.staleTime || 60 * 60 * 1000, // 1小时 (标签很少变化)
+    gcTime: options?.gcTime || 24 * 60 * 60 * 1000, // 24小时
+    refetchOnWindowFocus: true, // 启用窗口聚焦刷新
     enabled: options?.enabled ?? true,
   })
 }

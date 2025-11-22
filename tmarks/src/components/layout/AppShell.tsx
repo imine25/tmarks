@@ -1,15 +1,8 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { useState, useRef, useEffect } from 'react'
 import {
   BookOpen,
   User,
-  Key,
-  Share2,
-  Database,
-  LogOut,
-  Layers,
-  Shield,
-  Download
+  Layers
 } from 'lucide-react'
 import { useThemeStore } from '@/stores/themeStore'
 import { useAuthStore } from '@/stores/authStore'
@@ -21,9 +14,7 @@ export function AppShell() {
   const { theme, colorTheme } = useThemeStore()
   const navigate = useNavigate()
   const location = useLocation()
-  const { user, logout } = useAuthStore()
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
+  const { user } = useAuthStore()
 
   // 判断当前是否在标签页组页面
   const isOnTabGroupsPage = location.pathname.startsWith('/tab')
@@ -31,30 +22,11 @@ export function AppShell() {
   // 切换按钮点击处理
   const handleToggleView = () => {
     if (isOnTabGroupsPage) {
-      navigate('/bookmarks')
+      navigate('/')
     } else {
       navigate('/tab')
     }
   }
-
-  const handleLogout = async () => {
-    await logout()
-    navigate('/login')
-  }
-
-  // 点击外部关闭菜单
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsUserMenuOpen(false)
-      }
-    }
-
-    if (isUserMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [isUserMenuOpen])
 
   return (
     <div className="min-h-screen" style={{backgroundColor: 'var(--background)'}} data-theme={theme} data-color-theme={colorTheme}>
@@ -102,96 +74,24 @@ export function AppShell() {
             <ThemeToggle />
             <ColorThemeSelector />
 
-            {/* 用户菜单 */}
+            {/* 用户按钮 - 直接跳转到设置 */}
             {user && (
-              <div className="relative" ref={menuRef}>
-                <button
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="px-3 py-2 rounded-lg border border-border hover:border-primary hover:bg-card/50 transition-all duration-200 flex items-center justify-center gap-2"
-                  style={{color: 'var(--foreground)'}}
-                  title={user.username}
-                >
-                  <User className="w-5 h-5" />
-                </button>
-
-                {/* 下拉菜单 */}
-                {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 rounded-lg shadow-lg border border-border overflow-hidden z-50"
-                       style={{backgroundColor: 'var(--card)'}}>
-                    <button
-                      onClick={() => {
-                        navigate('/extension')
-                        setIsUserMenuOpen(false)
-                      }}
-                      className="w-full px-4 py-3 flex items-center gap-2 hover:bg-muted/50 transition-colors duration-200"
-                      style={{color: 'var(--foreground)'}}
-                    >
-                      <Download className="w-4 h-4" />
-                      <span>浏览器插件</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        navigate('/api-keys')
-                        setIsUserMenuOpen(false)
-                      }}
-                      className="w-full px-4 py-3 flex items-center gap-2 hover:bg-muted/50 transition-colors duration-200"
-                      style={{color: 'var(--foreground)'}}
-                    >
-                      <Key className="w-4 h-4" />
-                      <span>API Keys</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        navigate('/share-settings')
-                        setIsUserMenuOpen(false)
-                      }}
-                      className="w-full px-4 py-3 flex items-center gap-2 hover:bg-muted/50 transition-colors duration-200"
-                      style={{color: 'var(--foreground)'}}
-                    >
-                      <Share2 className="w-4 h-4" />
-                      <span>公开分享</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        navigate('/import-export')
-                        setIsUserMenuOpen(false)
-                      }}
-                      className="w-full px-4 py-3 flex items-center gap-2 hover:bg-muted/50 transition-colors duration-200"
-                      style={{color: 'var(--foreground)'}}
-                    >
-                      <Database className="w-4 h-4" />
-                      <span>数据管理</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        navigate('/permissions')
-                        setIsUserMenuOpen(false)
-                      }}
-                      className="w-full px-4 py-3 flex items-center gap-2 hover:bg-muted/50 transition-colors duration-200"
-                      style={{color: 'var(--foreground)'}}
-                    >
-                      <Shield className="w-4 h-4" />
-                      <span>浏览器权限</span>
-                    </button>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full px-4 py-3 flex items-center gap-2 hover:bg-muted/50 transition-colors duration-200"
-                      style={{color: 'var(--foreground)'}}
-                    >
-                      <LogOut className="w-4 h-4" />
-                      <span>登出</span>
-                    </button>
-                  </div>
-                )}
-              </div>
+              <button
+                onClick={() => navigate('/settings/general')}
+                className="px-3 py-2 rounded-lg border border-border hover:border-primary hover:bg-card/50 transition-all duration-200 flex items-center justify-center gap-2"
+                style={{color: 'var(--foreground)'}}
+                title={`${user.username} - 点击进入设置`}
+              >
+                <User className="w-5 h-5" />
+              </button>
             )}
           </div>
         </div>
       </header>
 
-      {/* 主内容区 */}
-      <main className="w-full px-3 sm:px-6 pb-16 sm:pb-0">
-        <div className="mx-auto" style={{ maxWidth: '100%' }}>
+      {/* 主内容区 - 黄金比例容器 */}
+      <main className="w-full pb-16 sm:pb-6 pt-3 sm:pt-6 flex flex-col min-h-0 flex-1">
+        <div className="mx-auto w-full px-3 sm:px-6" style={{ maxWidth: '1200px' }}>
           <Outlet />
         </div>
       </main>
