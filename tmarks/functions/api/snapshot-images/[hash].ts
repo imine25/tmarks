@@ -74,16 +74,41 @@ export const onRequestGet: PagesFunction<Env, 'hash'> = async (context) => {
     }
 
     // 构建 R2 键
-    const imageKey = `${userId}/${bookmarkId}/v${version}/images/${hash}`
+    let imageKey = `${userId}/${bookmarkId}/v${version}/images/${hash}`
 
     console.log(`[Snapshot Image API] Fetching: ${imageKey}`)
 
     // 从 R2 获取图片
-    const r2Object = await bucket.get(imageKey)
+    let r2Object = await bucket.get(imageKey)
+
+    // 如果没找到，尝试兼容旧格式（带/不带扩展名）
+    if (!r2Object) {
+      console.log(`[Snapshot Image API] Not found, trying alternative formats...`)
+      
+      // 如果 hash 带扩展名，试试去掉
+      if (hash.includes('.')) {
+        const hashWithoutExt = hash.replace(/\.(webp|jpg|jpeg|png|gif)$/i, '')
+        const altKey = `${userId}/${bookmarkId}/v${version}/images/${hashWithoutExt}`
+        console.log(`[Snapshot Image API] Trying without extension: ${altKey}`)
+        r2Object = await bucket.get(altKey)
+        if (r2Object) imageKey = altKey
+      } else {
+        // 如果 hash 不带扩展名，试试加上常见扩展名
+        const extensions = ['.webp', '.jpg', '.jpeg', '.png', '.gif']
+        for (const ext of extensions) {
+          const altKey = `${userId}/${bookmarkId}/v${version}/images/${hash}${ext}`
+          console.log(`[Snapshot Image API] Trying with extension: ${altKey}`)
+          r2Object = await bucket.get(altKey)
+          if (r2Object) {
+            imageKey = altKey
+            break
+          }
+        }
+      }
+    }
 
     if (!r2Object) {
-      console.warn(`[Snapshot Image API] Image not found in R2: ${imageKey}`)
-      // 返回 404 而不是 500，避免连接关闭
+      console.warn(`[Snapshot Image API] Image not found in R2 (tried all formats): ${hash}`)
       return new Response('Image not found', {
         status: 404,
         headers: {
