@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { CheckCircle } from 'lucide-react'
 import { TagSidebar } from '@/components/tags/TagSidebar'
 import { BookmarkListContainer } from '@/components/bookmarks/BookmarkListContainer'
@@ -181,30 +181,38 @@ export function BookmarksPage() {
   const updatePreferences = useUpdatePreferences()
 
   // 标签选择防抖：延迟300ms更新实际标签筛选（减少API调用）
-  useEffect(() => {
+  // 优化：使用 useCallback 避免重复创建函数
+  const debouncedUpdateTags = useCallback((tags: string[]) => {
     if (tagDebounceTimerRef.current) {
       clearTimeout(tagDebounceTimerRef.current)
     }
-
     tagDebounceTimerRef.current = setTimeout(() => {
-      setDebouncedSelectedTags(selectedTags)
+      setDebouncedSelectedTags(tags)
     }, 300)
+  }, [])
 
+  useEffect(() => {
+    debouncedUpdateTags(selectedTags)
     return () => {
       if (tagDebounceTimerRef.current) {
         clearTimeout(tagDebounceTimerRef.current)
       }
     }
-  }, [selectedTags])
+  }, [selectedTags, debouncedUpdateTags])
 
   // 搜索防抖：延迟500ms更新实际搜索关键词（减少API调用）
-  useEffect(() => {
+  // 优化：使用 useCallback 避免重复创建函数
+  const debouncedUpdateSearch = useCallback((keyword: string) => {
     const timer = setTimeout(() => {
-      setDebouncedSearchKeyword(searchKeyword)
+      setDebouncedSearchKeyword(keyword)
     }, 500)
-
     return () => clearTimeout(timer)
-  }, [searchKeyword])
+  }, [])
+
+  useEffect(() => {
+    const cleanup = debouncedUpdateSearch(searchKeyword)
+    return cleanup
+  }, [searchKeyword, debouncedUpdateSearch])
 
   // 初始化视图模式和排序方式 - 优化：立即从localStorage读取，不等待API
   useEffect(() => {
@@ -352,32 +360,33 @@ export function BookmarksPage() {
   }, [searchKeyword, preferences?.enable_search_auto_clear, preferences?.search_auto_clear_seconds])
 
   const hasMore = Boolean(bookmarksQuery.hasNextPage)
-  const handleOpenForm = (bookmark?: Bookmark) => {
+  // 优化：使用 useCallback 避免重复创建函数
+  const handleOpenForm = useCallback((bookmark?: Bookmark) => {
     if (bookmark) {
       setEditingBookmark(bookmark)
     } else {
       setEditingBookmark(null)
     }
     setShowForm(true)
-  }
+  }, [])
 
-  const handleCloseForm = () => {
+  const handleCloseForm = useCallback(() => {
     setShowForm(false)
     setEditingBookmark(null)
-  }
+  }, [])
 
-  const handleFormSuccess = () => {
+  const handleFormSuccess = useCallback(() => {
     bookmarksQuery.refetch()
     refetchTags()
-  }
+  }, [bookmarksQuery, refetchTags])
 
-  const handleLoadMore = () => {
+  const handleLoadMore = useCallback(() => {
     if (bookmarksQuery.hasNextPage) {
       bookmarksQuery.fetchNextPage()
     }
-  }
+  }, [bookmarksQuery])
 
-  const handleViewModeChange = () => {
+  const handleViewModeChange = useCallback(() => {
     // 循环切换：列表 -> 卡片 -> 极简 -> 标题 -> 列表
     const currentIndex = VIEW_MODES.indexOf(viewMode)
     const nextIndex = (currentIndex + 1) % VIEW_MODES.length
@@ -386,16 +395,14 @@ export function BookmarksPage() {
     setStoredViewMode(nextMode)
     // 保存到用户偏好设置
     updatePreferences.mutate({ view_mode: nextMode })
-  }
+  }, [viewMode, updatePreferences])
 
-
-
-  const handleTagLayoutChange = (layout: 'grid' | 'masonry') => {
+  const handleTagLayoutChange = useCallback((layout: 'grid' | 'masonry') => {
     setTagLayout(layout)
     updatePreferences.mutate({ tag_layout: layout })
-  }
+  }, [updatePreferences])
 
-  const handleSortByChange = () => {
+  const handleSortByChange = useCallback(() => {
     // 循环切换：创建时间 -> 更新时间 -> 置顶优先 -> 热门程度 -> 创建时间
     const currentIndex = SORT_OPTIONS.indexOf(sortBy)
     const nextIndex = (currentIndex + 1) % SORT_OPTIONS.length
@@ -403,31 +410,31 @@ export function BookmarksPage() {
     setSortBy(nextSort)
     // 保存到用户偏好设置
     updatePreferences.mutate({ sort_by: nextSort })
-  }
+  }, [sortBy, updatePreferences])
 
-  const handleToggleSelect = (bookmarkId: string) => {
+  const handleToggleSelect = useCallback((bookmarkId: string) => {
     setSelectedIds((prev) =>
       prev.includes(bookmarkId)
         ? prev.filter((id) => id !== bookmarkId)
         : [...prev, bookmarkId]
     )
-  }
+  }, [])
 
-  const handleSelectAll = () => {
+  const handleSelectAll = useCallback(() => {
     setSelectedIds(filteredBookmarks.map((b) => b.id))
-  }
+  }, [filteredBookmarks])
 
-  const handleClearSelection = () => {
+  const handleClearSelection = useCallback(() => {
     setSelectedIds([])
     setBatchMode(false)
-  }
+  }, [])
 
-  const handleBatchSuccess = () => {
+  const handleBatchSuccess = useCallback(() => {
     setSelectedIds([])
     setBatchMode(false)
     bookmarksQuery.refetch()
     refetchTags()
-  }
+  }, [bookmarksQuery, refetchTags])
 
 
 

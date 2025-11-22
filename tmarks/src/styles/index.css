@@ -25,3 +25,32 @@
     padding-right: max(env(safe-area-inset-right), 0px);
   }
 }
+
+
+/* ========================================
+   性能优化：CSS Containment
+   ======================================== */
+
+/* 书签卡片性能优化 */
+.bookmark-card,
+[class*="bookmark-card"] {
+  contain: layout style paint;
+  will-change: auto;
+}
+
+/* 标签项性能优化 */
+.tag-item,
+[class*="tag-item"] {
+  contain: layout style paint;
+}
+
+/* 列表项性能优化 */
+.bookmark-list-item {
+  contain: layout style paint;
+}
+
+/* 减少重绘 */
+.card {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}

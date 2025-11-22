@@ -1,7 +1,7 @@
 import type { Bookmark } from '@/lib/types'
 import { AdaptiveImage } from '@/components/common/AdaptiveImage'
 import { useRecordClick } from '@/hooks/useBookmarks'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, memo, useCallback } from 'react'
 import type { ImageType } from '@/lib/image-utils'
 import { DefaultBookmarkIconComponent } from './DefaultBookmarkIcon'
 import { usePreferences } from '@/hooks/usePreferences'
