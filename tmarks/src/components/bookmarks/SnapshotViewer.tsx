@@ -43,8 +43,9 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
-      setSnapshots(data.snapshots || []);
+      const result = await response.json();
+      // API 返回格式: { data: { snapshots: [...], total: ... } }
+      setSnapshots(result.data?.snapshots || []);
     } catch (error) {
       console.error('Failed to load snapshots:', error);
     } finally {
