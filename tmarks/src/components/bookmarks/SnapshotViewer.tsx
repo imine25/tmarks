@@ -13,6 +13,7 @@ interface Snapshot {
   file_size: number;
   snapshot_title: string;
   created_at: string;
+  view_url: string; // 签名 URL
 }
 
 interface SnapshotViewerProps {
@@ -65,18 +66,9 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
     loadSnapshots();
   };
 
-  const handleView = (snapshotId: string, version: number) => {
-    // 构建带 token 的 URL
-    const url = new URL(`/api/v1/bookmarks/${bookmarkId}/snapshots/${snapshotId}`, window.location.origin);
-    
-    if (accessToken) {
-      url.searchParams.set('token', accessToken);
-    }
-    
-    // 添加版本信息（用于 V2 图片加载）
-    url.searchParams.set('v', version.toString());
-    
-    window.open(url.toString(), '_blank');
+  const handleView = (viewUrl: string) => {
+    // 直接使用 API 返回的签名 URL
+    window.open(viewUrl, '_blank');
   };
 
   const handleDelete = async (snapshotId: string, version: number, e: React.MouseEvent) => {
@@ -175,7 +167,7 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
                   className="flex items-center gap-2 p-2.5 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-transparent hover:border-blue-200 dark:hover:border-blue-800 transition-all group"
                 >
                   <button
-                    onClick={() => handleView(snapshot.id, snapshot.version)}
+                    onClick={() => handleView(snapshot.view_url)}
                     className="flex-1 flex items-center justify-between gap-3 text-left min-w-0"
                   >
                     <div className="flex-1 min-w-0">
