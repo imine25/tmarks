@@ -12,6 +12,7 @@ import { requireAuth, AuthContext } from '../../../../../middleware/auth'
 interface CleanupRequest {
   keep_count?: number
   older_than_days?: number
+  verify_and_fix?: boolean // 验证并修复孤立记录（R2 文件不存在的记录）
 }
 
 interface RouteParams {
@@ -27,7 +28,7 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
 
     try {
       const body = await context.request.json() as CleanupRequest
-      const { keep_count, older_than_days } = body
+      const { keep_count, older_than_days, verify_and_fix } = body
 
       const db = context.env.DB
       const bucket = context.env.SNAPSHOTS_BUCKET
@@ -44,6 +45,86 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
 
       if (!bookmark) {
         return notFound('Bookmark not found')
+      }
+
+      // 如果是验证并修复模式
+      if (verify_and_fix) {
+        const { results: allSnapshots } = await db
+          .prepare(
+            `SELECT id, r2_key, file_size
+             FROM bookmark_snapshots
+             WHERE bookmark_id = ? AND user_id = ?`
+          )
+          .bind(bookmarkId, userId)
+          .all<{ id: string; r2_key: string; file_size: number }>()
+
+        const orphaned: Array<{ id: string; r2_key: string; file_size: number }> = []
+
+        // 检查每个快照的 R2 文件是否存在
+        for (const snapshot of allSnapshots || []) {
+          try {
+            const r2Object = await bucket.head(snapshot.r2_key)
+            if (!r2Object) {
+              orphaned.push(snapshot)
+            }
+          } catch (error) {
+            // 文件不存在
+            orphaned.push(snapshot)
+          }
+        }
+
+        if (orphaned.length === 0) {
+          return success({
+            deleted_count: 0,
+            freed_space: 0,
+            message: 'All snapshots are valid, no orphaned records found',
+          })
+        }
+
+        // 删除孤立的记录
+        const ids = orphaned.map((s) => `'${s.id}'`).join(',')
+        await db
+          .prepare(`DELETE FROM bookmark_snapshots WHERE id IN (${ids})`)
+          .run()
+
+        // 更新书签的快照计数
+        const remaining = await db
+          .prepare(
+            `SELECT COUNT(*) as count FROM bookmark_snapshots
+             WHERE bookmark_id = ? AND user_id = ?`
+          )
+          .bind(bookmarkId, userId)
+          .first()
+
+        const remainingCount = (remaining?.count as number) || 0
+
+        if (remainingCount === 0) {
+          await db
+            .prepare(
+              `UPDATE bookmarks 
+               SET has_snapshot = 0, 
+                   latest_snapshot_at = NULL,
+                   snapshot_count = 0
+               WHERE id = ?`
+            )
+            .bind(bookmarkId)
+            .run()
+        } else {
+          await db
+            .prepare(
+              `UPDATE bookmarks 
+               SET snapshot_count = ?
+               WHERE id = ?`
+            )
+            .bind(remainingCount, bookmarkId)
+            .run()
+        }
+
+        return success({
+          deleted_count: orphaned.length,
+          freed_space: 0,
+          message: `Fixed ${orphaned.length} orphaned snapshot records`,
+        })
       }
 
       let toDelete: Array<{ id: string; r2_key: string; file_size: number }> = []

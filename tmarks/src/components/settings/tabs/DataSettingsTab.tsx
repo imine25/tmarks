@@ -1,20 +1,25 @@
 import { useState } from 'react'
-import { Database, Download, Upload, FileJson, FileCode } from 'lucide-react'
+import { Database, Download, Upload, FileJson, FileCode, Camera, Trash2 } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { ExportSection } from '@/components/import-export/ExportSection'
 import { ImportSection } from '@/components/import-export/ImportSection'
 import { BOOKMARKS_QUERY_KEY } from '@/hooks/useBookmarks'
 import { TAGS_QUERY_KEY } from '@/hooks/useTags'
+import { useToastStore } from '@/stores/toastStore'
+import { useAuthStore } from '@/stores/authStore'
 import type { ExportFormat, ExportOptions, ImportResult } from '@shared/import-export-types'
 
 export function DataSettingsTab() {
   const queryClient = useQueryClient()
+  const { addToast } = useToastStore()
+  const { accessToken } = useAuthStore()
   const [activeTab, setActiveTab] = useState<'export' | 'import'>('export')
   const [lastOperation, setLastOperation] = useState<{
-    type: 'export' | 'import'
+    type: 'export' | 'import' | 'cleanup'
     timestamp: string
     details: string
   } | null>(null)
+  const [isCleaningSnapshots, setIsCleaningSnapshots] = useState(false)
 
   // 处理导出完成
   const handleExportComplete = (format: ExportFormat, options: ExportOptions) => {
@@ -36,6 +41,76 @@ export function DataSettingsTab() {
     // 刷新书签和标签缓存
     queryClient.invalidateQueries({ queryKey: [BOOKMARKS_QUERY_KEY] })
     queryClient.invalidateQueries({ queryKey: [TAGS_QUERY_KEY] })
+  }
+
+  // 清理所有书签的孤立快照记录
+  const handleCleanupAllSnapshots = async () => {
+    if (!confirm('确定要清理所有书签的孤立快照记录吗？\n\n这将检查所有快照记录，删除 R2 文件不存在的记录。')) {
+      return
+    }
+
+    setIsCleaningSnapshots(true)
+    try {
+      // 获取所有书签
+      const response = await fetch('/api/v1/bookmarks?page=1&page_size=1000', {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('获取书签列表失败')
+      }
+
+      const data = await response.json()
+      const bookmarks = data.data?.bookmarks || []
+      
+      let totalCleaned = 0
+      let processedCount = 0
+
+      // 逐个清理每个书签的快照
+      for (const bookmark of bookmarks) {
+        if (bookmark.snapshot_count > 0) {
+          try {
+            const cleanupResponse = await fetch(`/api/v1/bookmarks/${bookmark.id}/snapshots/cleanup`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ verify_and_fix: true }),
+            })
+
+            if (cleanupResponse.ok) {
+              const result = await cleanupResponse.json()
+              totalCleaned += result.data?.deleted_count || 0
+            }
+          } catch (error) {
+            console.error(`清理书签 ${bookmark.id} 的快照失败:`, error)
+          }
+        }
+        processedCount++
+      }
+
+      setLastOperation({
+        type: 'cleanup',
+        timestamp: new Date().toLocaleString(),
+        details: `检查了 ${processedCount} 个书签，清理了 ${totalCleaned} 条孤立快照记录`
+      })
+
+      if (totalCleaned > 0) {
+        addToast('success', `成功清理 ${totalCleaned} 条孤立快照记录`)
+        // 刷新书签缓存
+        queryClient.invalidateQueries({ queryKey: [BOOKMARKS_QUERY_KEY] })
+      } else {
+        addToast('info', '没有发现孤立的快照记录')
+      }
+    } catch (error) {
+      console.error('清理快照失败:', error)
+      addToast('error', '清理快照失败')
+    } finally {
+      setIsCleaningSnapshots(false)
+    }
   }
 
   return (
@@ -93,18 +168,22 @@ export function DataSettingsTab() {
               <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
                 lastOperation.type === 'export'
                   ? 'bg-primary/10 text-primary'
-                  : 'bg-success/10 text-success'
+                  : lastOperation.type === 'import'
+                  ? 'bg-success/10 text-success'
+                  : 'bg-warning/10 text-warning'
               }`}>
                 {lastOperation.type === 'export' ? (
                   <Download className="w-4 h-4" />
-                ) : (
+                ) : lastOperation.type === 'import' ? (
                   <Upload className="w-4 h-4" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-foreground text-sm">
-                    {lastOperation.type === 'export' ? '数据导出' : '数据导入'}
+                    {lastOperation.type === 'export' ? '数据导出' : lastOperation.type === 'import' ? '数据导入' : '快照清理'}
                   </span>
                   <span className="text-xs text-muted-foreground">
                     {lastOperation.timestamp}
@@ -117,6 +196,41 @@ export function DataSettingsTab() {
             </div>
           </div>
         )}
+      </div>
+
+      <div className="border-t border-border"></div>
+
+      {/* 快照管理 */}
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-lg font-semibold text-foreground">快照管理</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            清理和维护书签快照数据
+          </p>
+        </div>
+
+        <div className="p-4 rounded-lg border border-border bg-card">
+          <div className="flex items-start gap-3">
+            <Camera className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <div className="text-sm font-medium mb-1">清理孤立快照记录</div>
+              <div className="text-xs text-muted-foreground space-y-1 mb-3">
+                <div>• 检查所有快照记录，验证 R2 文件是否存在</div>
+                <div>• 删除 R2 文件不存在的数据库记录</div>
+                <div>• 自动更新书签的快照计数</div>
+                <div>• 适用于手动删除 R2 文件后的数据修复</div>
+              </div>
+              <button
+                onClick={handleCleanupAllSnapshots}
+                disabled={isCleaningSnapshots}
+                className="btn btn-warning btn-sm flex items-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                {isCleaningSnapshots ? '清理中...' : '清理孤立记录'}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="border-t border-border"></div>
