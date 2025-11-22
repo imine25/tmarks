@@ -149,7 +149,7 @@ export interface TagsResponse {
 export type TagLayoutPreference = 'grid' | 'masonry'
 export type SortByPreference = 'created' | 'updated' | 'pinned' | 'popular'
 
-export type DefaultBookmarkIcon = 'bookmark' | 'star' | 'heart' | 'link' | 'globe' | 'folder'
+export type DefaultBookmarkIcon = 'gradient-glow' | 'pulse-breath'
 
 export interface UserPreferences {
   user_id?: string

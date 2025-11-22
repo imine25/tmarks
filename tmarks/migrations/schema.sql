@@ -77,7 +77,6 @@ CREATE INDEX IF NOT EXISTS idx_bookmarks_last_clicked ON bookmarks(user_id, last
 
 -- 标签表：书签分类标签
 CREATE TABLE IF NOT EXISTS tags (
-CREATE TABLE IF NOT EXISTS tags (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
   name TEXT NOT NULL,
@@ -97,7 +96,6 @@ CREATE INDEX IF NOT EXISTS idx_tags_click_count ON tags(user_id, click_count DES
 CREATE INDEX IF NOT EXISTS idx_tags_last_clicked ON tags(user_id, last_clicked_at DESC);
 
 -- 书签-标签关联表：多对多关系
-CREATE TABLE IF NOT EXISTS bookmark_tags (
 CREATE TABLE IF NOT EXISTS bookmark_tags (
   bookmark_id TEXT NOT NULL,
   tag_id TEXT NOT NULL,
@@ -119,7 +117,6 @@ CREATE INDEX IF NOT EXISTS idx_bookmark_tags_bookmark ON bookmark_tags(bookmark_
 
 -- 用户偏好设置表：主题、布局、排序等个性化设置
 CREATE TABLE IF NOT EXISTS user_preferences (
-CREATE TABLE IF NOT EXISTS user_preferences (
   user_id TEXT PRIMARY KEY,
   theme TEXT NOT NULL DEFAULT 'light',
   page_size INTEGER NOT NULL DEFAULT 30,
@@ -135,7 +132,6 @@ CREATE TABLE IF NOT EXISTS user_preferences (
 -- ============================================================================
 
 -- 审计日志表：记录用户操作历史
-CREATE TABLE IF NOT EXISTS audit_logs (
 CREATE TABLE IF NOT EXISTS audit_logs (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id TEXT,
@@ -157,7 +153,6 @@ CREATE INDEX IF NOT EXISTS idx_audit_logs_created ON audit_logs(created_at DESC)
 -- ============================================================================
 
 -- API Keys 表：用户 API 访问密钥
-CREATE TABLE IF NOT EXISTS api_keys (
 CREATE TABLE IF NOT EXISTS api_keys (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
@@ -181,7 +176,6 @@ CREATE INDEX IF NOT EXISTS idx_api_keys_status ON api_keys(user_id, status);
 
 -- API Key 使用日志表：记录 API 调用历史
 CREATE TABLE IF NOT EXISTS api_key_logs (
-CREATE TABLE IF NOT EXISTS api_key_logs (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   api_key_id TEXT NOT NULL,
   user_id TEXT NOT NULL,
@@ -203,7 +197,6 @@ CREATE INDEX IF NOT EXISTS idx_api_logs_user ON api_key_logs(user_id, created_at
 -- ============================================================================
 
 -- 标签页组表：保存的浏览器标签页组
-CREATE TABLE IF NOT EXISTS tab_groups (
 CREATE TABLE IF NOT EXISTS tab_groups (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
@@ -231,7 +224,6 @@ CREATE INDEX IF NOT EXISTS idx_tab_groups_deleted ON tab_groups(user_id, is_dele
 
 -- 标签页项表：标签页组中的具体网页
 CREATE TABLE IF NOT EXISTS tab_group_items (
-CREATE TABLE IF NOT EXISTS tab_group_items (
   id TEXT PRIMARY KEY,
   group_id TEXT NOT NULL,
   title TEXT NOT NULL,
@@ -258,7 +250,6 @@ CREATE INDEX IF NOT EXISTS idx_tab_group_items_not_archived ON tab_group_items(g
 
 -- 分享表：标签页组的公开分享链接
 CREATE TABLE IF NOT EXISTS shares (
-CREATE TABLE IF NOT EXISTS shares (
   id TEXT PRIMARY KEY,
   group_id TEXT NOT NULL,
   user_id TEXT NOT NULL,
@@ -276,7 +267,6 @@ CREATE INDEX IF NOT EXISTS idx_shares_group_id ON shares(group_id);
 CREATE INDEX IF NOT EXISTS idx_shares_user_id ON shares(user_id);
 
 -- 统计表：用户每日操作统计
-CREATE TABLE IF NOT EXISTS statistics (
 CREATE TABLE IF NOT EXISTS statistics (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
@@ -302,14 +292,12 @@ CREATE INDEX IF NOT EXISTS idx_statistics_date ON statistics(stat_date);
 
 -- 注册限制表：每日注册数量限制
 CREATE TABLE IF NOT EXISTS registration_limits (
-CREATE TABLE IF NOT EXISTS registration_limits (
   date TEXT PRIMARY KEY,
   count INTEGER NOT NULL DEFAULT 0,
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 -- 迁移记录表：数据库版本管理
-CREATE TABLE IF NOT EXISTS schema_migrations (
 CREATE TABLE IF NOT EXISTS schema_migrations (
   version TEXT PRIMARY KEY,
   applied_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -369,8 +357,8 @@ ALTER TABLE user_preferences ADD COLUMN enable_tag_selection_auto_clear INTEGER 
 -- ============================================================================
 
 -- 默认书签图标（当书签没有封面图和网站图标时显示）
--- 可选值: 'bookmark', 'star', 'heart', 'link', 'globe', 'folder'
-ALTER TABLE user_preferences ADD COLUMN default_bookmark_icon TEXT NOT NULL DEFAULT 'bookmark';
+-- 可选值: 'gradient-glow', 'pulse-breath'
+ALTER TABLE user_preferences ADD COLUMN default_bookmark_icon TEXT NOT NULL DEFAULT 'gradient-glow';
 
 -- 网站图标字段（favicon URL）
 -- 优先级: cover_image > favicon > default_bookmark_icon
