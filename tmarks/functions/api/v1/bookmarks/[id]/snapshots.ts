@@ -78,7 +78,7 @@ export const onRequestGet: PagesFunction<Env, 'id', AuthContext>[] = [
 
           // 构建签名 URL
           const baseUrl = new URL(context.request.url).origin
-          const viewUrl = `${baseUrl}/api/v1/bookmarks/${bookmarkId}/snapshots/${snapshot.id}/view?sig=${signature}&exp=${expires}&u=${userId}`
+          const viewUrl = `${baseUrl}/api/v1/bookmarks/${bookmarkId}/snapshots/${snapshot.id}/view?sig=${signature}&exp=${expires}&u=${userId}&a=view`
 
           return {
             ...snapshot,
@@ -253,7 +253,7 @@ export const onRequestPost: PagesFunction<Env, 'id', AuthContext>[] = [
 
       // 构建签名 URL
       const baseUrl = new URL(context.request.url).origin
-      const viewUrl = `${baseUrl}/api/v1/bookmarks/${bookmarkId}/snapshots/${snapshotId}/view?sig=${signature}&exp=${expires}&u=${userId}`
+      const viewUrl = `${baseUrl}/api/v1/bookmarks/${bookmarkId}/snapshots/${snapshotId}/view?sig=${signature}&exp=${expires}&u=${userId}&a=view`
 
       return success({
         snapshot: {
