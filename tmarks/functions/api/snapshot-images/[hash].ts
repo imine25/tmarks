@@ -7,8 +7,8 @@
  */
 
 import type { PagesFunction } from '@cloudflare/workers-types'
-import type { Env } from '../../../lib/types'
-import { notFound, internalError, forbidden } from '../../../lib/response'
+import type { Env } from '../../lib/types'
+import { notFound, internalError, forbidden } from '../../lib/response'
 
 // GET /api/snapshot-images/:hash - 获取快照图片
 export const onRequestGet: PagesFunction<Env, 'hash'> = async (context) => {
