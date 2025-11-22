@@ -5,9 +5,9 @@
  */
 
 import type { PagesFunction } from '@cloudflare/workers-types'
-import type { Env, RouteParams } from '../../lib/types'
-import { success, internalError } from '../../lib/response'
-import { requireApiKeyAuth, ApiKeyAuthContext } from '../../middleware/api-key-auth-pages'
+import type { Env, RouteParams } from '../../../lib/types'
+import { success, internalError } from '../../../lib/response'
+import { requireApiKeyAuth, ApiKeyAuthContext } from '../../../middleware/api-key-auth-pages'
 
 // GET /api/me - 获取当前用户信息
 type BookmarkStats = {

@@ -5,9 +5,9 @@
  */
 
 import type { PagesFunction } from '@cloudflare/workers-types'
-import type { Env, RouteParams } from '../../../lib/types'
-import { success, notFound, internalError } from '../../../lib/response'
-import { requireAuth, AuthContext } from '../../../middleware/auth'
+import type { Env, RouteParams } from '../../../../lib/types'
+import { success, notFound, internalError } from '../../../../lib/response'
+import { requireAuth, AuthContext } from '../../../../middleware/auth'
 
 interface TabGroupRow {
   id: string

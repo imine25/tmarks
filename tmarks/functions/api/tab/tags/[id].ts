@@ -5,10 +5,10 @@
  */
 
 import type { PagesFunction } from '@cloudflare/workers-types'
-import type { Env, RouteParams, SQLParam } from '../../lib/types'
-import { success, badRequest, notFound, noContent, internalError } from '../../lib/response'
-import { requireApiKeyAuth, ApiKeyAuthContext } from '../../middleware/api-key-auth-pages'
-import { sanitizeString } from '../../lib/validation'
+import type { Env, RouteParams, SQLParam } from '../../../lib/types'
+import { success, badRequest, notFound, noContent, internalError } from '../../../lib/response'
+import { requireApiKeyAuth, ApiKeyAuthContext } from '../../../middleware/api-key-auth-pages'
+import { sanitizeString } from '../../../lib/validation'
 
 interface UpdateTagRequest {
   name?: string

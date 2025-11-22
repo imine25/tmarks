@@ -5,9 +5,9 @@
  */
 
 import type { PagesFunction } from '@cloudflare/workers-types'
-import type { Env, RouteParams } from '../../../lib/types'
-import { success, notFound, internalError } from '../../../lib/response'
-import { requireApiKeyAuth, ApiKeyAuthContext } from '../../../middleware/api-key-auth-pages'
+import type { Env, RouteParams } from '../../../../lib/types'
+import { success, notFound, internalError } from '../../../../lib/response'
+import { requireApiKeyAuth, ApiKeyAuthContext } from '../../../../middleware/api-key-auth-pages'
 
 // PATCH /api/tags/:id/click - 增加标签点击计数
 export const onRequestPatch: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[] = [

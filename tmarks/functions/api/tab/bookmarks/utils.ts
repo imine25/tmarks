@@ -1,4 +1,4 @@
-import type { Bookmark, BookmarkRow } from '../../lib/types'
+import type { Bookmark, BookmarkRow } from '../../../lib/types'
 
 export function normalizeBookmark(row: BookmarkRow): Bookmark {
   return {

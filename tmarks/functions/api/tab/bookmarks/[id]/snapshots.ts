@@ -5,9 +5,9 @@
  */
 
 import type { PagesFunction } from '@cloudflare/workers-types'
-import type { Env } from '../../../../../lib/types'
-import { success, badRequest, notFound, internalError } from '../../../../../lib/response'
-import { requireApiKeyAuth, ApiKeyAuthContext } from '../../../../../middleware/api-key-auth-pages'
+import type { Env } from '../../../../../../lib/types'
+import { success, badRequest, notFound, internalError } from '../../../../../../lib/response'
+import { requireApiKeyAuth, ApiKeyAuthContext } from '../../../../../../middleware/api-key-auth-pages'
 
 // 生成 nanoid 风格的短 ID（21 字符）
 function generateNanoId(): string {

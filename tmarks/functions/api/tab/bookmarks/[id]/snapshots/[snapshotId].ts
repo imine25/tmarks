@@ -5,9 +5,9 @@
  */
 
 import type { PagesFunction } from '@cloudflare/workers-types'
-import type { Env } from '../../../../../../lib/types'
-import { success, notFound, internalError } from '../../../../../../lib/response'
-import { requireApiKeyAuth, ApiKeyAuthContext } from '../../../../../../middleware/api-key-auth-pages'
+import type { Env } from '../../../../../../../lib/types'
+import { success, notFound, internalError } from '../../../../../../../lib/response'
+import { requireApiKeyAuth, ApiKeyAuthContext } from '../../../../../../../middleware/api-key-auth-pages'
 
 interface RouteParams {
   id: string

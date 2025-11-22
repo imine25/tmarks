@@ -5,11 +5,11 @@
  */
 
 import type { PagesFunction } from '@cloudflare/workers-types'
-import type { Env, RouteParams } from '../../lib/types'
-import { success, badRequest, created, internalError } from '../../lib/response'
-import { requireApiKeyAuth, ApiKeyAuthContext } from '../../middleware/api-key-auth-pages'
-import { sanitizeString } from '../../lib/validation'
-import { generateUUID } from '../../lib/crypto'
+import type { Env, RouteParams } from '../../../lib/types'
+import { success, badRequest, created, internalError } from '../../../lib/response'
+import { requireApiKeyAuth, ApiKeyAuthContext } from '../../../middleware/api-key-auth-pages'
+import { sanitizeString } from '../../../lib/validation'
+import { generateUUID } from '../../../lib/crypto'
 
 interface CreateTagRequest {
   name: string
