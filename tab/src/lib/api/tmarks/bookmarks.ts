@@ -17,45 +17,45 @@ import type {
 export class BookmarksAPI extends TMarksClient {
   /**
    * 获取书签列表
-   * GET /api/bookmarks
+   * GET /api/tab/bookmarks
    */
   async getBookmarks(params?: GetBookmarksParams): Promise<GetBookmarksResponse> {
-    return this.get<GetBookmarksResponse>('/bookmarks', params);
+    return this.get<GetBookmarksResponse>('/tab/bookmarks', params);
   }
 
   /**
    * 创建单个书签
-   * POST /api/bookmarks
+   * POST /api/tab/bookmarks
    */
   async createBookmark(input: CreateBookmarkInput): Promise<CreateBookmarkResponse> {
-    return this.post<CreateBookmarkResponse>('/bookmarks', input);
+    return this.post<CreateBookmarkResponse>('/tab/bookmarks', input);
   }
 
   /**
    * 获取单个书签
-   * GET /api/bookmarks/:id
+   * GET /api/tab/bookmarks/:id
    */
   async getBookmark(id: string): Promise<GetBookmarkResponse> {
-    return this.get<GetBookmarkResponse>(`/bookmarks/${id}`);
+    return this.get<GetBookmarkResponse>(`/tab/bookmarks/${id}`);
   }
 
   /**
    * 更新单个书签
-   * PATCH /api/bookmarks/:id
+   * PATCH /api/tab/bookmarks/:id
    */
   async updateBookmark(
     id: string,
     input: UpdateBookmarkInput
   ): Promise<CreateBookmarkResponse> {
-    return this.patch<CreateBookmarkResponse>(`/bookmarks/${id}`, input);
+    return this.patch<CreateBookmarkResponse>(`/tab/bookmarks/${id}`, input);
   }
 
   /**
    * 删除单个书签
-   * DELETE /api/bookmarks/:id
+   * DELETE /api/tab/bookmarks/:id
    */
   async deleteBookmark(id: string): Promise<void> {
-    return this.delete<void>(`/bookmarks/${id}`);
+    return this.delete<void>(`/tab/bookmarks/${id}`);
   }
 
   

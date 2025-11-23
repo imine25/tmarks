@@ -56,7 +56,6 @@ export function TabCollectionView({ config, onBack }: TabCollectionViewProps) {
       // Select all by default
       setSelectedTabIds(new Set(validTabs.map((tab) => tab.id)));
     } catch (err) {
-      console.error('Failed to load tabs:', err);
       setError('加载标签页失败');
     } finally {
       setIsLoading(false);
@@ -102,7 +101,6 @@ export function TabCollectionView({ config, onBack }: TabCollectionViewProps) {
         setError(result.error || '收纳失败');
       }
     } catch (err) {
-      console.error('Failed to collect tabs:', err);
       setError(err instanceof Error ? err.message : '收纳失败');
     } finally {
       setIsCollecting(false);
@@ -114,7 +112,6 @@ export function TabCollectionView({ config, onBack }: TabCollectionViewProps) {
       await closeTabs(collectedTabIds);
       window.close();
     } catch (err) {
-      console.error('Failed to close tabs:', err);
       setError('关闭标签页失败');
     }
   };
@@ -130,7 +127,7 @@ export function TabCollectionView({ config, onBack }: TabCollectionViewProps) {
     <div className="relative h-[80vh] min-h-[620px] w-[380px] overflow-hidden rounded-b-2xl bg-white text-gray-900 shadow-2xl">
       <div className="relative flex h-full flex-col">
         {/* Error/Success Messages */}
-        <div className="pointer-events-none absolute top-4 left-0 right-0 z-[9999] px-4 space-y-2">
+        <div className="pointer-events-none absolute top-4 left-0 right-0 z-30 px-4 space-y-2">
           {error && (
             <div className="pointer-events-auto">
               <ErrorMessage message={error} onDismiss={() => setError(null)} />
@@ -144,7 +141,7 @@ export function TabCollectionView({ config, onBack }: TabCollectionViewProps) {
         </div>
 
         {/* Header - Fixed */}
-        <header className="fixed top-0 left-0 right-0 z-40 px-3 pt-2 pb-2.5 bg-white border-b border-gray-200 shadow-sm rounded-b-2xl">
+        <header className="fixed top-0 left-0 right-0 z-20 px-3 pt-2 pb-2.5 bg-white border-b border-gray-200 shadow-sm rounded-b-2xl">
           <div className="flex items-center gap-2">
             <button
               onClick={onBack}
@@ -191,7 +188,7 @@ export function TabCollectionView({ config, onBack }: TabCollectionViewProps) {
 
         {/* Close Confirm Dialog - Fixed at top */}
         {showCloseConfirm && (
-          <div className="fixed top-[60px] left-0 right-0 z-50 px-4 pt-2 animate-in slide-in-from-top-5 fade-in duration-300">
+          <div className="fixed top-[60px] left-0 right-0 z-40 px-4 pt-2 animate-in slide-in-from-top-5 fade-in duration-300">
             <section className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-4 shadow-lg">
               <div className="mb-3 flex items-start gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100">

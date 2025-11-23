@@ -74,45 +74,45 @@ export interface GetTabGroupResponse {
 export class TabGroupsAPI extends TMarksClient {
   /**
    * 获取标签页组列表
-   * GET /api/v1/tab-groups
+   * GET /api/tab/tab-groups
    */
   async getTabGroups(params?: GetTabGroupsParams): Promise<GetTabGroupsResponse> {
-    return this.get<GetTabGroupsResponse>('/v1/tab-groups', params);
+    return this.get<GetTabGroupsResponse>('/tab/tab-groups', params);
   }
 
   /**
    * 创建标签页组
-   * POST /api/v1/tab-groups
+   * POST /api/tab/tab-groups
    */
   async createTabGroup(input: CreateTabGroupInput): Promise<CreateTabGroupResponse> {
-    return this.post<CreateTabGroupResponse>('/v1/tab-groups', input);
+    return this.post<CreateTabGroupResponse>('/tab/tab-groups', input);
   }
 
   /**
    * 获取单个标签页组
-   * GET /api/v1/tab-groups/:id
+   * GET /api/tab/tab-groups/:id
    */
   async getTabGroup(id: string): Promise<GetTabGroupResponse> {
-    return this.get<GetTabGroupResponse>(`/v1/tab-groups/${id}`);
+    return this.get<GetTabGroupResponse>(`/tab/tab-groups/${id}`);
   }
 
   /**
    * 更新标签页组
-   * PATCH /api/v1/tab-groups/:id
+   * PATCH /api/tab/tab-groups/:id
    */
   async updateTabGroup(
     id: string,
     input: UpdateTabGroupInput
   ): Promise<CreateTabGroupResponse> {
-    return this.patch<CreateTabGroupResponse>(`/v1/tab-groups/${id}`, input);
+    return this.patch<CreateTabGroupResponse>(`/tab/tab-groups/${id}`, input);
   }
 
   /**
    * 删除标签页组
-   * DELETE /api/v1/tab-groups/:id
+   * DELETE /api/tab/tab-groups/:id
    */
   async deleteTabGroup(id: string): Promise<void> {
-    return this.delete<void>(`/v1/tab-groups/${id}`);
+    return this.delete<void>(`/tab/tab-groups/${id}`);
   }
 
   // ============ 辅助方法 ============
