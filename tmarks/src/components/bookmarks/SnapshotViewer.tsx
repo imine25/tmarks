@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Camera, ExternalLink, Trash2 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
@@ -139,25 +140,10 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
     }
   };
 
-  // 如果没有快照，不显示任何内容
-  if (!isOpen && snapshotCount === 0) {
-    return null;
-  }
 
-  if (!isOpen) {
-    return (
-      <button
-        onClick={handleOpen}
-        className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:scale-105 active:scale-95 transition-all"
-        title={`查看 ${snapshotCount} 个快照`}
-      >
-        <Camera className="w-3 h-3" strokeWidth={2} />
-        <span className="font-medium">{snapshotCount}</span>
-      </button>
-    );
-  }
 
-  return (
+  // 使用 Portal 将弹窗渲染到 body，避免被父容器限制
+  const modalContent = isOpen ? createPortal(
     <div 
       className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4" 
       style={{ zIndex: 200 }}
@@ -286,6 +272,23 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
+  ) : null;
+
+  return (
+    <>
+      {!isOpen && snapshotCount > 0 && (
+        <button
+          onClick={handleOpen}
+          className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:scale-105 active:scale-95 transition-all"
+          title={`查看 ${snapshotCount} 个快照`}
+        >
+          <Camera className="w-3 h-3" strokeWidth={2} />
+          <span className="font-medium">{snapshotCount}</span>
+        </button>
+      )}
+      {modalContent}
+    </>
   );
 }
