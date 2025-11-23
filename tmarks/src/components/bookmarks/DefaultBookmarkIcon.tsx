@@ -8,7 +8,7 @@ interface DefaultBookmarkIconProps {
 export function DefaultBookmarkIconComponent({ icon, className = 'w-10 h-10 sm:w-8 sm:h-8' }: DefaultBookmarkIconProps) {
   if (icon === 'orbital-spinner') {
     return (
-      <div className={`${className} relative flex items-center justify-center`}>
+      <div className={`${className} relative flex items-center justify-center`} style={{ fontSize: '1rem' }}>
         <style>{`
           @keyframes orbital-move {
             0% { transform: translateY(0); }
@@ -82,7 +82,7 @@ export function DefaultBookmarkIconComponent({ icon, className = 'w-10 h-10 sm:w
 
   // 默认返回轨道旋转（作为唯一动画）
   return (
-    <div className={`${className} relative flex items-center justify-center`}>
+    <div className={`${className} relative flex items-center justify-center`} style={{ fontSize: '1rem' }}>
       <style>{`
         @keyframes orbital-move {
           0% { transform: translateY(0); }

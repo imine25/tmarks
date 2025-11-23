@@ -341,8 +341,8 @@ function TitleOnlyCard({
                   />
                 ) : null
               ) : (
-                <div className="w-full h-full scale-[0.6]">
-                  <DefaultBookmarkIconComponent icon={defaultIcon} />
+                <div className="w-full h-full flex items-center justify-center">
+                  <DefaultBookmarkIconComponent icon={defaultIcon} className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
               )}
             </div>
