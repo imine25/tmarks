@@ -12,18 +12,6 @@ export function DefaultBookmarkIconComponent({
   // 简单的三点跳动动画 - 最常见的 loading 动画
   return (
     <div className={`${className} relative flex items-center justify-center gap-1`}>
-      <style>{`
-        @keyframes bookmark-dot-bounce {
-          0%, 80%, 100% {
-            transform: translateY(0);
-            opacity: 0.4;
-          }
-          40% {
-            transform: translateY(-6px);
-            opacity: 1;
-          }
-        }
-      `}</style>
       <div
         className="w-1.5 h-1.5 rounded-full bg-primary"
         style={{
