@@ -5,177 +5,68 @@ interface DefaultBookmarkIconProps {
   className?: string
 }
 
-export function DefaultBookmarkIconComponent({ icon, className = 'w-10 h-10 sm:w-8 sm:h-8' }: DefaultBookmarkIconProps) {
-  if (icon === 'orbital-spinner') {
-    return (
-      <div className={`${className} relative flex items-center justify-center`}>
-        <style>{`
-          @keyframes orbital-move {
-            0% { transform: translateY(0); }
-            50% { transform: translateY(92%); }
-            100% { transform: translateY(0); }
-          }
-          
-          .orbital-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-          }
-          
-          .orbital-track {
-            position: absolute;
-            width: 9%;
-            height: 100%;
-            left: 50%;
-            top: 0;
-            margin-left: -4.5%;
-            border-radius: 50px;
-            background: linear-gradient(to bottom, 
-              hsl(var(--primary) / 0.15) 0%, 
-              hsl(var(--primary) / 0.08) 50%, 
-              hsl(var(--primary) / 0.15) 100%
-            );
-          }
-          
-          .orbital-track::after {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 38%;
-            background: linear-gradient(to bottom, 
-              hsl(var(--primary) / 0.2), 
-              transparent
-            );
-            border-radius: 50px;
-          }
-          
-          .orbital-track::before {
-            content: "";
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 100%;
-            height: 35%;
-            background: linear-gradient(to top, 
-              hsl(var(--primary) / 0.2), 
-              transparent
-            );
-            border-radius: 50px;
-          }
-          
-          .orbital-ball {
-            width: 9%;
-            height: 9%;
-            border-radius: 50%;
-            background: hsl(var(--primary));
-            box-shadow: 
-              0 0 4px hsl(var(--primary) / 0.5),
-              0 0 8px hsl(var(--primary) / 0.3),
-              inset 0 -2px 3px rgba(0, 0, 0, 0.2);
-            animation: orbital-move 3.63s ease-in-out infinite;
-            position: absolute;
-            left: 50%;
-            top: 0;
-            margin-left: -4.5%;
-          }
-        `}</style>
-        
-        <div className="orbital-container">
-          {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <div key={i} className="orbital-track" style={{ transform: `rotate(${i * 20}deg)` }}>
-              <div className="orbital-ball" style={{ animationDelay: `${i * 0.2}s` }} />
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  // 默认返回轨道旋转（作为唯一动画）
+export function DefaultBookmarkIconComponent({
+  icon: _icon,
+  className = 'w-10 h-10 sm:w-8 sm:h-8',
+}: DefaultBookmarkIconProps) {
+  // 使用 SVG 实现轨道旋转动画（更可靠）
+  // 目前只有一个图标选项，所以忽略 icon 参数
   return (
     <div className={`${className} relative flex items-center justify-center`}>
-      <style>{`
-        @keyframes orbital-move {
-          0% { transform: translateY(0); }
-          50% { transform: translateY(92%); }
-          100% { transform: translateY(0); }
-        }
-        
-        .orbital-container {
-          position: relative;
-          width: 100%;
-          height: 100%;
-        }
-        
-        .orbital-track {
-          position: absolute;
-          width: 9%;
-          height: 100%;
-          left: 50%;
-          top: 0;
-          margin-left: -4.5%;
-          border-radius: 50px;
-          background: linear-gradient(to bottom, 
-            hsl(var(--primary) / 0.15) 0%, 
-            hsl(var(--primary) / 0.08) 50%, 
-            hsl(var(--primary) / 0.15) 100%
-          );
-        }
-        
-        .orbital-track::after {
-          content: "";
-          position: absolute;
-          left: 0;
-          top: 0;
-          width: 100%;
-          height: 38%;
-          background: linear-gradient(to bottom, 
-            hsl(var(--primary) / 0.2), 
-            transparent
-          );
-          border-radius: 50px;
-        }
-        
-        .orbital-track::before {
-          content: "";
-          position: absolute;
-          bottom: 0;
-          right: 0;
-          width: 100%;
-          height: 35%;
-          background: linear-gradient(to top, 
-            hsl(var(--primary) / 0.2), 
-            transparent
-          );
-          border-radius: 50px;
-        }
-        
-        .orbital-ball {
-          width: 9%;
-          height: 9%;
-          border-radius: 50%;
-          background: hsl(var(--primary));
-          box-shadow: 
-            0 0 4px hsl(var(--primary) / 0.5),
-            0 0 8px hsl(var(--primary) / 0.3),
-            inset 0 -2px 3px rgba(0, 0, 0, 0.2);
-          animation: orbital-move 3.63s ease-in-out infinite;
-          position: absolute;
-          left: 50%;
-          top: 0;
-          margin-left: -4.5%;
-        }
-      `}</style>
-      
-      <div className="orbital-container">
+      <svg
+        viewBox="0 0 100 100"
+        className="w-full h-full"
+        style={{ transform: 'rotate(-90deg)' }}
+      >
+        <defs>
+          {/* 定义渐变 */}
+          <linearGradient id="track-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.15" />
+            <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="0.08" />
+            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.15" />
+          </linearGradient>
+
+          {/* 定义动画 */}
+          <style>{`
+            @keyframes orbit-move {
+              0%, 100% { cy: 15; }
+              50% { cy: 85; }
+            }
+            .orbit-ball {
+              animation: orbit-move 3.63s ease-in-out infinite;
+            }
+          `}</style>
+        </defs>
+
+        {/* 9 条轨道，每条旋转 20 度 */}
         {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-          <div key={i} className="orbital-track" style={{ transform: `rotate(${i * 20}deg)` }}>
-            <div className="orbital-ball" style={{ animationDelay: `${i * 0.2}s` }} />
-          </div>
+          <g key={i} transform={`rotate(${i * 20} 50 50)`}>
+            {/* 轨道线 */}
+            <line
+              x1="50"
+              y1="15"
+              x2="50"
+              y2="85"
+              stroke="url(#track-gradient)"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+
+            {/* 运动的小球 */}
+            <circle
+              className="orbit-ball"
+              cx="50"
+              cy="15"
+              r="2.5"
+              fill="hsl(var(--primary))"
+              style={{
+                animationDelay: `${i * 0.2}s`,
+                filter: 'drop-shadow(0 0 3px hsl(var(--primary) / 0.6))',
+              }}
+            />
+          </g>
         ))}
-      </div>
+      </svg>
     </div>
   )
 }
