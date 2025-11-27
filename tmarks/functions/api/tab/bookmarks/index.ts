@@ -375,8 +375,14 @@ export const onRequestPost: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[]
         },
       })
     } catch (error) {
-      console.error('Create bookmark error:', error)
-      return internalError('Failed to create bookmark')
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      const errorStack = error instanceof Error ? error.stack : undefined
+      console.error('Create bookmark error:', {
+        message: errorMessage,
+        stack: errorStack,
+        error
+      })
+      return internalError(`Failed to create bookmark: ${errorMessage}`)
     }
   },
 ]

@@ -33,7 +33,9 @@ interface TabGroupItemRow {
 
 interface CreateTabGroupRequest {
   title?: string
-  items: Array<{
+  parent_id?: string | null
+  is_folder?: boolean
+  items?: Array<{
     title: string
     url: string
     favicon?: string
@@ -115,47 +117,53 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
     try {
       const body = (await context.request.json()) as CreateTabGroupRequest
 
-      if (!body.items || body.items.length === 0) {
-        return badRequest('At least one tab item is required')
+      const isFolder = body.is_folder || false
+
+      // Validate: folders don't need items, but regular groups do
+      if (!isFolder && (!body.items || body.items.length === 0)) {
+        return badRequest('At least one tab item is required for non-folder groups')
       }
 
-      // Generate title if not provided (timestamp format)
+      // Generate title if not provided (timestamp format for groups, "新文件夹" for folders)
       const now = new Date()
-      const defaultTitle = body.title || now.toLocaleString('zh-CN', {
+      const defaultTitle = body.title || (isFolder ? '新文件夹' : now.toLocaleString('zh-CN', {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
         hour: '2-digit',
         minute: '2-digit',
         hour12: false,
-      }).replace(/\//g, '-')
+      }).replace(/\//g, '-'))
 
       const title = sanitizeString(defaultTitle, 200)
       const groupId = generateUUID()
       const timestamp = now.toISOString()
+      const parentId = body.parent_id || null
 
-      // Insert tab group
+      // Insert tab group or folder
       await context.env.DB.prepare(
-        'INSERT INTO tab_groups (id, user_id, title, created_at, updated_at) VALUES (?, ?, ?, ?, ?)'
+        'INSERT INTO tab_groups (id, user_id, title, parent_id, is_folder, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
       )
-        .bind(groupId, userId, title, timestamp, timestamp)
+        .bind(groupId, userId, title, parentId, isFolder ? 1 : 0, timestamp, timestamp)
         .run()
 
-      // Insert tab group items
-      const itemInserts = body.items.map((item, index) => {
-        const itemId = generateUUID()
-        const itemTitle = sanitizeString(item.title, 500)
-        const itemUrl = sanitizeString(item.url, 2000)
-        const favicon = item.favicon ? sanitizeString(item.favicon, 2000) : null
+      // Insert tab group items (only for non-folder groups)
+      if (!isFolder && body.items && body.items.length > 0) {
+        const itemInserts = body.items.map((item, index) => {
+          const itemId = generateUUID()
+          const itemTitle = sanitizeString(item.title, 500)
+          const itemUrl = sanitizeString(item.url, 2000)
+          const favicon = item.favicon ? sanitizeString(item.favicon, 2000) : null
 
-        return context.env.DB.prepare(
-          'INSERT INTO tab_group_items (id, group_id, title, url, favicon, position, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
-        )
-          .bind(itemId, groupId, itemTitle, itemUrl, favicon, index, timestamp)
-          .run()
-      })
+          return context.env.DB.prepare(
+            'INSERT INTO tab_group_items (id, group_id, title, url, favicon, position, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+          )
+            .bind(itemId, groupId, itemTitle, itemUrl, favicon, index, timestamp)
+            .run()
+        })
 
-      await Promise.all(itemInserts)
+        await Promise.all(itemInserts)
+      }
 
       // Fetch the created group with items
       const groupRow = await context.env.DB.prepare('SELECT * FROM tab_groups WHERE id = ?')

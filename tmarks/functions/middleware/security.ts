@@ -114,11 +114,32 @@ function getAllowedOrigin(request: Request): string {
     'http://localhost:5173',
     'http://localhost:3000',
     'https://tmarks.pages.dev',
+    'https://tmarks.669696.xyz',
     // 添加你的生产域名
   ]
   
+  // 如果是 Chrome 扩展的请求，允许所有 chrome-extension:// 来源
+  if (origin && origin.startsWith('chrome-extension://')) {
+    return origin
+  }
+  
+  // 如果是 Edge 扩展的请求，允许所有 extension:// 来源
+  if (origin && origin.startsWith('extension://')) {
+    return origin
+  }
+  
+  // 如果是 Firefox 扩展的请求，允许所有 moz-extension:// 来源
+  if (origin && origin.startsWith('moz-extension://')) {
+    return origin
+  }
+  
   if (origin && allowedOrigins.includes(origin)) {
     return origin
+  }
+  
+  // 如果没有 Origin 头（可能是服务器端请求或扩展请求），返回 *
+  if (!origin) {
+    return '*'
   }
   
   // 默认返回第一个允许的源
