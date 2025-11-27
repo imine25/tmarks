@@ -1,65 +1,65 @@
 {
   "../../../../@crx/manifest": {
-    "file": "assets/crx-manifest.js-Lh1z63Ka.js",
+    "file": "assets/crx-manifest.js-GadNyId1.js",
     "name": "crx-manifest.js",
     "src": "../../../../@crx/manifest",
     "isEntry": true
   },
-  "_SuccessMessage-CQdIk5YD.js": {
-    "file": "assets/SuccessMessage-CQdIk5YD.js",
+  "_SuccessMessage-D1LRUAvC.js": {
+    "file": "assets/SuccessMessage-D1LRUAvC.js",
     "name": "SuccessMessage",
     "imports": [
-      "_index-DlUqGJ2w.js"
+      "_index-t8aYSNnz.js"
     ]
   },
-  "_index-AGxGDhI7.js": {
-    "file": "assets/index-AGxGDhI7.js",
+  "_index-B0F8WSnQ.js": {
+    "file": "assets/index-B0F8WSnQ.js",
     "name": "index"
   },
-  "_index-B3uGW65S.js": {
-    "file": "assets/index-B3uGW65S.js",
+  "_index-DNQOCTJz.js": {
+    "file": "assets/index-DNQOCTJz.js",
     "name": "index",
     "isDynamicEntry": true,
     "imports": [
-      "_prompts-CZcZabTo.js",
-      "_index-DlUqGJ2w.js"
+      "_prompts-CKcm-rRX.js",
+      "_index-t8aYSNnz.js"
     ]
   },
-  "_index-DlUqGJ2w.js": {
-    "file": "assets/index-DlUqGJ2w.js",
+  "_index-t8aYSNnz.js": {
+    "file": "assets/index-t8aYSNnz.js",
     "name": "index"
   },
-  "_index.ts-loader-jNPezfTT.js": {
-    "file": "assets/index.ts-loader-jNPezfTT.js",
-    "src": "_index.ts-loader-jNPezfTT.js"
+  "_index.ts-loader-BOC1S_33.js": {
+    "file": "assets/index.ts-loader-BOC1S_33.js",
+    "src": "_index.ts-loader-BOC1S_33.js"
   },
-  "_preload-helper-BXl3LOEh.js": {
-    "file": "assets/preload-helper-BXl3LOEh.js",
+  "_preload-helper-BhLMWRjL.js": {
+    "file": "assets/preload-helper-BhLMWRjL.js",
     "name": "preload-helper"
   },
-  "_prompts-CZcZabTo.js": {
-    "file": "assets/prompts-CZcZabTo.js",
+  "_prompts-CKcm-rRX.js": {
+    "file": "assets/prompts-CKcm-rRX.js",
     "name": "prompts"
   },
   "src/background/index.ts": {
-    "file": "assets/index.ts-DYuFl-oi.js",
+    "file": "assets/index.ts-DpIglvd6.js",
     "name": "index.ts",
     "src": "src/background/index.ts",
     "isEntry": true,
     "imports": [
-      "_index-DlUqGJ2w.js",
-      "_index-B3uGW65S.js",
-      "_index-AGxGDhI7.js",
-      "_prompts-CZcZabTo.js"
+      "_index-t8aYSNnz.js",
+      "_index-DNQOCTJz.js",
+      "_index-B0F8WSnQ.js",
+      "_prompts-CKcm-rRX.js"
     ]
   },
   "src/content/index.ts": {
-    "file": "assets/index.ts-DLderptY.js",
+    "file": "assets/index.ts-BkN6eQy3.js",
     "name": "index.ts",
     "src": "src/content/index.ts",
     "isEntry": true,
     "imports": [
-      "_preload-helper-BXl3LOEh.js"
+      "_preload-helper-BhLMWRjL.js"
     ],
     "dynamicImports": [
       "src/content/singlefile-capture.ts",
@@ -67,47 +67,47 @@
     ]
   },
   "src/content/singlefile-capture-v2.ts": {
-    "file": "assets/singlefile-capture-v2-BFkKbDqi.js",
+    "file": "assets/singlefile-capture-v2-DXdSZKa8.js",
     "name": "singlefile-capture-v2",
     "src": "src/content/singlefile-capture-v2.ts",
     "isDynamicEntry": true
   },
   "src/content/singlefile-capture.ts": {
-    "file": "assets/singlefile-capture-CGqU8xAy.js",
+    "file": "assets/singlefile-capture-Bkt_j5oF.js",
     "name": "singlefile-capture",
     "src": "src/content/singlefile-capture.ts",
     "isDynamicEntry": true
   },
   "src/options/index.html": {
-    "file": "assets/options-CJNU9hjL.js",
+    "file": "assets/options-D6-UaC3n.js",
     "name": "options",
     "src": "src/options/index.html",
     "isEntry": true,
     "imports": [
-      "_SuccessMessage-CQdIk5YD.js",
-      "_preload-helper-BXl3LOEh.js",
-      "_index-DlUqGJ2w.js",
-      "_prompts-CZcZabTo.js"
+      "_SuccessMessage-D1LRUAvC.js",
+      "_preload-helper-BhLMWRjL.js",
+      "_index-t8aYSNnz.js",
+      "_prompts-CKcm-rRX.js"
     ],
     "dynamicImports": [
-      "_index-B3uGW65S.js"
+      "_index-DNQOCTJz.js"
     ],
     "css": [
-      "assets/options-CVb2mx12.css"
+      "assets/options-BBzFgKlN.css"
     ]
   },
   "src/popup/index.html": {
-    "file": "assets/popup-n4KSaeT6.js",
+    "file": "assets/popup-CbaQGoPG.js",
     "name": "popup",
     "src": "src/popup/index.html",
     "isEntry": true,
     "imports": [
-      "_SuccessMessage-CQdIk5YD.js",
-      "_index-DlUqGJ2w.js",
-      "_index-AGxGDhI7.js"
+      "_SuccessMessage-D1LRUAvC.js",
+      "_index-t8aYSNnz.js",
+      "_index-B0F8WSnQ.js"
     ],
     "css": [
-      "assets/popup-BJwWDgEw.css"
+      "assets/popup-CUmZdG7V.css"
     ]
   }
 }
