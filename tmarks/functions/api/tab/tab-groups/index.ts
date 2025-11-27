@@ -1,13 +1,13 @@
 /**
- * 内部 API - 标签页组操作
+ * 对外 API - 标签页组操作
  * 路径: /api/tab/tab-groups
- * 认证: JWT Token (Bearer)
+ * 认证: API Key (X-API-Key header) 或 JWT Token (Bearer)
  */
 
 import type { PagesFunction } from '@cloudflare/workers-types'
 import type { Env, RouteParams, SQLParam } from '../../../lib/types'
 import { success, badRequest, created, internalError } from '../../../lib/response'
-import { requireAuth, AuthContext } from '../../../middleware/auth'
+import { requireDualAuth, DualAuthContext } from '../../../middleware/dual-auth'
 import { sanitizeString } from '../../../lib/validation'
 import { generateUUID } from '../../../lib/crypto'
 
@@ -47,9 +47,9 @@ interface CreateTabGroupRequest {
   }>
 }
 
-// GET /api/tab-groups - 获取标签页组列表
-export const onRequestGet: PagesFunction<Env, RouteParams, AuthContext>[] = [
-  requireAuth,
+// GET /api/tab/tab-groups - 获取标签页组列表
+export const onRequestGet: PagesFunction<Env, RouteParams, DualAuthContext>[] = [
+  requireDualAuth('tab_groups.read'),
   async (context) => {
     const userId = context.data.user_id
     const url = new URL(context.request.url)
@@ -155,9 +155,9 @@ export const onRequestGet: PagesFunction<Env, RouteParams, AuthContext>[] = [
   },
 ]
 
-// POST /api/tab-groups - 创建标签页组
-export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
-  requireAuth,
+// POST /api/tab/tab-groups - 创建标签页组
+export const onRequestPost: PagesFunction<Env, RouteParams, DualAuthContext>[] = [
+  requireDualAuth('tab_groups.create'),
   async (context) => {
     const userId = context.data.user_id
 
