@@ -187,12 +187,23 @@ export const onRequestPost: PagesFunction<Env, RouteParams, DualAuthContext>[] =
       const timestamp = now.toISOString()
       const parentId = body.parent_id || null
 
+      console.log('[TabGroups API tab] Creating tab group:', { 
+        groupId, 
+        userId, 
+        authType: context.data.auth_type,
+        title, 
+        isFolder, 
+        itemCount: body.items?.length || 0 
+      })
+
       // Insert tab group or folder
       await context.env.DB.prepare(
         'INSERT INTO tab_groups (id, user_id, title, parent_id, is_folder, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
       )
         .bind(groupId, userId, title, parentId, isFolder ? 1 : 0, timestamp, timestamp)
         .run()
+
+      console.log('[TabGroups API tab] Tab group inserted successfully')
 
       // Insert tab group items (only for non-folder groups)
       if (!isFolder && body.items && body.items.length > 0) {
@@ -210,6 +221,7 @@ export const onRequestPost: PagesFunction<Env, RouteParams, DualAuthContext>[] =
         })
 
         await Promise.all(itemInserts)
+        console.log('[TabGroups API tab] Inserted', body.items.length, 'items')
       }
 
       // Get created tab group with items

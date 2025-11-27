@@ -15,6 +15,13 @@ interface TabGroupRow {
   id: string
   user_id: string
   title: string
+  color: string | null
+  tags: string | null
+  parent_id: string | null
+  is_folder: number
+  is_deleted: number
+  deleted_at: string | null
+  position: number
   created_at: string
   updated_at: string
 }
@@ -53,47 +60,61 @@ export const onRequestGet: PagesFunction<Env, RouteParams, AuthContext>[] = [
     const pageCursor = url.searchParams.get('page_cursor') || ''
 
     try {
-      // Build query
+      // Build query - 获取所有字段，过滤已删除的记录
       let query = `
-        SELECT
-          tg.id,
-          tg.user_id,
-          tg.title,
-          tg.created_at,
-          tg.updated_at,
-          COUNT(tgi.id) as item_count
-        FROM tab_groups tg
-        LEFT JOIN tab_group_items tgi ON tg.id = tgi.group_id
-        WHERE tg.user_id = ?
+        SELECT *
+        FROM tab_groups
+        WHERE user_id = ? AND (is_deleted IS NULL OR is_deleted = 0)
       `
       const params: SQLParam[] = [userId]
 
       // Cursor pagination
       if (pageCursor) {
-        query += ' AND tg.created_at < ?'
+        query += ' AND created_at < ?'
         params.push(pageCursor)
       }
 
-      query += ' GROUP BY tg.id ORDER BY tg.created_at DESC LIMIT ?'
+      query += ' ORDER BY created_at DESC LIMIT ?'
       params.push(pageSize + 1)
 
+      console.log('[TabGroups API v1] Query params:', { userId, pageSize, pageCursor })
+      console.log('[TabGroups API v1] Full query:', query)
+      
       const { results } = await context.env.DB.prepare(query)
         .bind(...params)
-        .all<TabGroupRow & { item_count: number }>()
+        .all<TabGroupRow>()
+
+      console.log('[TabGroups API v1] Found groups:', results.length)
 
       const hasMore = results.length > pageSize
       const tabGroups = hasMore ? results.slice(0, pageSize) : results
       const nextCursor = hasMore ? tabGroups[tabGroups.length - 1].created_at : null
 
+      // Get items for each group
+      const groupsWithItems = await Promise.all(
+        tabGroups.map(async (group) => {
+          const { results: items } = await context.env.DB.prepare(
+            `SELECT tgi.*
+             FROM tab_group_items tgi
+             JOIN tab_groups tg ON tgi.group_id = tg.id
+             WHERE tgi.group_id = ? AND tg.user_id = ?
+             ORDER BY tgi.position ASC`
+          )
+            .bind(group.id, userId)
+            .all<TabGroupItemRow>()
+
+          console.log(`[TabGroups API v1] Group ${group.id} (${group.title}): ${items?.length || 0} items`)
+
+          return {
+            ...group,
+            items: items || [],
+            item_count: items?.length || 0,
+          }
+        })
+      )
+
       return success({
-        tab_groups: tabGroups.map((tg) => ({
-          id: tg.id,
-          user_id: tg.user_id,
-          title: tg.title,
-          created_at: tg.created_at,
-          updated_at: tg.updated_at,
-          item_count: tg.item_count,
-        })),
+        tab_groups: groupsWithItems,
         meta: {
           page_size: pageSize,
           count: tabGroups.length,
