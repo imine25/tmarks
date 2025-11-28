@@ -305,7 +305,8 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
           userId,
           tempBookmarkId,
           context.env.SNAPSHOTS_BUCKET,
-          context.env.DB
+          context.env.DB,
+          context.env.R2_PUBLIC_URL || ''
         )
 
         // 如果上传成功，使用 R2 URL 和 imageId

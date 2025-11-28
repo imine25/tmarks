@@ -8,9 +8,7 @@ pages_build_output_dir = ".deploy"
 #
 # 需要绑定的资源：
 # - D1 数据库：变量名 DB，选择数据库 tmarks-prod-db
-# - KV 命名空间：变量名 RATE_LIMIT_KV
-# - KV 命名空间：变量名 PUBLIC_SHARE_KV
-# - KV 命名空间：变量名 CACHE_KV（可选，用于通用缓存）
+# - KV 命名空间：变量名 TMARKS_KV（用于公开分享缓存等）
 # - R2 存储桶：变量名 SNAPSHOTS_BUCKET，选择存储桶 tmarks-snapshots（用于网页快照）
 #
 # 这样配置的好处：

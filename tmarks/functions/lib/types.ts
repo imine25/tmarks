@@ -1,9 +1,9 @@
 export interface Env {
   DB: D1Database
-  RATE_LIMIT_KV?: KVNamespace // Optional for development
-  PUBLIC_SHARE_KV?: KVNamespace // Optional cache for public share pages
-  CACHE_KV?: KVNamespace // Optional general cache
+  TMARKS_KV?: KVNamespace // 统一缓存（公开分享、速率限制等）
   SNAPSHOTS_BUCKET?: R2Bucket // R2 bucket for bookmark snapshots
+  R2_PUBLIC_URL?: string // R2 公开访问域名（如 https://r2.example.com）
+  CORS_ALLOWED_ORIGINS?: string // CORS 允许的源列表（逗号分隔，如 https://example.com,https://app.example.com）
   ALLOW_REGISTRATION?: string
   JWT_SECRET: string
   ENCRYPTION_KEY: string

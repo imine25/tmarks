@@ -157,14 +157,10 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     let tags: Array<{ id: string; name: string; color: string | null; bookmark_count: number }> = []
 
     if (!usePagination || !pageCursor) {
+      const tagsCacheKey = generateCacheKey('publicShare', `${slug}:tags`)
+      
       // 尝试从缓存获取标签
-      let cachedTags: typeof tags | null = null
-      if (context.env.PUBLIC_SHARE_KV) {
-        const cached = await context.env.PUBLIC_SHARE_KV.get(tagsCacheKey, 'json')
-        if (cached) {
-          cachedTags = cached as typeof tags
-        }
-      }
+      const cachedTags = await cache.get<typeof tags>('publicShare', tagsCacheKey)
 
       if (cachedTags) {
         tags = cachedTags
@@ -188,12 +184,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         tags = tagStats || []
 
         // 缓存标签统计（30分钟）
-        if (context.env.PUBLIC_SHARE_KV && tags.length > 0) {
-          await context.env.PUBLIC_SHARE_KV.put(
-            tagsCacheKey,
-            JSON.stringify(tags),
-            { expirationTtl: 1800 }
-          )
+        if (tags.length > 0) {
+          await cache.set('publicShare', tagsCacheKey, tags, { async: true })
         }
       }
     }

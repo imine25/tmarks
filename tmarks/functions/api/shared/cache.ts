@@ -1,12 +1,13 @@
 import type { Env } from '../../lib/types'
+import { CacheService } from '../../lib/cache'
+import { getCacheInvalidationPrefix } from '../../lib/cache/strategies'
 
-const CACHE_PREFIX = 'public-share:'
-
+/**
+ * 失效用户的公开分享缓存
+ * 当用户修改书签时调用，确保分享页面显示最新数据
+ */
 export async function invalidatePublicShareCache(env: Env, userId: string) {
-  if (!env.PUBLIC_SHARE_KV) {
-    return
-  }
-
+  // 查询用户的公开分享 slug
   const record = await env.DB.prepare(
     `SELECT public_slug FROM users WHERE id = ? AND public_share_enabled = 1`
   )
@@ -17,6 +18,8 @@ export async function invalidatePublicShareCache(env: Env, userId: string) {
     return
   }
 
-  const key = `${CACHE_PREFIX}${record.public_slug.toLowerCase()}`
-  await env.PUBLIC_SHARE_KV.delete(key)
+  // 使用 CacheService 统一失效缓存
+  const cache = new CacheService(env)
+  const prefix = getCacheInvalidationPrefix(record.public_slug.toLowerCase(), 'publicShare')
+  await cache.invalidate(prefix)
 }

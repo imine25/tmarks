@@ -60,8 +60,12 @@ export function generateCacheKey(
       parts.push('sort', params.sort)
     }
 
+    if (params.page_size) {
+      parts.push('size', String(params.page_size))
+    }
+
     if (params.page_cursor) {
-      parts.push('cursor', params.page_cursor)
+      parts.push('cursor', String(params.page_cursor))
     }
   }
 

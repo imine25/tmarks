@@ -58,7 +58,7 @@ export class CacheService {
       }
 
       // L2: KV 缓存
-      if (this.env.CACHE_KV || this.env.RATE_LIMIT_KV || this.env.PUBLIC_SHARE_KV) {
+      if (this.env.TMARKS_KV) {
         const kvCached = await this.getFromKV<T>(type, key)
         if (kvCached !== null) {
           this.hits++
@@ -107,10 +107,8 @@ export class CacheService {
       }
 
       // L2: KV 缓存 (只在策略启用时写入)
-      if (this.config.strategies[type]) {
-        if (this.env.CACHE_KV || this.env.RATE_LIMIT_KV || this.env.PUBLIC_SHARE_KV) {
-          await this.setToKV(type, key, data, options)
-        }
+      if (this.config.strategies[type] && this.env.TMARKS_KV) {
+        await this.setToKV(type, key, data, options)
       }
     } catch (error) {
       this.handleError('set', error)
@@ -126,14 +124,8 @@ export class CacheService {
       this.memCache.delete(key)
 
       // 删除 KV 缓存
-      if (this.env.CACHE_KV) {
-        await this.env.CACHE_KV.delete(key)
-      }
-      if (this.env.RATE_LIMIT_KV) {
-        await this.env.RATE_LIMIT_KV.delete(key)
-      }
-      if (this.env.PUBLIC_SHARE_KV) {
-        await this.env.PUBLIC_SHARE_KV.delete(key)
+      if (this.env.TMARKS_KV) {
+        await this.env.TMARKS_KV.delete(key)
       }
     } catch (error) {
       this.handleError('delete', error)
@@ -292,35 +284,23 @@ export class CacheService {
    * 失效 KV 缓存
    */
   private async invalidateKV(prefix: string): Promise<void> {
-    const namespaces = [
-      this.env.CACHE_KV,
-      this.env.RATE_LIMIT_KV,
-      this.env.PUBLIC_SHARE_KV,
-    ].filter((ns): ns is KVNamespace => ns !== undefined)
+    if (!this.env.TMARKS_KV) return
 
-    for (const kv of namespaces) {
-      try {
-        const keys = await kv.list({ prefix })
-        await Promise.all(
-          keys.keys.map(k => kv.delete(k.name))
-        )
-      } catch (error) {
-        console.warn('KV invalidate error:', error)
-      }
+    try {
+      const keys = await this.env.TMARKS_KV.list({ prefix })
+      await Promise.all(
+        keys.keys.map(k => this.env.TMARKS_KV!.delete(k.name))
+      )
+    } catch (error) {
+      console.warn('KV invalidate error:', error)
     }
   }
 
   /**
-   * 获取对应的 KV Namespace
+   * 获取 KV Namespace（统一使用 TMARKS_KV）
    */
-  private getKVNamespace(type: CacheStrategyType): KVNamespace | undefined {
-    if (type === 'rateLimit') {
-      return this.env.RATE_LIMIT_KV
-    }
-    if (type === 'publicShare') {
-      return this.env.PUBLIC_SHARE_KV
-    }
-    return this.env.CACHE_KV || this.env.PUBLIC_SHARE_KV
+  private getKVNamespace(_type: CacheStrategyType): KVNamespace | undefined {
+    return this.env.TMARKS_KV
   }
 
   /**
