@@ -9,7 +9,7 @@ import type { Env, BookmarkRow, RouteParams, SQLParam } from '../../../lib/types
 import { success, badRequest, notFound, noContent, internalError } from '../../../lib/response'
 import { requireApiKeyAuth, ApiKeyAuthContext } from '../../../middleware/api-key-auth-pages'
 import { isValidUrl, sanitizeString } from '../../../lib/validation'
-import { normalizeBookmark } from './utils'
+import { normalizeBookmark } from '../../../lib/bookmark-utils'
 import { invalidatePublicShareCache } from '../../shared/cache'
 
 interface UpdateBookmarkRequest {
@@ -173,7 +173,7 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[
       }
 
       // 更新标签关联
-      if (body.tags !== undefined && body.tags.length >= 0) {
+      if (body.tags !== undefined) {
         // 新版：直接传标签名称，后端自动创建或链接
         const { createOrLinkTags } = await import('../../../lib/tags')
         

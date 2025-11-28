@@ -10,7 +10,7 @@ import { success, badRequest, created, internalError } from '../../lib/response'
 import { requireApiKeyAuth, ApiKeyAuthContext } from '../../middleware/api-key-auth-pages'
 import { isValidUrl, sanitizeString } from '../../lib/validation'
 import { generateUUID } from '../../lib/crypto'
-import { normalizeBookmark } from './utils'
+import { normalizeBookmark } from '../../lib/bookmark-utils'
 import { invalidatePublicShareCache } from '../shared/cache'
 import { uploadCoverImageToR2 } from '../../lib/image-upload'
 

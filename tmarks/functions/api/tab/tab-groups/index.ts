@@ -198,7 +198,7 @@ export const onRequestPost: PagesFunction<Env, RouteParams, DualAuthContext>[] =
 
       // Insert tab group or folder
       await context.env.DB.prepare(
-        'INSERT INTO tab_groups (id, user_id, title, parent_id, is_folder, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+        'INSERT INTO tab_groups (id, user_id, title, parent_id, is_folder, is_deleted, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 0, ?, ?)'
       )
         .bind(groupId, userId, title, parentId, isFolder ? 1 : 0, timestamp, timestamp)
         .run()
