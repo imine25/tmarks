@@ -152,7 +152,13 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
         return badRequest('Tag selection auto clear seconds must be between 10 and 300')
       }
 
-      if (body.default_bookmark_icon && !['gradient-glow', 'pulse-breath'].includes(body.default_bookmark_icon)) {
+      // 默认书签图标：前端当前只提供 orbital-spinner，但为了兼容旧数据，仍然允许历史值
+      if (
+        body.default_bookmark_icon &&
+        !['gradient-glow', 'pulse-breath', 'orbital-spinner', 'bookmark'].includes(
+          body.default_bookmark_icon,
+        )
+      ) {
         return badRequest('Invalid default bookmark icon value')
       }
 
