@@ -36,7 +36,8 @@ TMarks 是一个现代化的智能书签管理系统，结合 AI 技术自动生
 - **后端**: Cloudflare Workers + Pages Functions
 - **数据库**: Cloudflare D1 (SQLite)
 - **缓存**: Cloudflare KV
-- **AI集成**: 支持 OpenAI、Anthropic、DeepSeek、智谱等8+提供商
+- **快照存储**: Cloudflare R2（可选，用于存储网页快照 HTML 与图片，支持全局 7GB 配额限制）
+- **AI集成**: 支持 OpenAI、Anthropic、DeepSeek、智谱等 8+ 提供商
 
 ---
 
@@ -89,112 +90,79 @@ pnpm dev
 
 ---
 
-### 快速部署
+### 开源用户一页部署指南
 
-**前置要求:**
-- Cloudflare 账号
-- GitHub 账号
+**前置条件**
+- 有 Cloudflare 账号
+- 有 GitHub 账号
 
-**部署步骤:**
+---
 
-1. **Fork 仓库**
-   - Fork 本仓库到你的 GitHub
+#### 1. 连接仓库并配置构建
+1. 在 GitHub 上 Fork 本仓库
+2. 打开 Cloudflare Dashboard → **Workers & Pages** → **Pages** → **创建项目**
+3. 选择「连接到 Git」，选中你的 Fork
+4. 构建配置：
+   - 根目录：`tmarks`
+   - 构建命令：`pnpm install && pnpm build:deploy`
+   - 构建输出目录：`.deploy`
+5. 保存并触发一次部署（第一次失败没关系，后面会修好）
 
-2. **创建 Cloudflare Pages 项目**
-   - 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/)
-   - Workers & Pages → 创建 → 连接到 Git → 选择你的 Fork 仓库
-   - 配置构建设置：
-     - 根目录：`tmarks`
-     - 构建命令：`pnpm install && pnpm build:deploy`
-     - 构建输出目录：`.deploy`
-   - 保存并部署（首次部署会失败，继续下一步配置）
+#### 2. 创建 Cloudflare 资源
+1. **D1 数据库（必需）**
+   - Workers & Pages → **D1 SQL Database** → Create database
+   - 名称：`tmarks-prod-db`
+2. **KV 命名空间（推荐）**
+   - Workers & Pages → **KV** → Create a namespace
+   - 名称：`TMARKS_KV`
+   - 不创建也能运行，但会失去 KV 缓存和限流保护
+3. **R2 存储桶（可选，快照用）**
+   - R2 对象存储 → 创建存储桶
+   - 名称：`tmarks-snapshots`
+   - 不创建则快照功能不可用，但其他功能正常
 
-3. **创建 D1 数据库和 KV 命名空间**
+#### 3. 在 Pages 项目中绑定资源
+进入 Pages 项目 → **设置 → 函数**：
 
-   在配置项目之前,需要先创建必要的资源:
+- D1 绑定：
+  - 新建 D1 绑定，变量名：`DB` → 选择 `tmarks-prod-db`
+- KV 绑定（如果创建了 KV）：
+  - 新建 KV 绑定，变量名：`TMARKS_KV` → 选择 `TMARKS_KV`
+- R2 绑定（如果创建了 R2）：
+  - 新建 R2 绑定，变量名：`SNAPSHOTS_BUCKET` → 选择 `tmarks-snapshots`
 
-   **a. 创建 D1 数据库：**
-   - 进入 [Cloudflare Dashboard](https://dash.cloudflare.com/)
-   - 左侧菜单选择 **Workers & Pages** → **D1 SQL Database**
-   - 点击右上角 **Create database** 按钮
-   - 数据库名称输入：`tmarks-prod-db`
-   - 点击 **Create** 创建数据库
+> 没有 KV / R2 时，可以跳过对应绑定，应用仍然可以启动。
 
-   **b. 创建 KV 命名空间（可选但推荐）：**
+#### 4. 配置环境变量
+进入 Pages 项目 → **设置 → 环境变量（生产环境）**，建议配置：
 
-   > 💡 **说明**: 两个 KV 命名空间都是可选的,不创建也能正常运行,但会影响性能和安全性:
-   > - `RATE_LIMIT_KV`: 用于 API 访问频率限制。**不创建时将关闭速率限制,可能导致 API 被滥用**
-   > - `PUBLIC_SHARE_KV`: 用于缓存公开分享页面。**不创建时每次访问都查询数据库,响应较慢**
-   >
-   > **推荐**: 生产环境建议创建这两个 KV,开发测试可以跳过
+- 业务相关：
+  - `ALLOW_REGISTRATION`：是否允许新用户注册，推荐 "true"
+    （设为非 "true"——包括 "false" 或留空——都会关闭注册；推荐的关闭方式是 **直接删除该变量**）
+  - `ENVIRONMENT`：运行环境，生产环境设为 `production`
+  - `JWT_ACCESS_TOKEN_EXPIRES_IN`：访问 Token 有效期，推荐 `365d`
+  - `JWT_REFRESH_TOKEN_EXPIRES_IN`：刷新 Token 有效期，推荐 `365d`
+- R2 相关（如果启用快照 / 封面图走 R2）：
+  - `R2_PUBLIC_URL`：**可选**，封面图使用 R2 存储时的对外访问域名（例如 `https://pub-xxxxx.r2.dev`）；快照本身通过 API 访问，不依赖该值
+  - `R2_MAX_TOTAL_BYTES`：R2 总存储上限（字节），可选；不配置或设为 `0` / 负数 表示不限制（如需限制可手动设置，例如约 7GiB）
+- 敏感变量（**只在 Dashboard 里配置，千万不要写入仓库**）：
+  - `JWT_SECRET`：JWT 签名密钥（建议 ≥ 48 位随机字符串）
+  - `ENCRYPTION_KEY`：数据加密密钥（建议 ≥ 48 位随机字符串）
 
-   - 左侧菜单选择 **Workers & Pages** → **KV**
-   - 点击右上角 **Create a namespace** 按钮
-   - 创建第一个 KV 命名空间（推荐）：
-     - 命名空间名称：`RATE_LIMIT_KV`
-     - 点击 **Add** 创建
-   - 重复上述步骤,创建第二个 KV 命名空间（推荐）：
-     - 命名空间名称：`PUBLIC_SHARE_KV`
-     - 点击 **Add** 创建
+> 本地 / 自托管部署时，可参考 `tmarks/wrangler.toml.example` 中的 `[vars]` 示例，业务配置可直接照抄，敏感密钥仅在 Dashboard 中填写真实值。
 
-4. **在项目中绑定资源**
+#### 5. 初始化数据库
+1. 打开 **Workers & Pages → D1 SQL Database**
+2. 进入 `tmarks-prod-db` → **Console**
+3. 打开仓库中的 `tmarks/migrations/d1_console_pure.sql`
+4. 复制全部 SQL，粘贴到控制台，点击 **Execute** 执行
 
-   进入你的 Pages 项目 → 设置：
+#### 6. 重新部署
+1. 回到 Pages 项目 → 部署
+2. 对之前失败的部署点击「重试」，或推送任意提交重新触发
+3. 构建成功后，就可以访问你的 TMarks 站点了 🎉
 
-   **a. 绑定 D1 数据库：**
-   - 设置 → 函数 → D1 数据库绑定 → 添加绑定
-   - 变量名：`DB`
-   - D1 数据库：选择刚才创建的 `tmarks-prod-db`
-   - 点击 **Save** 保存
-
-   **b. 绑定 KV 命名空间（如果创建了KV）：**
-   - 设置 → 函数 → KV 命名空间绑定 → 添加绑定
-   - 第一个 KV（如果创建了 RATE_LIMIT_KV）：
-     - 变量名：`RATE_LIMIT_KV`
-     - KV 命名空间：选择刚才创建的 `RATE_LIMIT_KV`
-     - 点击 **Save** 保存
-   - 点击 **添加绑定** 继续添加第二个 KV（如果创建了 PUBLIC_SHARE_KV）：
-     - 变量名：`PUBLIC_SHARE_KV`
-     - KV 命名空间：选择刚才创建的 `PUBLIC_SHARE_KV`
-     - 点击 **Save** 保存
-
-   > 💡 **提示**: 如果跳过了 KV 创建,可以跳过此步骤,应用仍可正常运行
-
-   **c. 配置环境变量：**
-   - 路径：项目设置 → 环境变量 → 生产环境
-   - 建议添加以下业务配置（括号为推荐值，可按需调整）：
-     - `ALLOW_REGISTRATION`：是否允许新用户注册，推荐 "true"（设为非 "true" 的任意值——包括 "false" 或留空——都会关闭注册；**推荐的关闭方式是直接删除该变量，避免多处配置造成混淆**）
-     - `ENVIRONMENT`：当前运行环境，生产环境请设为 "production"
-     - `JWT_ACCESS_TOKEN_EXPIRES_IN`：访问 Token 有效期，推荐 "365d"
-     - `JWT_REFRESH_TOKEN_EXPIRES_IN`：刷新 Token 有效期，推荐 "365d"
-   - ⚠️ 敏感环境变量（务必通过 Dashboard 配置，不要写入代码仓库）：
-     - `JWT_SECRET`：JWT 签名密钥，建议使用至少 48 位随机字符串
-     - `ENCRYPTION_KEY`：数据加密密钥，建议使用至少 48 位随机字符串
-   - 本地或自托管部署时，可参考 `tmarks/wrangler.toml.example` 中的 `[vars]` 示例配置（业务配置可直接照抄，敏感密钥仅在 Dashboard 中填写真实值）。
-
-5. **初始化数据库**
-
-   数据库创建后需要执行 SQL 脚本初始化表结构：
-
-   - 进入 **Workers & Pages** → **D1 SQL Database**
-   - 点击打开 `tmarks-prod-db` 数据库
-   - 点击 **Console** 标签页
-   - 打开仓库中的 `tmarks/migrations/d1_console_pure.sql` 文件
-   - 复制完整的 SQL 内容
-   - 粘贴到 D1 控制台的输入框中
-   - 点击 **Execute** 执行 SQL
-   - 等待执行完成,确认所有表都创建成功
-
-6. **重新部署**
-   - 回到 Pages 项目页面 → 部署 → 查看部署
-   - 找到之前失败的部署,点击 **重试部署**
-   - 或者推送一个新的提交触发自动部署
-   - 等待构建完成即可访问你的 TMarks 应用
-
-**后续更新:**
-- 直接推送代码到 GitHub，Cloudflare 会自动构建部署
-- 所有配置都保存在 Dashboard 中，不会被代码更新影响
-
+> 之后更新：只要往 GitHub 推代码，Cloudflare 会自动重新构建和部署，之前配置的数据库 / KV / R2 / 环境变量都不会丢。
 ---
 
 
