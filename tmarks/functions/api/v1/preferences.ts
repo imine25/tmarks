@@ -357,7 +357,34 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
       })
     } catch (error) {
       console.error('Update preferences error:', error)
-      return internalError('Failed to update preferences')
+
+      // 在无法直接查看 Cloudflare Functions 日志的情况下，
+      // 临时把错误信息附加到响应中，方便前端 Network 面板中排查问题。
+      const baseMessage = 'Failed to update preferences'
+      let details = ''
+
+      if (error instanceof Error) {
+        details = error.message
+      } else if (typeof error === 'string') {
+        details = error
+      }
+
+      const message = details
+        ? `${baseMessage}: ${details}`
+        : baseMessage
+
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: 'INTERNAL_ERROR',
+            message,
+          },
+        }),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      )
     }
   },
 ]
