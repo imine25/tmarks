@@ -65,6 +65,25 @@ async function hasSortByColumn(db: D1Database): Promise<boolean> {
   }
 }
 
+// 某些旧数据库可能还没有自动清空相关字段，做一次能力探测，避免 500
+async function hasAutomationColumns(db: D1Database): Promise<boolean> {
+  try {
+    // 这些字段在同一个迁移中加入，只检测一个列即可代表这一批字段是否存在
+    await db
+      .prepare('SELECT search_auto_clear_seconds FROM user_preferences LIMIT 1')
+      .first()
+    return true
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      /no such column: search_auto_clear_seconds/i.test(error.message)
+    ) {
+      return false
+    }
+    throw error
+  }
+}
+
 // GET /api/v1/preferences - 获取用户偏好
 export const onRequestGet: PagesFunction<Env, RouteParams, AuthContext>[] = [
   requireAuth,
@@ -118,6 +137,7 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
       const body = await context.request.json() as UpdatePreferencesRequest
       const tagLayoutSupported = await hasTagLayoutColumn(context.env.DB)
       const sortBySupported = await hasSortByColumn(context.env.DB)
+      const automationSupported = await hasAutomationColumns(context.env.DB)
 
       // 验证输入
       if (body.theme && !['light', 'dark'].includes(body.theme)) {
@@ -204,49 +224,53 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
         values.push(body.sort_by)
       }
 
-      if (body.search_auto_clear_seconds !== undefined) {
-        updates.push('search_auto_clear_seconds = ?')
-        values.push(body.search_auto_clear_seconds)
+      if (automationSupported) {
+        if (body.search_auto_clear_seconds !== undefined) {
+          updates.push('search_auto_clear_seconds = ?')
+          values.push(body.search_auto_clear_seconds)
+        }
+
+        if (body.tag_selection_auto_clear_seconds !== undefined) {
+          updates.push('tag_selection_auto_clear_seconds = ?')
+          values.push(body.tag_selection_auto_clear_seconds)
+        }
+
+        if (body.enable_search_auto_clear !== undefined) {
+          updates.push('enable_search_auto_clear = ?')
+          values.push(body.enable_search_auto_clear ? 1 : 0)
+        }
+
+        if (body.enable_tag_selection_auto_clear !== undefined) {
+          updates.push('enable_tag_selection_auto_clear = ?')
+          values.push(body.enable_tag_selection_auto_clear ? 1 : 0)
+        }
       }
 
-      if (body.tag_selection_auto_clear_seconds !== undefined) {
-        updates.push('tag_selection_auto_clear_seconds = ?')
-        values.push(body.tag_selection_auto_clear_seconds)
-      }
+      if (automationSupported) {
+        if (body.default_bookmark_icon !== undefined) {
+          updates.push('default_bookmark_icon = ?')
+          values.push(body.default_bookmark_icon)
+        }
 
-      if (body.enable_search_auto_clear !== undefined) {
-        updates.push('enable_search_auto_clear = ?')
-        values.push(body.enable_search_auto_clear ? 1 : 0)
-      }
+        if (body.snapshot_retention_count !== undefined) {
+          updates.push('snapshot_retention_count = ?')
+          values.push(body.snapshot_retention_count)
+        }
 
-      if (body.enable_tag_selection_auto_clear !== undefined) {
-        updates.push('enable_tag_selection_auto_clear = ?')
-        values.push(body.enable_tag_selection_auto_clear ? 1 : 0)
-      }
+        if (body.snapshot_auto_create !== undefined) {
+          updates.push('snapshot_auto_create = ?')
+          values.push(body.snapshot_auto_create ? 1 : 0)
+        }
 
-      if (body.default_bookmark_icon !== undefined) {
-        updates.push('default_bookmark_icon = ?')
-        values.push(body.default_bookmark_icon)
-      }
+        if (body.snapshot_auto_dedupe !== undefined) {
+          updates.push('snapshot_auto_dedupe = ?')
+          values.push(body.snapshot_auto_dedupe ? 1 : 0)
+        }
 
-      if (body.snapshot_retention_count !== undefined) {
-        updates.push('snapshot_retention_count = ?')
-        values.push(body.snapshot_retention_count)
-      }
-
-      if (body.snapshot_auto_create !== undefined) {
-        updates.push('snapshot_auto_create = ?')
-        values.push(body.snapshot_auto_create ? 1 : 0)
-      }
-
-      if (body.snapshot_auto_dedupe !== undefined) {
-        updates.push('snapshot_auto_dedupe = ?')
-        values.push(body.snapshot_auto_dedupe ? 1 : 0)
-      }
-
-      if (body.snapshot_auto_cleanup_days !== undefined) {
-        updates.push('snapshot_auto_cleanup_days = ?')
-        values.push(body.snapshot_auto_cleanup_days)
+        if (body.snapshot_auto_cleanup_days !== undefined) {
+          updates.push('snapshot_auto_cleanup_days = ?')
+          values.push(body.snapshot_auto_cleanup_days)
+        }
       }
 
       if (updates.length === 0) {
