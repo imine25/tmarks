@@ -190,6 +190,16 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
         return badRequest('Snapshot auto cleanup days must be between 0 and 365')
       }
 
+      // 确保当前用户在 user_preferences 表中有一条记录；
+      // 如果不存在，则插入一条使用表定义默认值的记录，避免 UPDATE 影响 0 行。
+      await context.env.DB.prepare(
+        `INSERT INTO user_preferences (user_id)
+         VALUES (?)
+         ON CONFLICT(user_id) DO NOTHING`
+      )
+        .bind(userId)
+        .run()
+
       // 构建更新语句
       const updates: string[] = []
       const values: SQLParam[] = []
