@@ -94,8 +94,9 @@ export function SortSelector({ value, onChange, className = '' }: SortSelectorPr
         case 'Enter':
         case ' ':
           e.preventDefault()
-          if (focusedIndex >= 0 && SORT_OPTIONS[focusedIndex]) {
-            onChange(SORT_OPTIONS[focusedIndex]!.value)
+          const option = SORT_OPTIONS[focusedIndex]
+          if (focusedIndex >= 0 && option) {
+            onChange(option.value)
             setIsOpen(false)
             buttonRef.current?.focus()
           }

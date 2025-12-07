@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { preferencesService } from '@/services/preferences'
 import type { UpdatePreferencesRequest, UserPreferences } from '@/lib/types'
 import { ApiError } from '@/lib/api-client'
+import { logger } from '@/lib/logger'
 
 export const PREFERENCES_QUERY_KEY = 'preferences'
 
@@ -51,7 +52,7 @@ export function usePreferences() {
       } catch (error) {
         // 如果接口返回 404,使用默认偏好设置(包含 localStorage 中的视图模式)
         if (error instanceof ApiError && error.status === 404) {
-          console.warn('Preferences API not found, using default preferences with localStorage view mode')
+          logger.warn('Preferences API not found, using default preferences with localStorage view mode')
           return getDefaultPreferences()
         }
         throw error
@@ -86,7 +87,7 @@ export function useUpdatePreferences() {
     onError: (error) => {
       // 静默处理错误,不影响用户体验
       // 偏好设置已经保存到 localStorage,即使服务器更新失败也不影响使用
-      console.warn('Failed to update preferences on server, but local changes are saved:', error)
+      logger.warn('Failed to update preferences on server, but local changes are saved:', error)
     },
     // 失败时不重试,避免频繁请求
     retry: false,

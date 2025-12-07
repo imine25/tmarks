@@ -359,10 +359,15 @@ export function TabGroupsPage() {
 
     // 同一个组内移动
     if (sourceGroup.id === targetGroup.id) {
-      const oldIndex = sourceGroup.items!.findIndex((item) => item.id === active.id)
-      const newIndex = sourceGroup.items!.findIndex((item) => item.id === over.id)
+      if (!sourceGroup.items) {
+        logger.error('Source group items is undefined')
+        return
+      }
 
-      const newItems = arrayMove(sourceGroup.items!, oldIndex, newIndex)
+      const oldIndex = sourceGroup.items.findIndex((item) => item.id === active.id)
+      const newIndex = sourceGroup.items.findIndex((item) => item.id === over.id)
+
+      const newItems = arrayMove(sourceGroup.items, oldIndex, newIndex)
 
       // Update local state immediately
       setTabGroups((prev) =>
@@ -389,13 +394,18 @@ export function TabGroupsPage() {
       }
     } else {
       // 跨组移动
-      const targetIndex = targetGroup.items!.findIndex((item) => item.id === over.id)
+      if (!sourceGroup.items || !targetGroup.items) {
+        logger.error('Source or target group items is undefined')
+        return
+      }
+
+      const targetIndex = targetGroup.items.findIndex((item) => item.id === over.id)
 
       // 从源组移除
-      const newSourceItems = sourceGroup.items!.filter((item) => item.id !== active.id)
+      const newSourceItems = sourceGroup.items.filter((item) => item.id !== active.id)
 
       // 添加到目标组
-      const newTargetItems = [...targetGroup.items!]
+      const newTargetItems = [...targetGroup.items]
       newTargetItems.splice(targetIndex, 0, sourceItem)
 
       // Update local state immediately
@@ -430,10 +440,10 @@ export function TabGroupsPage() {
         setTabGroups((prev) =>
           prev.map((g) => {
             if (g.id === sourceGroup.id) {
-              return { ...g, items: sourceGroup.items, item_count: sourceGroup.items!.length }
+              return { ...g, items: sourceGroup.items, item_count: sourceGroup.items?.length ?? 0 }
             }
             if (g.id === targetGroup.id) {
-              return { ...g, items: targetGroup.items, item_count: targetGroup.items!.length }
+              return { ...g, items: targetGroup.items, item_count: targetGroup.items?.length ?? 0 }
             }
             return g
           })
@@ -466,7 +476,12 @@ export function TabGroupsPage() {
     if (!sourceGroup || !targetGroup) return
 
     // 从源组移除
-    const newSourceItems = sourceGroup.items!.filter((i) => i.id !== item.id)
+    if (!sourceGroup.items) {
+      logger.error('Source group items is undefined')
+      return
+    }
+
+    const newSourceItems = sourceGroup.items.filter((i) => i.id !== item.id)
 
     // 添加到目标组末尾
     const newTargetItems = [...(targetGroup.items || []), item]
@@ -503,7 +518,7 @@ export function TabGroupsPage() {
       setTabGroups((prev) =>
         prev.map((g) => {
           if (g.id === currentGroupId) {
-            return { ...g, items: sourceGroup.items, item_count: sourceGroup.items!.length }
+            return { ...g, items: sourceGroup.items, item_count: sourceGroup.items?.length ?? 0 }
           }
           if (g.id === targetGroupId) {
             return { ...g, items: targetGroup.items, item_count: targetGroup.items?.length || 0 }

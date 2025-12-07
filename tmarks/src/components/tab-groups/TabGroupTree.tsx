@@ -18,7 +18,7 @@ import {
   Lock,
   Pin
 } from 'lucide-react'
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import {
   DndContext,
@@ -155,11 +155,12 @@ function TreeNode({
     disabled: isLocked // 锁定时禁用拖拽
   })
 
-  // 拖拽时的样式：增强视觉反馈
+  // 拖拽时的样式：增强视觉反馈（参考 Notion 风格）
   const style = {
     opacity: isDragging ? 0.4 : 1,
+    transform: isDragging ? 'scale(1.05)' : 'scale(1)',
     cursor: isLocked ? 'not-allowed' : (isDragging ? 'grabbing' : 'grab'),
-    transition: 'opacity 0.2s ease',
+    transition: 'all 0.2s cubic-bezier(0.25, 1, 0.5, 1)',
   }
 
   // 防止双击与单击冲突
@@ -353,17 +354,36 @@ function TreeNode({
 
   return (
     <div ref={setNodeRef} style={style} className="relative">
-      {/* 拖动目标指示器 - 插入到上方 */}
+      {/* 拖动目标指示器 - 插入到上方（Notion 风格：线条 + 圆点） */}
       {isDropTarget && dropPosition === 'before' && (
         <div
-          className="absolute left-0 right-0 pointer-events-none bg-primary rounded-sm animate-pulse"
+          className="absolute left-0 right-0 pointer-events-none bg-primary rounded-sm"
           style={{
             top: '-2px',
-            height: '3px',
+            height: '2px',
             zIndex: 999,
             boxShadow: '0 0 8px hsl(var(--primary) / 0.5)',
           }}
-        />
+        >
+          {/* 左侧圆点 */}
+          <div
+            className="absolute top-1/2 -translate-y-1/2 bg-primary rounded-full"
+            style={{
+              left: '0',
+              width: '6px',
+              height: '6px',
+            }}
+          />
+          {/* 右侧圆点 */}
+          <div
+            className="absolute top-1/2 -translate-y-1/2 bg-primary rounded-full"
+            style={{
+              right: '0',
+              width: '6px',
+              height: '6px',
+            }}
+          />
+        </div>
       )}
 
       {/* 拖动目标指示器 - 放入文件夹内部 */}
@@ -377,17 +397,36 @@ function TreeNode({
         />
       )}
 
-      {/* 拖动目标指示器 - 插入到下方 */}
+      {/* 拖动目标指示器 - 插入到下方（Notion 风格：线条 + 圆点） */}
       {isDropTarget && dropPosition === 'after' && (
         <div
-          className="absolute left-0 right-0 pointer-events-none bg-primary rounded-sm animate-pulse"
+          className="absolute left-0 right-0 pointer-events-none bg-primary rounded-sm"
           style={{
             bottom: '-2px',
-            height: '3px',
+            height: '2px',
             zIndex: 999,
             boxShadow: '0 0 8px hsl(var(--primary) / 0.5)',
           }}
-        />
+        >
+          {/* 左侧圆点 */}
+          <div
+            className="absolute top-1/2 -translate-y-1/2 bg-primary rounded-full"
+            style={{
+              left: '0',
+              width: '6px',
+              height: '6px',
+            }}
+          />
+          {/* 右侧圆点 */}
+          <div
+            className="absolute top-1/2 -translate-y-1/2 bg-primary rounded-full"
+            style={{
+              right: '0',
+              width: '6px',
+              height: '6px',
+            }}
+          />
+        </div>
       )}
 
       {/* 节点行 */}
@@ -536,14 +575,14 @@ function TreeNode({
       </div>
 
       {/* 子节点 */}
-      {isExpanded && hasChildren && (
+      {isExpanded && hasChildren && group.children && (
         <div>
-          {group.children!.map((child, index) => (
+          {group.children?.map((child, index) => (
             <TreeNode
               key={child.id}
               group={child}
               level={level + 1}
-              isLast={index === group.children!.length - 1}
+              isLast={index === (group.children?.length ?? 0) - 1}
               parentLines={[...parentLines, !isLast]}
               selectedGroupId={selectedGroupId}
               onSelectGroup={onSelectGroup}
@@ -589,6 +628,18 @@ export function TabGroupTree({
   const [movingGroup, setMovingGroup] = useState<TabGroup | null>(null)
   const pointerInitialYRef = useRef<number | null>(null)
   const pointerInitialXRef = useRef<number | null>(null)
+  
+  // 性能优化：RAF 引用
+  const rafIdRef = useRef<number | null>(null)
+  
+  // 清理 RAF
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current)
+      }
+    }
+  }, [])
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -647,30 +698,36 @@ export function TabGroupTree({
     setActiveId(draggedId)
   }
 
-  const handleDragOver = (event: DragOverEvent) => {
-    const overId = event.over?.id as string | null
-    setOverId(overId)
-
-    if (!overId || !event.over) {
-      setDropPosition(null)
-      return
+  const handleDragOver = useCallback((event: DragOverEvent) => {
+    // 性能优化：使用 requestAnimationFrame 确保在浏览器重绘前执行
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current)
     }
+    
+    rafIdRef.current = requestAnimationFrame(() => {
+      const overId = event.over?.id as string | null
+      setOverId(overId)
 
-    // 获取目标元素
-    const overGroup = tabGroups.find(g => g.id === overId)
-    if (!overGroup) {
-      setDropPosition(null)
-      return
-    }
+      if (!overId || !event.over) {
+        setDropPosition(null)
+        return
+      }
 
-    const overRect = event.over.rect
-    const activeRect = event.active.rect.current
-    const initialRect = activeRect.initial
+      // 获取目标元素
+      const overGroup = tabGroups.find(g => g.id === overId)
+      if (!overGroup) {
+        setDropPosition(null)
+        return
+      }
 
-    if (!overRect || !initialRect || overRect.height === 0) {
-      setDropPosition(null)
-      return
-    }
+      const overRect = event.over.rect
+      const activeRect = event.active.rect.current
+      const initialRect = activeRect.initial
+
+      if (!overRect || !initialRect || overRect.height === 0) {
+        setDropPosition(null)
+        return
+      }
 
     // translated 在未应用 transform 时可能为 null，因此回退到初始 + delta。优先使用真实指针位置，提升靠近时的命中率。
     const translatedRect = activeRect.translated
@@ -710,32 +767,35 @@ export function TabGroupTree({
       overWidth: overRect.width
     })
 
-    // 如果是文件夹，使用三区域逻辑
-    if (overGroup.is_folder === 1) {
-      const insideByVertical = relativeY >= 0.15 && relativeY <= 0.85
-      const insideByHorizontal = relativeX >= 0.45
+      // 如果是文件夹，使用三区域逻辑
+      if (overGroup.is_folder === 1) {
+        const insideByVertical = relativeY >= 0.15 && relativeY <= 0.85
+        const insideByHorizontal = relativeX >= 0.45
 
-      if (insideByVertical || insideByHorizontal) {
-        logger.log('  → inside')
-        setDropPosition('inside') // 中间区域
-      } else if (relativeY < 0.15) {
-        logger.log('  → before')
-        setDropPosition('before') // 上边缘
+        if (insideByVertical || insideByHorizontal) {
+          logger.log('  → inside')
+          setDropPosition('inside') // 中间区域
+        } else if (relativeY < 0.15) {
+          logger.log('  → before')
+          setDropPosition('before') // 上边缘
+        } else {
+          logger.log('  → after')
+          setDropPosition('after') // 下边缘
+        }
       } else {
-        logger.log('  → after')
-        setDropPosition('after') // 下边缘
+        // 如果是分组，使用两区域逻辑
+        if (relativeY < 0.5) {
+          logger.log('  → before')
+          setDropPosition('before')
+        } else {
+          logger.log('  → after')
+          setDropPosition('after')
+        }
       }
-    } else {
-      // 如果是分组，使用两区域逻辑
-      if (relativeY < 0.5) {
-        logger.log('  → before')
-        setDropPosition('before')
-      } else {
-        logger.log('  → after')
-        setDropPosition('after')
-      }
-    }
-  }
+      
+      rafIdRef.current = null
+    })
+  }, [tabGroups])
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
@@ -933,13 +993,16 @@ export function TabGroupTree({
         </SortableContext>
       </div>
 
-      {/* DragOverlay - 显示拖拽时的元素 */}
+      {/* DragOverlay - 显示拖拽时的元素（增强视觉效果） */}
       <DragOverlay>
         {activeId ? (
           <div
-            className="opacity-80 bg-card border-2 border-primary rounded shadow-lg cursor-grabbing"
+            className="bg-card border-2 border-primary rounded cursor-grabbing shadow-xl"
             style={{
-              padding: '6px 12px'
+              padding: '6px 12px',
+              opacity: 0.95,
+              transform: 'scale(1.05)',
+              transition: 'all 0.2s cubic-bezier(0.25, 1, 0.5, 1)',
             }}
           >
             {(() => {
@@ -953,7 +1016,7 @@ export function TabGroupTree({
                   ) : (
                     <Circle className="w-2 h-2 text-primary fill-current" />
                   )}
-                  <span className="text-sm text-foreground">{draggedGroup.title}</span>
+                  <span className="text-sm font-medium text-foreground">{draggedGroup.title}</span>
                 </div>
               )
             })()}

@@ -166,10 +166,11 @@ export const onRequestPost: PagesFunction<Env, RouteParams, DualAuthContext>[] =
 
       const isFolder = body.is_folder || false
 
-      // Validate: folders don't need items, but regular groups do
-      if (!isFolder && (!body.items || body.items.length === 0)) {
-        return badRequest('At least one tab item is required for non-folder groups')
-      }
+      // Validate: folders don't need items, but regular groups can be empty
+      // 允许创建空的标签页组，用户可以稍后添加项目
+      // if (!isFolder && (!body.items || body.items.length === 0)) {
+      //   return badRequest('At least one tab item is required for non-folder groups')
+      // }
 
       // Generate title if not provided (timestamp format for groups, "新文件夹" for folders)
       const now = new Date()

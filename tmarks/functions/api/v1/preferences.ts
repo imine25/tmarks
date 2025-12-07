@@ -5,7 +5,7 @@ import { requireAuth, AuthContext } from '../../middleware/auth'
 
 interface UserPreferences {
   user_id: string
-  theme: 'light' | 'dark'
+  theme: 'light' | 'dark' | 'system'
   page_size: number
   view_mode: 'list' | 'card' | 'minimal' | 'title'
   density: 'compact' | 'normal' | 'comfortable'
@@ -24,7 +24,7 @@ interface UserPreferences {
 }
 
 interface UpdatePreferencesRequest {
-  theme?: 'light' | 'dark'
+  theme?: 'light' | 'dark' | 'system'
   page_size?: number
   view_mode?: 'list' | 'card' | 'minimal' | 'title'
   density?: 'compact' | 'normal' | 'comfortable'
@@ -140,7 +140,7 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
       const automationSupported = await hasAutomationColumns(context.env.DB)
 
       // 验证输入
-      if (body.theme && !['light', 'dark'].includes(body.theme)) {
+      if (body.theme && !['light', 'dark', 'system'].includes(body.theme)) {
         return badRequest('Invalid theme value')
       }
 
