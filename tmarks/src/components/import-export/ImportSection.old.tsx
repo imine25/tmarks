@@ -3,21 +3,54 @@
  * 提供书签数据导入功能的用户界面
  */
 
+import { useState, useRef } from 'react'
 import { Upload, FileText, Code, CheckCircle, Loader2, ArrowRight, Copy, Check } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { DragDropUpload } from '../common/DragDropUpload'
 import { ProgressIndicator } from '../common/ProgressIndicator'
 import { ErrorDisplay } from '../common/ErrorDisplay'
-import { useImportState } from './hooks/useImportState'
-import { useImportActions, formatFileSize } from './hooks/useImportActions'
-import type { ImportFormat, ImportResult } from '@shared/import-export-types'
+import { useAuthStore } from '@/stores/authStore'
+import type {
+  ImportFormat,
+  ImportOptions,
+  ImportResult,
+  ValidationResult
+} from '@shared/import-export-types'
 
 interface ImportSectionProps {
   onImport?: (result: ImportResult) => void
 }
 
-// AI 转换提示词
-const HTML_PROMPT = `你是一个书签格式转换专家。请将浏览器导出的 HTML 书签文件清理并标准化为规范的 HTML 格式。
+interface ImportProgress {
+  current: number
+  total: number
+  status: string
+}
+
+export function ImportSection({ onImport }: ImportSectionProps) {
+  const navigate = useNavigate()
+  const [selectedFormat, setSelectedFormat] = useState<ImportFormat>('html')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isImporting, setIsImporting] = useState(false)
+  const [isValidating, setIsValidating] = useState(false)
+  const [importProgress, setImportProgress] = useState<ImportProgress | null>(null)
+  const [importResult, setImportResult] = useState<ImportResult | null>(null)
+  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null)
+  const [options, setOptions] = useState<ImportOptions>({
+    skip_duplicates: true,
+    create_missing_tags: true,
+    preserve_timestamps: true,
+    batch_size: 50,
+    max_concurrent: 5,
+    default_tag_color: 'hsl(var(--primary))',
+    folder_as_tag: true
+  })
+  const [copiedPrompt, setCopiedPrompt] = useState<boolean>(false)
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // AI 转换提示词 - 只保留 HTML 格式转换
+  const htmlPrompt = `你是一个书签格式转换专家。请将浏览器导出的 HTML 书签文件清理并标准化为规范的 HTML 格式。
 
 【重要】严格按照以下格式输出，不要添加任何解释或额外内容：
 
@@ -73,62 +106,164 @@ const HTML_PROMPT = `你是一个书签格式转换专家。请将浏览器导�
 我的 HTML 书签文件：
 [在这里粘贴你的 HTML 书签文件内容]`
 
-// 格式选项
-const formatOptions = [
-  {
-    value: 'html' as ImportFormat,
-    label: 'HTML',
-    description: '浏览器导出的书签文件',
-    icon: FileText,
-    extensions: ['.html', '.htm'],
-    recommended: true
-  },
-  {
-    value: 'json' as ImportFormat,
-    label: 'JSON',
-    description: 'TMarks 标准格式，包含完整数据',
-    icon: Code,
-    extensions: ['.json'],
-    recommended: true
+  // 复制提示词
+  const copyPrompt = async () => {
+    try {
+      await navigator.clipboard.writeText(htmlPrompt)
+      setCopiedPrompt(true)
+      setTimeout(() => setCopiedPrompt(false), 2000)
+    } catch (error) {
+      console.error('Failed to copy:', error)
+    }
   }
-]
 
-export function ImportSection({ onImport }: ImportSectionProps) {
-  const navigate = useNavigate()
-  
-  // 状态管理
-  const state = useImportState()
-  const {
-    selectedFormat,
-    setSelectedFormat,
-    selectedFile,
-    isImporting,
-    isValidating,
-    importProgress,
-    importResult,
-    validationResult,
-    options,
-    setOptions,
-    copiedPrompt,
-    setCopiedPrompt,
-    fileInputRef,
-  } = state
+  // 格式选项
+  const formatOptions = [
+    {
+      value: 'html' as ImportFormat,
+      label: 'HTML',
+      description: '浏览器导出的书签文件',
+      icon: FileText,
+      extensions: ['.html', '.htm'],
+      recommended: true
+    },
+    {
+      value: 'json' as ImportFormat,
+      label: 'JSON',
+      description: 'TMarks 标准格式，包含完整数据',
+      icon: Code,
+      extensions: ['.json'],
+      recommended: true
+    }
+  ]
 
-  // 操作逻辑
-  const actions = useImportActions({
-    selectedFormat,
-    setSelectedFile: state.setSelectedFile,
-    setImportResult: state.setImportResult,
-    setIsValidating: state.setIsValidating,
-    setValidationResult: state.setValidationResult,
-    setIsImporting: state.setIsImporting,
-    setImportProgress: state.setImportProgress,
-    fileInputRef,
-    options,
-    onImport,
-  })
+  // 文件选择处理
+  const handleFileSelect = (file: File) => {
+    setSelectedFile(file)
+    setImportResult(null)
+    // 简单验证：只检查文件是否可读和格式是否匹配
+    validateFile(file)
+  }
 
-  const { handleFileSelect, handleImport, handleReset, copyPrompt } = actions
+  // 文件验证（轻量级验证，只检查基本格式）
+  const validateFile = async (file: File) => {
+    setIsValidating(true)
+    try {
+      // 检查文件扩展名
+      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase()
+      const formatConfig = formatOptions.find(f => f.value === selectedFormat)
+
+      if (!formatConfig?.extensions.includes(fileExtension)) {
+        setValidationResult({
+          valid: false,
+          errors: [{
+            field: 'file',
+            message: `文件格式不匹配，期望 ${formatConfig?.extensions.join(', ')}，实际为 ${fileExtension}`
+          }],
+          warnings: []
+        })
+        return
+      }
+
+      // 检查文件大小（50MB 限制）
+      const maxSize = 50 * 1024 * 1024
+      if (file.size > maxSize) {
+        setValidationResult({
+          valid: false,
+          errors: [{
+            field: 'file',
+            message: `文件过大，最大支持 ${formatFileSize(maxSize)}，当前文件 ${formatFileSize(file.size)}`
+          }],
+          warnings: []
+        })
+        return
+      }
+
+      // 尝试读取文件内容（确保文件可读）
+      await file.text()
+
+      // 基本验证通过
+      setValidationResult({ valid: true, errors: [], warnings: [] })
+
+    } catch {
+      setValidationResult({
+        valid: false,
+        errors: [{ field: 'file', message: '文件读取失败，请确保文件未损坏' }],
+        warnings: []
+      })
+    } finally {
+      setIsValidating(false)
+    }
+  }
+
+  // 执行导入
+  const handleImport = async () => {
+    if (!selectedFile) return
+
+    setIsImporting(true)
+    setImportProgress({ current: 0, total: 100, status: '准备导入...' })
+
+    try {
+      const content = await selectedFile.text()
+
+      const token = useAuthStore.getState().accessToken
+      const response = await fetch('/api/v1/import', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          format: selectedFormat,
+          content,
+          options
+        })
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || 'Import failed')
+      }
+
+      const result: ImportResult = await response.json()
+      setImportResult(result)
+      onImport?.(result)
+
+    } catch (error) {
+      console.error('Import failed:', error)
+      setImportResult({
+        success: 0,
+        failed: 1,
+        skipped: 0,
+        total: 1,
+        errors: [{
+          index: 0,
+          item: { title: '', url: '', tags: [] },
+          error: error instanceof Error ? error.message : '未知错误',
+          code: 'UNKNOWN_ERROR'
+        }],
+        created_bookmarks: [],
+        created_tags: [],
+        created_tab_groups: [],
+        tab_groups_success: 0,
+        tab_groups_failed: 0
+      })
+    } finally {
+      setIsImporting(false)
+      setImportProgress(null)
+    }
+  }
+
+  // 重置状态
+  const handleReset = () => {
+    setSelectedFile(null)
+    setImportResult(null)
+    setValidationResult(null)
+    setImportProgress(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -175,6 +310,8 @@ export function ImportSection({ onImport }: ImportSectionProps) {
         </div>
       </div>
 
+
+
       {/* 文件选择 */}
       <div className="space-y-3">
         <label className="block text-sm font-medium text-foreground">
@@ -184,7 +321,7 @@ export function ImportSection({ onImport }: ImportSectionProps) {
         <DragDropUpload
           onFileSelect={handleFileSelect}
           accept={formatOptions.find(f => f.value === selectedFormat)?.extensions.join(',')}
-          maxSize={50 * 1024 * 1024}
+          maxSize={50 * 1024 * 1024} // 50MB
           disabled={isImporting}
         >
           {selectedFile ? (
@@ -367,6 +504,7 @@ export function ImportSection({ onImport }: ImportSectionProps) {
             </div>
           </div>
 
+          {/* 成功率指示器 */}
           {importResult.total > 0 && (
             <div className="mt-4">
               <div className="flex items-center justify-between text-xs sm:text-sm mb-2">
@@ -401,6 +539,7 @@ export function ImportSection({ onImport }: ImportSectionProps) {
             </div>
           )}
 
+          {/* 导入成功后的操作按钮 */}
           {importResult.success > 0 && (
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
               <button
@@ -425,7 +564,7 @@ export function ImportSection({ onImport }: ImportSectionProps) {
       {!importResult && (
         <div className="flex space-x-3">
           <button
-            onClick={() => selectedFile && handleImport(selectedFile)}
+            onClick={handleImport}
             disabled={!selectedFile || !validationResult?.valid || isImporting || isValidating}
             className="w-full flex items-center justify-center space-x-2 px-4 py-3 sm:py-2 text-sm font-medium text-primary-foreground bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
           >
@@ -453,7 +592,7 @@ export function ImportSection({ onImport }: ImportSectionProps) {
             </div>
 
             <button
-              onClick={() => copyPrompt(HTML_PROMPT, setCopiedPrompt)}
+              onClick={copyPrompt}
               className="w-full flex items-center justify-center space-x-2 p-3 bg-card border border-border rounded-md hover:border-primary/50 hover:bg-muted transition-colors"
             >
               <FileText className="h-4 w-4 text-muted-foreground" />
@@ -475,4 +614,15 @@ export function ImportSection({ onImport }: ImportSectionProps) {
       )}
     </div>
   )
+}
+
+// 工具函数：格式化文件大小
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 B'
+  
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
 }

@@ -6,7 +6,7 @@
 
 import type { PagesFunction } from '@cloudflare/workers-types'
 import type { Env, RouteParams, SQLParam } from '../../../lib/types'
-import { success, badRequest, created, internalError } from '../../../lib/response'
+import { success, created, internalError } from '../../../lib/response'
 import { requireDualAuth, DualAuthContext } from '../../../middleware/dual-auth'
 import { sanitizeString } from '../../../lib/validation'
 import { generateUUID } from '../../../lib/crypto'
