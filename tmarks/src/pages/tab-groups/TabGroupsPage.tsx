@@ -13,6 +13,7 @@ import { TabGroupHeader } from '@/components/tab-groups/TabGroupHeader'
 import { TabItemList } from '@/components/tab-groups/TabItemList'
 import { TabGroupTree } from '@/components/tab-groups/TabGroupTree'
 import { TodoSidebar } from '@/components/tab-groups/TodoSidebar'
+import { PinnedItemsSection } from '@/components/tab-groups/PinnedItemsSection'
 import { ResizablePanel } from '@/components/common/ResizablePanel'
 import { arrayMove } from '@dnd-kit/sortable'
 import {
@@ -746,6 +747,11 @@ export function TabGroupsPage() {
       {/* No Search Results */}
       {tabGroups.length > 0 && filteredTabGroups.length === 0 && (
         <EmptyState isSearching={true} searchQuery={searchQuery} />
+      )}
+
+      {/* 固定标签页区域 */}
+      {sortedGroups.length > 0 && !searchQuery && (
+        <PinnedItemsSection tabGroups={sortedGroups} />
       )}
 
       {/* Tab Groups Grid */}
