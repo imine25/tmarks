@@ -70,7 +70,7 @@ export const onRequestGet: PagesFunction<Env, RouteParams, AuthContext>[] = [
          FROM tab_group_items tgi
          JOIN tab_groups tg ON tgi.group_id = tg.id
          WHERE tgi.group_id = ? AND tg.user_id = ?
-         ORDER BY tgi.position ASC`
+         ORDER BY COALESCE(tgi.is_pinned, 0) DESC, tgi.position ASC`
       )
         .bind(groupId, userId)
         .all<TabGroupItemRow>()
