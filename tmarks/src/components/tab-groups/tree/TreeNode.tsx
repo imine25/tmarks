@@ -144,63 +144,65 @@ export function TreeNode({
         <div className="h-0.5 bg-primary mx-3 -mt-0.5" />
       )}
 
-      {/* 节点行 */}
+      {/* 节点行 - OneTab 风格布局 */}
       <div
-        className={`group flex items-center gap-1.5 px-2 py-1 hover:bg-muted relative ${
+        className={`group flex items-center px-2 py-1 hover:bg-muted ${
           isSelected ? 'bg-primary/10' : ''
         } ${isBeingDragged ? 'opacity-50' : ''} ${dropIndicatorClass}`}
-        style={{ paddingLeft: level > 0 ? `${8 + level * 20}px` : '8px' }}
       >
-        {/* 树形连接线 - OneTab 简洁风格 */}
-        {level > 0 && (
-          <div className="absolute left-0 top-0 h-full pointer-events-none">
-            {Array.from({ length: level }).map((_, idx) => {
-              const isLastLevel = idx === level - 1
-              const shouldDrawVertical = idx < level - 1 ? parentLines[idx] : !isLast
-              const lineLeft = 8 + idx * 20
+        {/* 树形连接线 - OneTab 风格：作为 flex 项 */}
+        {level > 0 && Array.from({ length: level }).map((_, idx) => {
+          const isLastLevel = idx === level - 1
+          const shouldDrawVertical = idx < level - 1 ? parentLines[idx] : !isLast
+          
+          return (
+            <div
+              key={idx}
+              className="relative flex-shrink-0"
+              style={{
+                width: idx === 0 ? '24px' : '20px',
+                alignSelf: 'stretch',
+                display: 'flex',
+                flexDirection: 'column',
+                userSelect: 'none',
+                fontSize: 0,
+              }}
+            >
+              {/* 垂直线 */}
+              {shouldDrawVertical && (
+                <div
+                  className="absolute left-0 top-0 bottom-0 w-px"
+                  style={{ backgroundColor: '#ababab' }}
+                />
+              )}
               
-              return (
-                <div key={idx}>
-                  {/* 垂直线 */}
-                  {shouldDrawVertical && (
-                    <div
-                      className="absolute top-0 bottom-0 w-px"
-                      style={{
-                        left: `${lineLeft}px`,
-                        backgroundColor: 'var(--border-color, #ababab)'
-                      }}
-                    />
-                  )}
-                  
-                  {/* 当前层级的连接线 */}
-                  {isLastLevel && (
-                    <>
-                      {/* 垂直线到中间 */}
-                      <div
-                        className="absolute top-0 w-px"
-                        style={{
-                          left: `${lineLeft}px`,
-                          height: '50%',
-                          backgroundColor: 'var(--border-color, #ababab)'
-                        }}
-                      />
-                      {/* 水平线 */}
-                      <div
-                        className="absolute h-px"
-                        style={{
-                          left: `${lineLeft}px`,
-                          top: '50%',
-                          width: '10px',
-                          backgroundColor: 'var(--border-color, #ababab)'
-                        }}
-                      />
-                    </>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        )}
+              {/* 当前层级的连接线 */}
+              {isLastLevel && (
+                <>
+                  {/* 上半部分垂直线 */}
+                  <div
+                    className="flex-shrink-0"
+                    style={{
+                      height: 'calc(50% - 0.5px)',
+                      borderLeft: '1px solid #ababab',
+                    }}
+                  />
+                  {/* 水平线 */}
+                  <div
+                    className="flex-shrink-0"
+                    style={{
+                      height: '1px',
+                      borderBottom: '1px solid #ababab',
+                      width: '8px',
+                    }}
+                  />
+                  {/* 下半部分占位 */}
+                  <div className="flex-1" />
+                </>
+              )}
+            </div>
+          )
+        })}
         
         {/* 展开/折叠按钮 */}
         <button
@@ -208,7 +210,7 @@ export function TreeNode({
             e.stopPropagation()
             toggleGroup(group.id, e)
           }}
-          className="w-4 h-4 flex items-center justify-center hover:bg-muted rounded flex-shrink-0"
+          className="w-4 h-4 flex items-center justify-center hover:bg-muted rounded flex-shrink-0 mr-1"
         >
           {hasChildren ? (
             isExpanded ? (
@@ -248,7 +250,7 @@ export function TreeNode({
               onChange={(e) => setEditingTitle(e.target.value)}
               onBlur={handleRenameSubmit}
               onKeyDown={handleRenameKeyDown}
-              className="text-sm flex-1 px-1 py-0.5 border border-primary rounded bg-card text-foreground focus:outline-none"
+              className="text-[13px] flex-1 px-1 py-0.5 border border-primary rounded bg-card text-foreground focus:outline-none"
               autoFocus
               onClick={(e) => e.stopPropagation()}
             />
@@ -258,8 +260,8 @@ export function TreeNode({
                 e.stopPropagation()
                 onSelectGroup(group.id)
               }}
-              className={`text-sm flex-1 truncate ${
-                isSelected ? 'font-medium text-primary' : 'text-foreground'
+              className={`text-[13px] flex-1 truncate leading-[19px] ${
+                isSelected ? 'font-semibold text-primary' : 'text-foreground'
               }`}
             >
               {group.title}
@@ -276,7 +278,7 @@ export function TreeNode({
 
         {/* 右键菜单 */}
         {!isEditing && (
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-1">
             <DropdownMenu 
               trigger={
                 <button className="p-0.5 hover:bg-muted rounded">
