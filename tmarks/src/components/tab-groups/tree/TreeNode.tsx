@@ -171,8 +171,11 @@ export function TreeNode({
               {/* 垂直线 */}
               {shouldDrawVertical && (
                 <div
-                  className="absolute left-0 top-0 bottom-0 w-px"
-                  style={{ backgroundColor: '#ababab' }}
+                  className="absolute left-0 top-0 bottom-0"
+                  style={{ 
+                    width: '1px',
+                    backgroundColor: '#ababab'
+                  }}
                 />
               )}
               
@@ -183,8 +186,9 @@ export function TreeNode({
                   <div
                     className="flex-shrink-0"
                     style={{
-                      height: 'calc(50% - 0.5px)',
-                      borderLeft: '1px solid #ababab',
+                      height: '50%',
+                      width: '1px',
+                      backgroundColor: '#ababab',
                     }}
                   />
                   {/* 水平线 */}
@@ -192,8 +196,8 @@ export function TreeNode({
                     className="flex-shrink-0"
                     style={{
                       height: '1px',
-                      borderBottom: '1px solid #ababab',
                       width: '8px',
+                      backgroundColor: '#ababab',
                     }}
                   />
                   {/* 下半部分占位 */}
