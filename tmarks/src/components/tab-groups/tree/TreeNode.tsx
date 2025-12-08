@@ -10,6 +10,7 @@ import { useSortable } from '@dnd-kit/sortable'
 import { DropdownMenu } from '@/components/common/DropdownMenu'
 import { useTabGroupMenu } from '@/hooks/useTabGroupMenu'
 import { buildTreeNodeMenu } from './TreeNodeMenu'
+import { getTotalItemCount } from './TreeUtils'
 import type { TabGroup } from '@/lib/types'
 
 interface TreeNodeProps {
@@ -150,63 +151,59 @@ export function TreeNode({
           isSelected ? 'bg-primary/10' : ''
         } ${isBeingDragged ? 'opacity-50' : ''} ${dropIndicatorClass}`}
       >
-        {/* 树形连接线 - OneTab 风格：作为 flex 项 */}
-        {level > 0 && Array.from({ length: level }).map((_, idx) => {
-          const isLastLevel = idx === level - 1
-          const shouldDrawVertical = idx < level - 1 ? parentLines[idx] : !isLast
-          
-          return (
-            <div
-              key={idx}
-              className="relative flex-shrink-0"
-              style={{
-                width: idx === 0 ? '24px' : '20px',
-                alignSelf: 'stretch',
-                display: 'flex',
-                flexDirection: 'column',
-                userSelect: 'none',
-                fontSize: 0,
-              }}
-            >
-              {/* 垂直线 */}
-              {shouldDrawVertical && (
-                <div
-                  className="absolute left-0 top-0 bottom-0"
-                  style={{ 
-                    width: '1px',
-                    backgroundColor: '#ababab'
-                  }}
-                />
-              )}
+        {/* 树形连接线 - OneTab 风格 */}
+        {level > 0 && (
+          <div className="relative flex-shrink-0" style={{ width: level === 1 ? '24px' : `${24 + (level - 1) * 20}px`, height: '100%' }}>
+            {Array.from({ length: level }).map((_, idx) => {
+              const isLastLevel = idx === level - 1
+              const shouldDrawVertical = idx < level - 1 ? parentLines[idx] : !isLast
+              const leftPos = idx === 0 ? 0 : 24 + (idx - 1) * 20
               
-              {/* 当前层级的连接线 */}
-              {isLastLevel && (
-                <>
-                  {/* 上半部分垂直线 */}
-                  <div
-                    className="flex-shrink-0"
-                    style={{
-                      height: '50%',
-                      width: '1px',
-                      backgroundColor: '#ababab',
-                    }}
-                  />
-                  {/* 水平线 */}
-                  <div
-                    className="flex-shrink-0"
-                    style={{
-                      height: '1px',
-                      width: '8px',
-                      backgroundColor: '#ababab',
-                    }}
-                  />
-                  {/* 下半部分占位 */}
-                  <div className="flex-1" />
-                </>
-              )}
-            </div>
-          )
-        })}
+              return (
+                <div key={idx}>
+                  {/* 垂直线 */}
+                  {shouldDrawVertical && (
+                    <div
+                      className="absolute top-0 bottom-0"
+                      style={{ 
+                        left: `${leftPos}px`,
+                        width: '1px',
+                        backgroundColor: '#ababab'
+                      }}
+                    />
+                  )}
+                  
+                  {/* 当前层级的连接线 */}
+                  {isLastLevel && (
+                    <>
+                      {/* 上半部分垂直线 */}
+                      <div
+                        className="absolute top-0"
+                        style={{
+                          left: `${leftPos}px`,
+                          width: '1px',
+                          height: '50%',
+                          backgroundColor: '#ababab',
+                        }}
+                      />
+                      {/* 水平线 */}
+                      <div
+                        className="absolute"
+                        style={{
+                          left: `${leftPos}px`,
+                          top: '50%',
+                          width: '8px',
+                          height: '1px',
+                          backgroundColor: '#ababab',
+                        }}
+                      />
+                    </>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
         
         {/* 展开/折叠按钮 */}
         <button
@@ -275,7 +272,7 @@ export function TreeNode({
           {/* 标签页数量 */}
           {!isEditing && (
             <span className="text-xs text-muted-foreground flex-shrink-0 ml-auto">
-              {group.item_count || 0}
+              {getTotalItemCount(group)}
             </span>
           )}
         </div>

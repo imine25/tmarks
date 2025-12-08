@@ -1,6 +1,25 @@
 import type { TabGroup } from '@/lib/types'
 
 /**
+ * 递归计算分组及其所有子分组的标签页总数
+ */
+export function getTotalItemCount(group: TabGroup): number {
+  let total = 0
+  
+  // 如果是文件夹，不计算自己的 item_count
+  if (group.is_folder !== 1) {
+    total += group.item_count || 0
+  }
+  
+  // 递归计算所有子项的数量
+  if (group.children && group.children.length > 0) {
+    total += group.children.reduce((sum, child) => sum + getTotalItemCount(child), 0)
+  }
+  
+  return total
+}
+
+/**
  * 构建树形结构
  */
 export function buildTree(groups: TabGroup[]): TabGroup[] {
