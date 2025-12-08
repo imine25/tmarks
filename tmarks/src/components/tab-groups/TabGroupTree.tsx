@@ -12,7 +12,6 @@ import {
   Share2,
   Copy,
   FolderPlus as FolderPlusIcon,
-  FilePlus,
   Trash2,
   Move,
   Lock,
@@ -301,22 +300,6 @@ function TreeNode({
       icon: <FolderPlusIcon className="w-4 h-4" />,
       onClick: () => menuActions.onCreateFolderBelow(group)
     },
-    {
-      label: '在上方创建分组',
-      icon: <FilePlus className="w-4 h-4" />,
-      onClick: () => menuActions.onCreateGroupAbove(group)
-    },
-    {
-      label: '在内部创建分组',
-      icon: <FilePlus className="w-4 h-4" />,
-      onClick: () => menuActions.onCreateGroupInside(group),
-      disabled: !isFolder
-    },
-    {
-      label: '在下方创建分组',
-      icon: <FilePlus className="w-4 h-4" />,
-      onClick: () => menuActions.onCreateGroupBelow(group)
-    },
     // 管理功能
     {
       label: '移除重复项',
@@ -434,48 +417,63 @@ function TreeNode({
         className={`group flex items-center gap-1 px-3 py-1.5 hover:bg-muted relative ${
           isSelected ? 'bg-primary/10' : ''
         } ${isBeingDragged ? 'opacity-50' : ''}`}
-        style={{ paddingLeft: `${12 + level * 20}px` }}
       >
-        {/* 树形连接线 - 使用伪元素和 border */}
-        {level > 0 && (
-          <div
-            className="absolute left-0 top-0 h-full pointer-events-none"
-            style={{
-              width: `${12 + level * 20}px`
-            }}
-          >
-            {/* 渲染每一层的垂直线和水平线 */}
-            {Array.from({ length: level }).map((_, idx) => {
-              const isCurrentLevel = idx === level - 1
-              const shouldDrawVertical = idx < level - 1 ? parentLines[idx] : !isLast
-              const lineLeft = 12 + idx * 20
-
-              return (
-                <div key={idx} className="absolute" style={{ left: `${lineLeft}px`, top: 0, height: '100%' }}>
-                  {/* 垂直线 */}
-                  {shouldDrawVertical && (
-                    <div
-                      className="absolute left-0 top-0 w-px h-full bg-border/50"
-                    />
-                  )}
-                  {/* 当前层级的连接线 */}
-                  {isCurrentLevel && (
-                    <>
-                      {/* 垂直线（上半部分） */}
-                      <div
-                        className="absolute left-0 top-0 w-px h-1/2 bg-border/50"
-                      />
-                      {/* 水平线 */}
-                      <div
-                        className="absolute left-0 top-1/2 w-2 h-px bg-border/50"
-                      />
-                    </>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        )}
+        {/* 树形连接线 - OneTab 风格 */}
+        {level > 0 && Array.from({ length: level }).map((_, idx) => {
+          const isLastLevel = idx === level - 1
+          const shouldDrawVertical = idx < level - 1 ? parentLines[idx] : !isLast
+          
+          return (
+            <div
+              key={idx}
+              className="relative flex-shrink-0"
+              style={{ 
+                width: idx === 0 ? '24px' : '20px',
+                height: '100%'
+              }}
+            >
+              {/* 垂直线 */}
+              {shouldDrawVertical && (
+                <div
+                  className="absolute top-0 bottom-0"
+                  style={{
+                    left: '0px',
+                    width: '1px',
+                    backgroundColor: '#ababab'
+                  }}
+                />
+              )}
+              
+              {/* 当前层级的连接线 */}
+              {isLastLevel && (
+                <>
+                  {/* 垂直线到中间 */}
+                  <div
+                    className="absolute top-0"
+                    style={{
+                      left: '0px',
+                      width: '1px',
+                      height: '50%',
+                      backgroundColor: '#ababab'
+                    }}
+                  />
+                  {/* 水平线 */}
+                  <div
+                    className="absolute"
+                    style={{
+                      left: '0px',
+                      top: '50%',
+                      width: '8px',
+                      height: '1px',
+                      backgroundColor: '#ababab'
+                    }}
+                  />
+                </>
+              )}
+            </div>
+          )
+        })}
+        
         {/* 内容区域 */}
         <div className="flex items-center gap-2 flex-1">
 
@@ -618,7 +616,11 @@ export function TabGroupTree({
   onMoveGroup,
   onRefresh,
 }: TabGroupTreeProps) {
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
+  // 默认展开所有文件夹
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
+    const folderIds = tabGroups.filter(g => g.is_folder === 1).map(g => g.id)
+    return new Set(folderIds)
+  })
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -628,6 +630,16 @@ export function TabGroupTree({
   const [movingGroup, setMovingGroup] = useState<TabGroup | null>(null)
   const pointerInitialYRef = useRef<number | null>(null)
   const pointerInitialXRef = useRef<number | null>(null)
+
+  // 当 tabGroups 变化时，自动展开新增的文件夹
+  useEffect(() => {
+    const folderIds = tabGroups.filter(g => g.is_folder === 1).map(g => g.id)
+    setExpandedGroups(prev => {
+      const next = new Set(prev)
+      folderIds.forEach(id => next.add(id))
+      return next
+    })
+  }, [tabGroups])
   
   // 性能优化：RAF 引用
   const rafIdRef = useRef<number | null>(null)
