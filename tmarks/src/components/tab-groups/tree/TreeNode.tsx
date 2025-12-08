@@ -147,63 +147,40 @@ export function TreeNode({
 
       {/* 节点行 - OneTab 风格布局 */}
       <div
-        className={`group flex items-center px-2 py-1 hover:bg-muted ${
+        className={`treeItem group flex items-center px-2 py-1 hover:bg-muted ${
           isSelected ? 'bg-primary/10' : ''
         } ${isBeingDragged ? 'opacity-50' : ''} ${dropIndicatorClass}`}
       >
-        {/* 树形连接线 - OneTab 风格 */}
-        {level > 0 && (
-          <div className="relative flex-shrink-0" style={{ width: level === 1 ? '24px' : `${24 + (level - 1) * 20}px`, height: '100%' }}>
-            {Array.from({ length: level }).map((_, idx) => {
-              const isLastLevel = idx === level - 1
-              const shouldDrawVertical = idx < level - 1 ? parentLines[idx] : !isLast
-              const leftPos = idx === 0 ? 0 : 24 + (idx - 1) * 20
-              
-              return (
-                <div key={idx}>
-                  {/* 垂直线 */}
-                  {shouldDrawVertical && (
-                    <div
-                      className="absolute top-0 bottom-0"
-                      style={{ 
-                        left: `${leftPos}px`,
-                        width: '1px',
-                        backgroundColor: '#ababab'
-                      }}
-                    />
-                  )}
-                  
-                  {/* 当前层级的连接线 */}
-                  {isLastLevel && (
-                    <>
-                      {/* 上半部分垂直线 */}
-                      <div
-                        className="absolute top-0"
-                        style={{
-                          left: `${leftPos}px`,
-                          width: '1px',
-                          height: '50%',
-                          backgroundColor: '#ababab',
-                        }}
-                      />
-                      {/* 水平线 */}
-                      <div
-                        className="absolute"
-                        style={{
-                          left: `${leftPos}px`,
-                          top: '50%',
-                          width: '8px',
-                          height: '1px',
-                          backgroundColor: '#ababab',
-                        }}
-                      />
-                    </>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        )}
+        {/* 树形连接线 - OneTab 风格：使用 inline-block */}
+        {level > 0 && Array.from({ length: level }).map((_, idx) => {
+          const isLastLevel = idx === level - 1
+          const shouldDrawVertical = idx < level - 1 ? parentLines[idx] : !isLast
+          
+          return (
+            <span
+              key={idx}
+              className="treeGlyph inline-block align-top relative"
+              style={{
+                width: idx === 0 ? '24px' : '20px',
+                height: '19px',
+                borderInlineStart: shouldDrawVertical ? '1px solid #ababab' : 'none',
+                marginInlineEnd: isLastLevel && isLast ? '1px' : '0',
+              }}
+            >
+              {isLastLevel && (
+                <span
+                  className="treeGlyphTop inline-block"
+                  style={{
+                    width: '8px',
+                    height: '50%',
+                    borderInlineStart: '1px solid #ababab',
+                    borderBottom: '1px solid #ababab',
+                  }}
+                />
+              )}
+            </span>
+          )
+        })}
         
         {/* 展开/折叠按钮 */}
         <button
