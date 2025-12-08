@@ -77,9 +77,6 @@ export function ApiKeysPage() {
 
       {/* 内容卡片 */}
       <div className="card p-4 sm:p-6">
-        {/* 配额信息 */}
-        <div className="mb-6">
-
         {/* 说明文字 */}
         <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-muted/30 border border-border rounded-lg">
           <p className="text-xs sm:text-sm text-muted-foreground mb-2 leading-relaxed">
