@@ -1,15 +1,15 @@
 /**
- * 对外 API - 标签页组操作
- * 路径: /api/v1/tab-groups
- * 认证: JWT Token
+ * 内部 API - 标签页组操作
+ * 路径: /api/tab-groups
+ * 认证: JWT Token (Bearer)
  */
 
 import type { PagesFunction } from '@cloudflare/workers-types'
-import type { Env, RouteParams, SQLParam } from '../../../lib/types'
-import { success, badRequest, created, internalError } from '../../../lib/response'
-import { requireAuth, AuthContext } from '../../../middleware/auth'
-import { sanitizeString } from '../../../lib/validation'
-import { generateUUID } from '../../../lib/crypto'
+import type { Env, RouteParams, SQLParam } from '../../lib/types'
+import { success, badRequest, created, internalError } from '../../lib/response'
+import { requireAuth, AuthContext } from '../../middleware/auth'
+import { sanitizeString } from '../../lib/validation'
+import { generateUUID } from '../../lib/crypto'
 
 interface TabGroupRow {
   id: string
@@ -26,8 +26,6 @@ interface TabGroupRow {
   updated_at: string
 }
 
-// 注意：此接口已与 /api/tab/tab-groups 保持完全一致
-
 interface TabGroupItemRow {
   id: string
   group_id: string
@@ -36,8 +34,6 @@ interface TabGroupItemRow {
   favicon: string | null
   position: number
   created_at: string
-  is_pinned?: number
-  is_todo?: number
 }
 
 interface CreateTabGroupRequest {
@@ -51,7 +47,7 @@ interface CreateTabGroupRequest {
   }>
 }
 
-// GET /api/v1/tab-groups - 获取标签页组列表
+// GET /api/tab-groups - 获取标签页组列表
 export const onRequestGet: PagesFunction<Env, RouteParams, AuthContext>[] = [
   requireAuth,
   async (context) => {
@@ -62,37 +58,58 @@ export const onRequestGet: PagesFunction<Env, RouteParams, AuthContext>[] = [
     const pageCursor = url.searchParams.get('page_cursor') || ''
 
     try {
-      // Build query - 获取所有字段，过滤已删除的记录
-      let query = `
-        SELECT *
-        FROM tab_groups
-        WHERE user_id = ? AND (is_deleted IS NULL OR is_deleted = 0)
-      `
-      const params: SQLParam[] = [userId]
+      // Try to query with is_deleted column first
+      let groups: TabGroupRow[] = []
+      try {
+        let query = `
+          SELECT *
+          FROM tab_groups
+          WHERE user_id = ? AND (is_deleted IS NULL OR is_deleted = 0)
+        `
+        const params: SQLParam[] = [userId]
 
-      // Cursor pagination
-      if (pageCursor) {
-        query += ' AND created_at < ?'
-        params.push(pageCursor)
+        // Pagination
+        if (pageCursor) {
+          query += ` AND created_at < ?`
+          params.push(pageCursor)
+        }
+
+        query += ` ORDER BY created_at DESC LIMIT ?`
+        params.push(pageSize + 1)
+
+        const result = await context.env.DB.prepare(query)
+          .bind(...params)
+          .all<TabGroupRow>()
+        groups = result.results
+      } catch {
+        // Fallback: query without is_deleted column
+        let query = `
+          SELECT *
+          FROM tab_groups
+          WHERE user_id = ?
+        `
+        const params: SQLParam[] = [userId]
+
+        // Pagination
+        if (pageCursor) {
+          query += ` AND created_at < ?`
+          params.push(pageCursor)
+        }
+
+        query += ` ORDER BY created_at DESC LIMIT ?`
+        params.push(pageSize + 1)
+
+        const result = await context.env.DB.prepare(query)
+          .bind(...params)
+          .all<TabGroupRow>()
+        groups = result.results
       }
 
-      query += ' ORDER BY created_at DESC LIMIT ?'
-      params.push(pageSize + 1)
+      const hasMore = groups.length > pageSize
+      const tabGroups = hasMore ? groups.slice(0, pageSize) : groups
+      const nextCursor = hasMore ? tabGroups[tabGroups.length - 1].created_at : undefined
 
-      console.log('[TabGroups API v1] Query params:', { userId, pageSize, pageCursor })
-      console.log('[TabGroups API v1] Full query:', query)
-      
-      const { results } = await context.env.DB.prepare(query)
-        .bind(...params)
-        .all<TabGroupRow>()
-
-      console.log('[TabGroups API v1] Found groups:', results.length)
-
-      const hasMore = results.length > pageSize
-      const tabGroups = hasMore ? results.slice(0, pageSize) : results
-      const nextCursor = hasMore ? tabGroups[tabGroups.length - 1].created_at : null
-
-      // Get items for each group
+      // Get items for each group (with user_id verification for security)
       const groupsWithItems = await Promise.all(
         tabGroups.map(async (group) => {
           const { results: items } = await context.env.DB.prepare(
@@ -105,10 +122,19 @@ export const onRequestGet: PagesFunction<Env, RouteParams, AuthContext>[] = [
             .bind(group.id, userId)
             .all<TabGroupItemRow>()
 
-          console.log(`[TabGroups API v1] Group ${group.id} (${group.title}): ${items?.length || 0} items`)
+          // Parse tags
+          let tags: string[] | null = null
+          if (group.tags) {
+            try {
+              tags = JSON.parse(group.tags)
+            } catch {
+              tags = null
+            }
+          }
 
           return {
             ...group,
+            tags,
             items: items || [],
             item_count: items?.length || 0,
           }
@@ -119,9 +145,7 @@ export const onRequestGet: PagesFunction<Env, RouteParams, AuthContext>[] = [
         tab_groups: groupsWithItems,
         meta: {
           page_size: pageSize,
-          count: tabGroups.length,
           next_cursor: nextCursor,
-          has_more: hasMore,
         },
       })
     } catch (error) {
@@ -131,7 +155,7 @@ export const onRequestGet: PagesFunction<Env, RouteParams, AuthContext>[] = [
   },
 ]
 
-// POST /api/v1/tab-groups - 创建标签页组
+// POST /api/tab-groups - 创建标签页组
 export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
   requireAuth,
   async (context) => {
@@ -142,11 +166,10 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
 
       const isFolder = body.is_folder || false
 
-      // Validate: folders don't need items, but regular groups can be empty
-      // 允许创建空的标签页组，用户可以稍后添加项目
-      // if (!isFolder && (!body.items || body.items.length === 0)) {
-      //   return badRequest('At least one tab item is required for non-folder groups')
-      // }
+      // Validate: folders don't need items, but regular groups do
+      if (!isFolder && (!body.items || body.items.length === 0)) {
+        return badRequest('At least one tab item is required for non-folder groups')
+      }
 
       // Generate title if not provided (timestamp format for groups, "新文件夹" for folders)
       const now = new Date()
@@ -166,7 +189,7 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
 
       // Insert tab group or folder
       await context.env.DB.prepare(
-        'INSERT INTO tab_groups (id, user_id, title, parent_id, is_folder, is_deleted, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 0, ?, ?)'
+        'INSERT INTO tab_groups (id, user_id, title, parent_id, is_folder, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
       )
         .bind(groupId, userId, title, parentId, isFolder ? 1 : 0, timestamp, timestamp)
         .run()
@@ -189,8 +212,10 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
         await Promise.all(itemInserts)
       }
 
-      // Fetch the created group with items
-      const groupRow = await context.env.DB.prepare('SELECT * FROM tab_groups WHERE id = ?')
+      // Get created tab group with items
+      const groupRow = await context.env.DB.prepare(
+        'SELECT * FROM tab_groups WHERE id = ?'
+      )
         .bind(groupId)
         .first<TabGroupRow>()
 
@@ -204,10 +229,6 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
       )
         .bind(groupId, userId)
         .all<TabGroupItemRow>()
-
-      if (!groupRow) {
-        return internalError('Failed to load tab group after creation')
-      }
 
       return created({
         tab_group: {

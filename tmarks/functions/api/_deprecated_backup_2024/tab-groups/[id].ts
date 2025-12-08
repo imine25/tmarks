@@ -1,14 +1,14 @@
 /**
- * 对外 API - 单个标签页组操作
- * 路径: /api/v1/tab-groups/:id
- * 认证: JWT Token
+ * 内部 API - 单个标签页组操作
+ * 路径: /api/tab-groups/:id
+ * 认证: JWT Token (Bearer)
  */
 
 import type { PagesFunction } from '@cloudflare/workers-types'
-import type { Env, RouteParams } from '../../../lib/types'
-import { success, badRequest, notFound, noContent, internalError } from '../../../lib/response'
-import { requireAuth, AuthContext } from '../../../middleware/auth'
-import { sanitizeString } from '../../../lib/validation'
+import type { Env, RouteParams } from '../../lib/types'
+import { success, badRequest, notFound, internalError } from '../../lib/response'
+import { requireAuth, AuthContext } from '../../middleware/auth'
+import { sanitizeString } from '../../lib/validation'
 
 interface TabGroupRow {
   id: string
@@ -33,8 +33,6 @@ interface TabGroupItemRow {
   favicon: string | null
   position: number
   created_at: string
-  is_pinned?: number
-  is_todo?: number
 }
 
 interface UpdateTabGroupRequest {
@@ -45,7 +43,7 @@ interface UpdateTabGroupRequest {
   position?: number
 }
 
-// GET /api/v1/tab-groups/:id - 获取单个标签页组详情
+// GET /api/tab-groups/:id - 获取单个标签页组详情
 export const onRequestGet: PagesFunction<Env, RouteParams, AuthContext>[] = [
   requireAuth,
   async (context) => {
@@ -53,15 +51,35 @@ export const onRequestGet: PagesFunction<Env, RouteParams, AuthContext>[] = [
     const groupId = context.params.id
 
     try {
-      // Get tab group
-      const groupRow = await context.env.DB.prepare(
-        'SELECT * FROM tab_groups WHERE id = ? AND user_id = ?'
-      )
-        .bind(groupId, userId)
-        .first<TabGroupRow>()
+      // Get tab group (exclude deleted by default)
+      let groupRow: TabGroupRow | null = null
+      try {
+        groupRow = await context.env.DB.prepare(
+          'SELECT * FROM tab_groups WHERE id = ? AND user_id = ? AND (is_deleted IS NULL OR is_deleted = 0)'
+        )
+          .bind(groupId, userId)
+          .first<TabGroupRow>()
+      } catch {
+        // Fallback: query without is_deleted column
+        groupRow = await context.env.DB.prepare(
+          'SELECT * FROM tab_groups WHERE id = ? AND user_id = ?'
+        )
+          .bind(groupId, userId)
+          .first<TabGroupRow>()
+      }
 
       if (!groupRow) {
         return notFound('Tab group not found')
+      }
+
+      // Parse tags if exists
+      let tags: string[] | null = null
+      if (groupRow.tags) {
+        try {
+          tags = JSON.parse(groupRow.tags)
+        } catch {
+          tags = null
+        }
       }
 
       // Get tab group items (with user_id verification for security)
@@ -78,6 +96,7 @@ export const onRequestGet: PagesFunction<Env, RouteParams, AuthContext>[] = [
       return success({
         tab_group: {
           ...groupRow,
+          tags,
           items: items || [],
           item_count: items?.length || 0,
         },
@@ -89,7 +108,7 @@ export const onRequestGet: PagesFunction<Env, RouteParams, AuthContext>[] = [
   },
 ]
 
-// PATCH /api/v1/tab-groups/:id - 更新标签页组
+// PATCH /api/tab-groups/:id - 更新标签页组
 export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
   requireAuth,
   async (context) => {
@@ -110,13 +129,28 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
         return notFound('Tab group not found')
       }
 
-      // Build update query
+      // Update tab group
       const updates: string[] = []
-      const params: Array<string | number | null> = []
+      const params: (string | number | null)[] = []
 
       if (body.title !== undefined) {
         updates.push('title = ?')
         params.push(sanitizeString(body.title, 200))
+      }
+
+      // Only add color/tags if they exist in the request
+      // Try to update, if column doesn't exist, skip silently
+      let hasColorOrTags = false
+      if (body.color !== undefined) {
+        updates.push('color = ?')
+        params.push(body.color)
+        hasColorOrTags = true
+      }
+
+      if (body.tags !== undefined) {
+        updates.push('tags = ?')
+        params.push(body.tags ? JSON.stringify(body.tags) : null)
+        hasColorOrTags = true
       }
 
       if (body.parent_id !== undefined) {
@@ -129,35 +163,37 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
         params.push(body.position)
       }
 
-      if (body.color !== undefined) {
-        updates.push('color = ?')
-        params.push(body.color)
-      }
-
-      if (body.tags !== undefined) {
-        updates.push('tags = ?')
-        params.push(body.tags ? JSON.stringify(body.tags) : null)
-      }
-
       if (updates.length === 0) {
-        return badRequest('No valid fields to update')
+        return badRequest('No fields to update')
       }
 
-      // Always update updated_at
       updates.push('updated_at = ?')
       params.push(new Date().toISOString())
+      params.push(groupId)
 
-      // Add WHERE clause params
-      params.push(groupId, userId)
+      try {
+        await context.env.DB.prepare(
+          `UPDATE tab_groups SET ${updates.join(', ')} WHERE id = ?`
+        )
+          .bind(...params)
+          .run()
+      } catch (e) {
+        // If update fails (likely due to missing columns), try without color/tags
+        if (hasColorOrTags && body.title !== undefined) {
+          await context.env.DB.prepare(
+            'UPDATE tab_groups SET title = ?, updated_at = ? WHERE id = ?'
+          )
+            .bind(sanitizeString(body.title, 200), new Date().toISOString(), groupId)
+            .run()
+        } else {
+          throw e
+        }
+      }
 
-      await context.env.DB.prepare(
-        `UPDATE tab_groups SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`
+      // Get updated tab group with items
+      const updatedGroup = await context.env.DB.prepare(
+        'SELECT * FROM tab_groups WHERE id = ?'
       )
-        .bind(...params)
-        .run()
-
-      // Fetch updated group with items
-      const updatedGroup = await context.env.DB.prepare('SELECT * FROM tab_groups WHERE id = ?')
         .bind(groupId)
         .first<TabGroupRow>()
 
@@ -189,7 +225,7 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
   },
 ]
 
-// DELETE /api/v1/tab-groups/:id - 删除标签页组
+// DELETE /api/tab-groups/:id - 软删除标签页组（移到回收站）
 export const onRequestDelete: PagesFunction<Env, RouteParams, AuthContext>[] = [
   requireAuth,
   async (context) => {
@@ -198,22 +234,41 @@ export const onRequestDelete: PagesFunction<Env, RouteParams, AuthContext>[] = [
 
     try {
       // Check if tab group exists and belongs to user
-      const groupRow = await context.env.DB.prepare(
-        'SELECT * FROM tab_groups WHERE id = ? AND user_id = ?'
-      )
-        .bind(groupId, userId)
-        .first<TabGroupRow>()
+      let groupRow: TabGroupRow | null = null
+      try {
+        groupRow = await context.env.DB.prepare(
+          'SELECT * FROM tab_groups WHERE id = ? AND user_id = ? AND (is_deleted IS NULL OR is_deleted = 0)'
+        )
+          .bind(groupId, userId)
+          .first<TabGroupRow>()
+      } catch {
+        // Fallback: query without is_deleted column
+        groupRow = await context.env.DB.prepare(
+          'SELECT * FROM tab_groups WHERE id = ? AND user_id = ?'
+        )
+          .bind(groupId, userId)
+          .first<TabGroupRow>()
+      }
 
       if (!groupRow) {
         return notFound('Tab group not found')
       }
 
-      // Delete tab group (items will be cascade deleted)
-      await context.env.DB.prepare('DELETE FROM tab_groups WHERE id = ? AND user_id = ?')
-        .bind(groupId, userId)
-        .run()
+      // Soft delete - mark as deleted (only if column exists)
+      try {
+        await context.env.DB.prepare(
+          'UPDATE tab_groups SET is_deleted = 1, deleted_at = ?, updated_at = ? WHERE id = ?'
+        )
+          .bind(new Date().toISOString(), new Date().toISOString(), groupId)
+          .run()
+      } catch {
+        // If is_deleted column doesn't exist, do hard delete
+        await context.env.DB.prepare('DELETE FROM tab_groups WHERE id = ?')
+          .bind(groupId)
+          .run()
+      }
 
-      return noContent()
+      return new Response(null, { status: 204 })
     } catch (error) {
       console.error('Delete tab group error:', error)
       return internalError('Failed to delete tab group')
