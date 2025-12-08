@@ -3,7 +3,7 @@
  * 显示所有分组中被固定的标签页
  */
 
-import { Pin, ExternalLink, Folder, X } from 'lucide-react'
+import { Pin, ExternalLink, Folder } from 'lucide-react'
 import type { TabGroup, TabGroupItem } from '@/lib/types'
 
 interface PinnedItem extends TabGroupItem {
@@ -57,21 +57,25 @@ export function PinnedItemsSection({ tabGroups, onUnpin }: PinnedItemsSectionPro
         {pinnedItems.map(item => (
           <div
             key={item.id}
-            className="group relative flex items-start gap-3 p-3 rounded border border-border bg-card hover:bg-muted hover:border-warning/50 transition-all"
+            className="group flex items-start gap-3 p-3 rounded border border-border bg-card hover:bg-muted hover:border-warning/50 transition-all"
           >
-            {/* 取消固定按钮 */}
-            {onUnpin && (
+            {/* 固定图标按钮 - 点击取消固定 */}
+            {onUnpin ? (
               <button
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
                   onUnpin(item.groupId, item.id)
                 }}
-                className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-warning text-warning-foreground hover:bg-warning/80 shadow-md opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10"
+                className="flex-shrink-0 mt-0.5 p-1 text-warning hover:bg-warning/10 rounded transition-colors"
                 title="取消固定"
               >
-                <X className="w-4 h-4" />
+                <Pin className="w-4 h-4" />
               </button>
+            ) : (
+              <div className="flex-shrink-0 mt-0.5 p-1">
+                <Pin className="w-4 h-4 text-warning" />
+              </div>
             )}
 
             {/* Favicon */}
