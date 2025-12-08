@@ -5,10 +5,10 @@
  */
 
 import type { PagesFunction } from '@cloudflare/workers-types'
-import type { Env, RouteParams } from '../../../../../lib/types'
-import { success, badRequest, notFound, internalError } from '../../../../../lib/response'
-import { requireAuth, AuthContext } from '../../../../../middleware/auth'
-import { generateUUID } from '../../../../../lib/crypto'
+import type { Env, RouteParams } from '../../../../lib/types'
+import { success, badRequest, notFound, internalError } from '../../../../lib/response'
+import { requireAuth, AuthContext } from '../../../../middleware/auth'
+import { generateUUID } from '../../../../lib/crypto'
 
 interface TabGroupRow {
   id: string
