@@ -97,7 +97,13 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
     const groupId = context.params.id
 
     try {
-      const body = (await context.request.json()) as UpdateTabGroupRequest
+      let body: UpdateTabGroupRequest
+      try {
+        body = (await context.request.json()) as UpdateTabGroupRequest
+      } catch (parseError) {
+        console.error('Failed to parse request body:', parseError)
+        return badRequest('Invalid request body: ' + (parseError instanceof Error ? parseError.message : 'JSON parse error'))
+      }
 
       // Check if tab group exists and belongs to user
       const groupRow = await context.env.DB.prepare(
