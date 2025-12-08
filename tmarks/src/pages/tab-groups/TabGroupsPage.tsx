@@ -751,7 +751,10 @@ export function TabGroupsPage() {
 
       {/* 固定标签页区域 */}
       {sortedGroups.length > 0 && !searchQuery && (
-        <PinnedItemsSection tabGroups={sortedGroups} />
+        <PinnedItemsSection 
+          tabGroups={sortedGroups}
+          onUnpin={(groupId, itemId) => handleTogglePin(groupId, itemId, 1)}
+        />
       )}
 
       {/* Tab Groups Grid */}

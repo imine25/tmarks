@@ -3,7 +3,7 @@
  * 显示所有分组中被固定的标签页
  */
 
-import { Pin, ExternalLink, Folder } from 'lucide-react'
+import { Pin, ExternalLink, Folder, X } from 'lucide-react'
 import type { TabGroup, TabGroupItem } from '@/lib/types'
 
 interface PinnedItem extends TabGroupItem {
@@ -13,9 +13,10 @@ interface PinnedItem extends TabGroupItem {
 
 interface PinnedItemsSectionProps {
   tabGroups: TabGroup[]
+  onUnpin?: (groupId: string, itemId: string) => void
 }
 
-export function PinnedItemsSection({ tabGroups }: PinnedItemsSectionProps) {
+export function PinnedItemsSection({ tabGroups, onUnpin }: PinnedItemsSectionProps) {
   // 收集所有固定的标签页
   const pinnedItems: PinnedItem[] = []
   
@@ -54,13 +55,25 @@ export function PinnedItemsSection({ tabGroups }: PinnedItemsSectionProps) {
       {/* 固定标签页列表 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {pinnedItems.map(item => (
-          <a
+          <div
             key={item.id}
-            href={item.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex items-start gap-3 p-3 rounded border border-border bg-card hover:bg-muted hover:border-warning/50 transition-all"
+            className="group relative flex items-start gap-3 p-3 rounded border border-border bg-card hover:bg-muted hover:border-warning/50 transition-all"
           >
+            {/* 取消固定按钮 */}
+            {onUnpin && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onUnpin(item.groupId, item.id)
+                }}
+                className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-warning text-warning-foreground hover:bg-warning/80 shadow-md opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10"
+                title="取消固定"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+
             {/* Favicon */}
             <div className="flex-shrink-0 mt-0.5">
               {item.favicon ? (
@@ -79,23 +92,30 @@ export function PinnedItemsSection({ tabGroups }: PinnedItemsSectionProps) {
               )}
             </div>
 
-            {/* 内容 */}
-            <div className="flex-1 min-w-0">
-              {/* 标题 */}
-              <div className="text-sm font-medium text-foreground truncate group-hover:text-primary">
-                {item.title}
+            {/* 内容 - 可点击打开链接 */}
+            <a
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 min-w-0 flex items-start gap-2"
+            >
+              <div className="flex-1 min-w-0">
+                {/* 标题 */}
+                <div className="text-sm font-medium text-foreground truncate group-hover:text-primary">
+                  {item.title}
+                </div>
+                
+                {/* 分组名称 */}
+                <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+                  <Folder className="w-3 h-3" />
+                  <span className="truncate">{item.groupTitle}</span>
+                </div>
               </div>
-              
-              {/* 分组名称 */}
-              <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
-                <Folder className="w-3 h-3" />
-                <span className="truncate">{item.groupTitle}</span>
-              </div>
-            </div>
 
-            {/* 外部链接图标 */}
-            <ExternalLink className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5" />
-          </a>
+              {/* 外部链接图标 */}
+              <ExternalLink className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5" />
+            </a>
+          </div>
         ))}
       </div>
     </div>
