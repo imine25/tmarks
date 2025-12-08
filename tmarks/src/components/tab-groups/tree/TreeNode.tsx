@@ -147,36 +147,60 @@ export function TreeNode({
 
       {/* 节点行 - OneTab 风格布局 */}
       <div
-        className={`treeItem group flex items-center px-2 py-1 hover:bg-muted ${
+        className={`treeItem group flex items-center px-2 py-1 hover:bg-muted relative ${
           isSelected ? 'bg-primary/10' : ''
         } ${isBeingDragged ? 'opacity-50' : ''} ${dropIndicatorClass}`}
       >
-        {/* 树形连接线 - OneTab 风格：使用 inline-block */}
+        {/* 树形连接线 - OneTab 风格：垂直线跨行延伸 */}
         {level > 0 && Array.from({ length: level }).map((_, idx) => {
           const isLastLevel = idx === level - 1
           const shouldDrawVertical = idx < level - 1 ? parentLines[idx] : !isLast
+          const glyphWidth = idx === 0 ? 24 : 20
           
           return (
             <span
               key={idx}
-              className="treeGlyph inline-block align-top relative"
+              className="treeGlyph inline-block relative"
               style={{
-                width: idx === 0 ? '24px' : '20px',
-                height: '19px',
-                borderInlineStart: shouldDrawVertical ? '1px solid #ababab' : 'none',
-                marginInlineEnd: isLastLevel && isLast ? '1px' : '0',
+                width: `${glyphWidth}px`,
+                height: '100%',
+                verticalAlign: 'top',
               }}
             >
-              {isLastLevel && (
+              {/* 垂直线 - 从顶部延伸到底部 */}
+              {shouldDrawVertical && (
                 <span
-                  className="treeGlyphTop inline-block"
+                  className="absolute top-0 bottom-0 left-0"
                   style={{
-                    width: '8px',
-                    height: '50%',
-                    borderInlineStart: '1px solid #ababab',
-                    borderBottom: '1px solid #ababab',
+                    width: '1px',
+                    backgroundColor: '#ababab',
                   }}
                 />
+              )}
+              
+              {/* L 形连接线 - 只在当前层级显示 */}
+              {isLastLevel && (
+                <>
+                  {/* 上半部分垂直线 */}
+                  <span
+                    className="absolute top-0 left-0"
+                    style={{
+                      width: '1px',
+                      height: '50%',
+                      backgroundColor: '#ababab',
+                    }}
+                  />
+                  {/* 水平线 */}
+                  <span
+                    className="absolute left-0"
+                    style={{
+                      top: '50%',
+                      width: '100%',
+                      height: '1px',
+                      backgroundColor: '#ababab',
+                    }}
+                  />
+                </>
               )}
             </span>
           )
