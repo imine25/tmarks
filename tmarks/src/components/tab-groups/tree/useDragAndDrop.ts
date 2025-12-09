@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import { useSensors, useSensor, PointerSensor, KeyboardSensor } from '@dnd-kit/core'
 import type { CollisionDetection, DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core'
 import { pointerWithin, closestCenter } from '@dnd-kit/core'
@@ -16,18 +16,6 @@ export function useDragAndDrop({ tabGroups, onMoveGroup }: UseDragAndDropProps) 
   const [activeId, setActiveId] = useState<string | null>(null)
   const [overId, setOverId] = useState<string | null>(null)
   const [dropPosition, setDropPosition] = useState<DropPosition | null>(null)
-  const pointerInitialYRef = useRef<number | null>(null)
-  const pointerInitialXRef = useRef<number | null>(null)
-  const rafIdRef = useRef<number | null>(null)
-
-  // 清理 RAF
-  useEffect(() => {
-    return () => {
-      if (rafIdRef.current !== null) {
-        cancelAnimationFrame(rafIdRef.current)
-      }
-    }
-  }, [])
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -48,84 +36,71 @@ export function useDragAndDrop({ tabGroups, onMoveGroup }: UseDragAndDropProps) 
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveId(event.active.id as string)
-    pointerInitialYRef.current = event.activatorEvent instanceof PointerEvent 
-      ? event.activatorEvent.clientY 
-      : null
-    pointerInitialXRef.current = event.activatorEvent instanceof PointerEvent 
-      ? event.activatorEvent.clientX 
-      : null
   }, [])
 
   const handleDragOver = useCallback((event: DragOverEvent) => {
-    if (rafIdRef.current !== null) {
-      cancelAnimationFrame(rafIdRef.current)
+    const { over, active } = event
+    const currentOverId = over?.id as string | null
+    setOverId(currentOverId)
+
+    if (!currentOverId || !over) {
+      setDropPosition(null)
+      return
     }
-    
-    rafIdRef.current = requestAnimationFrame(() => {
-      const overId = event.over?.id as string | null
-      setOverId(overId)
 
-      if (!overId || !event.over) {
-        setDropPosition(null)
-        return
-      }
+    const overGroup = tabGroups.find(g => g.id === currentOverId)
+    if (!overGroup) {
+      setDropPosition(null)
+      return
+    }
 
-      const overGroup = tabGroups.find(g => g.id === overId)
-      if (!overGroup) {
-        setDropPosition(null)
-        return
-      }
+    // 获取目标元素的矩形
+    const overRect = over.rect
+    if (!overRect || overRect.height === 0) {
+      setDropPosition(null)
+      return
+    }
 
-      const overRect = event.over.rect
-      const activeRect = event.active.rect.current
-      const initialRect = activeRect.initial
+    // 使用 active.rect.current.translated 获取当前拖拽元素的位置
+    const activeTranslated = active.rect.current.translated
+    if (!activeTranslated) {
+      setDropPosition(null)
+      return
+    }
 
-      if (!overRect || !initialRect || overRect.height === 0) {
-        setDropPosition(null)
-        return
-      }
+    // 计算拖拽元素中心点相对于目标元素的位置
+    const activeCenterY = activeTranslated.top + activeTranslated.height / 2
+    const relativeY = activeCenterY - overRect.top
+    const relativeYPercent = relativeY / overRect.height
 
-      // 使用当前拖拽位置，而不是初始位置
-      const pointerInitialY = pointerInitialYRef.current
-      if (pointerInitialY === null) {
-        setDropPosition(null)
-        return
-      }
-
-      // 计算当前鼠标位置 = 初始位置 + 拖拽偏移量
-      const deltaY = activeRect.translated ? activeRect.translated.top - initialRect.top : 0
-      const currentPointerY = pointerInitialY + deltaY
-
-      const relativeY = currentPointerY - overRect.top
-      const relativeYPercent = relativeY / overRect.height
-
-      if (overGroup.is_folder === 1) {
-        if (relativeYPercent < 0.25) {
-          setDropPosition('before')
-        } else if (relativeYPercent > 0.75) {
-          setDropPosition('after')
-        } else {
-          setDropPosition('inside')
-        }
+    // 根据目标是否为文件夹，使用不同的判断逻辑
+    if (overGroup.is_folder === 1) {
+      // 文件夹：上方 25% = before，中间 50% = inside，下方 25% = after
+      if (relativeYPercent < 0.25) {
+        setDropPosition('before')
+      } else if (relativeYPercent > 0.75) {
+        setDropPosition('after')
       } else {
-        if (relativeYPercent < 0.5) {
-          setDropPosition('before')
-        } else {
-          setDropPosition('after')
-        }
+        setDropPosition('inside')
       }
-    })
+    } else {
+      // 普通分组：上方 50% = before，下方 50% = after
+      if (relativeYPercent < 0.5) {
+        setDropPosition('before')
+      } else {
+        setDropPosition('after')
+      }
+    }
   }, [tabGroups])
 
   const handleDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event
     const currentDropPosition = dropPosition
 
+    // 清理状态
     setActiveId(null)
     setOverId(null)
     setDropPosition(null)
-    pointerInitialYRef.current = null
-    pointerInitialXRef.current = null
 
     if (!over || active.id === over.id || !onMoveGroup) return
 
@@ -135,25 +110,16 @@ export function useDragAndDrop({ tabGroups, onMoveGroup }: UseDragAndDropProps) 
     if (!draggedGroup || !targetGroup) return
 
     logger.log('🎯 DragEnd:', {
-      draggedId: draggedGroup.id,
-      draggedTitle: draggedGroup.title,
-      draggedIsFolder: draggedGroup.is_folder,
-      draggedParentId: draggedGroup.parent_id,
-      targetId: targetGroup.id,
-      targetTitle: targetGroup.title,
-      targetIsFolder: targetGroup.is_folder,
-      targetParentId: targetGroup.parent_id,
+      dragged: draggedGroup.title,
+      target: targetGroup.title,
+      targetIsFolder: targetGroup.is_folder === 1,
       dropPosition: currentDropPosition
     })
 
-    // 根据拖放位置决定操作
+    // 拖拽到文件夹内部
     if (currentDropPosition === 'inside' && targetGroup.is_folder === 1) {
-      logger.log('  ✅ Conditions met for moving inside folder')
-      
-      // 放入文件夹内部
+      // 检查循环嵌套（不能把文件夹拖到自己的子孙节点内）
       if (draggedGroup.is_folder === 1) {
-        logger.log('  🔍 Checking for circular nesting...')
-        
         const isDescendant = (parentId: string, childId: string): boolean => {
           const child = tabGroups.find(g => g.id === childId)
           if (!child || !child.parent_id) return false
@@ -165,45 +131,34 @@ export function useDragAndDrop({ tabGroups, onMoveGroup }: UseDragAndDropProps) 
           logger.log('  ❌ Cannot move folder into its descendant')
           return
         }
-        logger.log('  ✅ No circular nesting detected')
       }
 
-      logger.log('  → Calling onMoveGroup:', {
-        groupId: draggedGroup.id,
-        newParentId: targetGroup.id,
-        newPosition: 0
-      })
-      
-      try {
-        await onMoveGroup(draggedGroup.id, targetGroup.id, 0)
-        logger.log('  ✅ Move completed successfully')
-      } catch (error) {
-        logger.error('  ❌ Move failed:', error)
-      }
-    } else {
-      // 移动到同级
-      const newParentId = targetGroup.parent_id || null
-      const siblings = tabGroups.filter(g => (g.parent_id || null) === newParentId)
-      
-      let targetIndex = siblings.findIndex(g => g.id === targetGroup.id)
-      if (currentDropPosition === 'after') {
-        targetIndex++
-      }
-
-      const currentIndex = siblings.findIndex(g => g.id === draggedGroup.id)
-      if (currentIndex !== -1 && currentIndex < targetIndex) {
-        targetIndex--
-      }
-
-      const newPosition = Math.max(0, targetIndex)
-      logger.log('  → Moving to same parent, new position:', newPosition)
-      await onMoveGroup(draggedGroup.id, newParentId, newPosition)
+      logger.log('  → Moving inside folder:', targetGroup.title)
+      await onMoveGroup(draggedGroup.id, targetGroup.id, 0)
+      return
     }
+
+    // 移动到同级（before 或 after）
+    const newParentId = targetGroup.parent_id || null
+    const siblings = tabGroups.filter(g => (g.parent_id || null) === newParentId)
+    
+    let targetIndex = siblings.findIndex(g => g.id === targetGroup.id)
+    if (currentDropPosition === 'after') {
+      targetIndex++
+    }
+
+    // 如果在同一父级内移动，需要调整索引
+    const currentIndex = siblings.findIndex(g => g.id === draggedGroup.id)
+    if (currentIndex !== -1 && currentIndex < targetIndex) {
+      targetIndex--
+    }
+
+    const newPosition = Math.max(0, targetIndex)
+    logger.log('  → Moving to position:', newPosition, 'under parent:', newParentId)
+    await onMoveGroup(draggedGroup.id, newParentId, newPosition)
   }, [dropPosition, tabGroups, onMoveGroup])
 
   const handleDragCancel = useCallback(() => {
-    pointerInitialYRef.current = null
-    pointerInitialXRef.current = null
     setActiveId(null)
     setOverId(null)
     setDropPosition(null)
