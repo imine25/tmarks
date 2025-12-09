@@ -51,7 +51,6 @@ export function TabItem({
     listeners,
     setNodeRef,
     transform,
-    transition,
     isDragging,
   } = useSortable({
     id: item.id,
@@ -60,7 +59,7 @@ export function TabItem({
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition: isDragging ? 'none' : transition,
+    transition: 'none', // 完全禁用 transition，避免从下往上拖拽时闪烁
     opacity: isDragging ? 0.4 : 1,
   }
 
