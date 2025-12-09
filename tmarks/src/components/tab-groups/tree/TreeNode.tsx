@@ -141,7 +141,7 @@ export function TreeNode({
   }
 
   return (
-    <div>
+    <div ref={setNodeRef} style={style}>
       {/* 拖放指示器 - before（蓝色横线 + 左侧圆点） */}
       {isDropTarget && dropPosition === 'before' && (
         <div className="relative h-1 mx-2">
@@ -152,9 +152,7 @@ export function TreeNode({
 
       {/* 节点行 */}
       <div
-        ref={setNodeRef}
         style={{
-          ...style,
           paddingLeft: `${level * 20 + 12}px`, // 使用缩进代替树状线
         }}
         className={`treeItem group flex items-center gap-1 py-1.5 pr-3 hover:bg-muted relative ${
