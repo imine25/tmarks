@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { FolderPlus, Circle } from 'lucide-react'
-import { DndContext } from '@dnd-kit/core'
+import { FolderPlus, Circle, Folder } from 'lucide-react'
+import { DndContext, DragOverlay } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import type { TabGroup } from '@/lib/types'
 import { TreeNode } from './tree/TreeNode'
@@ -180,6 +180,34 @@ export function TabGroupTree({
             </div>
           </SortableContext>
         </div>
+
+        {/* DragOverlay - 拖拽时显示的浮动元素 */}
+        <DragOverlay>
+          {activeId ? (
+            <div
+              className="bg-card border-2 border-primary rounded shadow-xl cursor-grabbing px-3 py-1.5 opacity-95"
+              style={{
+                transform: 'scale(1.05)',
+              }}
+            >
+              {(() => {
+                const draggedGroup = tabGroups.find(g => g.id === activeId)
+                if (!draggedGroup) return null
+                const isFolder = draggedGroup.is_folder === 1
+                return (
+                  <div className="flex items-center gap-2">
+                    {isFolder ? (
+                      <Folder className="w-3.5 h-3.5 text-primary" />
+                    ) : (
+                      <Circle className="w-2 h-2 text-primary fill-current" />
+                    )}
+                    <span className="text-sm font-medium text-foreground">{draggedGroup.title}</span>
+                  </div>
+                )
+              })()}
+            </div>
+          ) : null}
+        </DragOverlay>
       </DndContext>
 
       {/* 移动对话框 */}

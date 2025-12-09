@@ -69,7 +69,6 @@ export function TreeNode({
     listeners,
     setNodeRef,
     transform,
-    transition,
     isDragging,
   } = useSortable({
     id: group.id,
@@ -84,7 +83,7 @@ export function TreeNode({
 
   const style = {
     transform: CSS.Translate.toString(transform),
-    transition,
+    transition: 'none', // 完全禁用 transition，保持元素位置不动
     opacity: isDragging ? 0.4 : 1,
     cursor: isLocked ? 'not-allowed' : (isDragging ? 'grabbing' : 'grab'),
   }
