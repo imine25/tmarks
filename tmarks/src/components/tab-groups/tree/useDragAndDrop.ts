@@ -85,16 +85,18 @@ export function useDragAndDrop({ tabGroups, onMoveGroup }: UseDragAndDropProps) 
         return
       }
 
-      const pointerY = event.activatorEvent instanceof PointerEvent 
-        ? event.activatorEvent.clientY 
-        : pointerInitialYRef.current
-
-      if (pointerY === null) {
+      // 使用当前拖拽位置，而不是初始位置
+      const pointerInitialY = pointerInitialYRef.current
+      if (pointerInitialY === null) {
         setDropPosition(null)
         return
       }
 
-      const relativeY = pointerY - overRect.top
+      // 计算当前鼠标位置 = 初始位置 + 拖拽偏移量
+      const deltaY = activeRect.translated ? activeRect.translated.top - initialRect.top : 0
+      const currentPointerY = pointerInitialY + deltaY
+
+      const relativeY = currentPointerY - overRect.top
       const relativeYPercent = relativeY / overRect.height
 
       if (overGroup.is_folder === 1) {
