@@ -7,6 +7,7 @@ import {
   MoreHorizontal,
 } from 'lucide-react'
 import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { DropdownMenu } from '@/components/common/DropdownMenu'
 import { useTabGroupMenu } from '@/hooks/useTabGroupMenu'
 import { buildTreeNodeMenu } from './TreeNodeMenu'
@@ -76,13 +77,15 @@ export function TreeNode({
       type: isFolder ? 'folder' : 'group',
       parentId: group.parent_id,
     },
-    disabled: isLocked
+    disabled: isLocked,
+    animateLayoutChanges: ({isSorting, wasDragging}) =>
+      isSorting || wasDragging ? false : true,
   })
 
   const style = {
-    opacity: isDragging ? 0.4 : 1,
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+    transform: CSS.Translate.toString(transform),
     transition,
+    opacity: isDragging ? 0.4 : 1,
     cursor: isLocked ? 'not-allowed' : (isDragging ? 'grabbing' : 'grab'),
   }
 
