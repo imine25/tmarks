@@ -136,6 +136,18 @@ export function TabGroupTree({
                   </div>
                 ) : (
                   <div className="relative">
+                    {/* 从"全部"延伸下来的垂直线 */}
+                    {treeData.length > 0 && (
+                      <div
+                        className="absolute pointer-events-none top-0 bottom-0"
+                        style={{
+                          left: '20px',
+                          width: '1px',
+                          backgroundColor: 'var(--border, #e5e7eb)',
+                        }}
+                      />
+                    )}
+
                     {treeData.map((group, index) => (
                       <TreeNode
                         key={group.id}
