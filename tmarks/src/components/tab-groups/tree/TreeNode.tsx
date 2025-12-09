@@ -139,11 +139,30 @@ export function TreeNode({
   }
 
   return (
-    <div ref={setNodeRef} style={style}>
+    <div ref={setNodeRef} style={style} className="relative">
       {/* 拖放指示器 - before */}
       {isDropTarget && dropPosition === 'before' && (
         <div className="h-0.5 bg-primary mx-3 -mt-0.5" />
       )}
+
+      {/* 垂直连接线 - 绘制在整个节点容器上，包括子节点 */}
+      {level > 0 && Array.from({ length: level - 1 }).map((_, idx) => {
+        const shouldDrawVertical = parentLines[idx]
+        const glyphWidth = idx === 0 ? 24 : 20
+        const leftOffset = Array.from({ length: idx + 1 }).reduce((sum, _, i) => sum + (i === 0 ? 24 : 20), 12) // 12px 是 padding
+        
+        return shouldDrawVertical ? (
+          <div
+            key={`vline-${idx}`}
+            className="absolute top-0 bottom-0"
+            style={{
+              left: `${leftOffset}px`,
+              width: '1px',
+              backgroundColor: 'var(--border, #e5e7eb)',
+            }}
+          />
+        ) : null
+      })}
 
       {/* 节点行 - OneTab 风格布局 */}
       <div
@@ -151,36 +170,43 @@ export function TreeNode({
           isSelected ? 'bg-primary/10' : ''
         } ${isBeingDragged ? 'opacity-50' : ''} ${dropIndicatorClass}`}
       >
-        {/* 树形连接线 - OneTab 风格 */}
+        {/* 树形连接线 - 缩进和 L 形转角 */}
         {level > 0 && Array.from({ length: level }).map((_, idx) => {
           const isLastLevel = idx === level - 1
-          const shouldDrawVertical = idx < level - 1 ? parentLines[idx] : !isLast
           const glyphWidth = idx === 0 ? 24 : 20
           
           return (
             <div
               key={idx}
-              className="treeGlyph relative flex-shrink-0"
+              className="relative flex-shrink-0"
               style={{
                 width: `${glyphWidth}px`,
                 height: '100%',
-                borderInlineStart: shouldDrawVertical ? '1px solid #ababab' : 'none',
               }}
             >
-              {/* L 形连接线的上半部分和水平线 */}
+              {/* 当前层级的 L 形连接线 */}
               {isLastLevel && (
-                <div
-                  className="treeGlyphTop"
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    top: 0,
-                    width: '8px',
-                    height: '50%',
-                    borderInlineStart: '1px solid #ababab',
-                    borderBottom: '1px solid #ababab',
-                  }}
-                />
+                <>
+                  {/* 垂直线 - 从顶部到中间 */}
+                  <div
+                    className="absolute top-0 left-0"
+                    style={{
+                      width: '1px',
+                      height: '50%',
+                      backgroundColor: 'var(--border, #e5e7eb)',
+                    }}
+                  />
+                  {/* 水平线 - 从左侧到图标 */}
+                  <div
+                    className="absolute left-0"
+                    style={{
+                      top: '50%',
+                      width: '10px',
+                      height: '1px',
+                      backgroundColor: 'var(--border, #e5e7eb)',
+                    }}
+                  />
+                </>
               )}
             </div>
           )
