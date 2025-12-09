@@ -154,6 +154,8 @@ export function TreeNode({
       <div
         ref={setNodeRef}
         style={style}
+        {...attributes}
+        {...(isLocked ? {} : listeners)}
         className={`treeItem group flex items-center gap-1 px-3 py-1.5 hover:bg-muted relative ${
           isSelected ? 'bg-primary/10' : ''
         } ${isBeingDragged ? 'opacity-50' : ''} ${dropIndicatorClass}`}
@@ -161,7 +163,7 @@ export function TreeNode({
         {/* 树形连接线 - OneTab 风格 */}
         {level > 0 && Array.from({ length: level }).map((_, idx) => {
           const isLastLevel = idx === level - 1
-          const shouldDrawVertical = idx < level - 1 ? parentLines[idx] : !isLast
+          const shouldDrawVertical = parentLines[idx]
           const glyphWidth = idx === 0 ? 24 : 20
           
           return (
@@ -171,10 +173,23 @@ export function TreeNode({
               style={{
                 width: `${glyphWidth}px`,
                 height: '100%',
-                borderInlineStart: shouldDrawVertical ? '1px solid #ababab' : 'none',
               }}
             >
-              {/* L 形连接线的上半部分和水平线 */}
+              {/* 垂直线 - 从父节点延伸下来 */}
+              {shouldDrawVertical && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: '1px',
+                    backgroundColor: '#ababab',
+                  }}
+                />
+              )}
+              
+              {/* L 形转角 - 只在最后一层显示 */}
               {isLastLevel && (
                 <div
                   className="treeGlyphTop"
@@ -184,7 +199,7 @@ export function TreeNode({
                     top: 0,
                     width: '8px',
                     height: '50%',
-                    borderInlineStart: '1px solid #ababab',
+                    borderLeft: '1px solid #ababab',
                     borderBottom: '1px solid #ababab',
                   }}
                 />
@@ -212,12 +227,8 @@ export function TreeNode({
           )}
         </button>
 
-        {/* 图标和标题区域 - 整行可拖拽 */}
-        <div
-          {...attributes}
-          {...(isLocked ? {} : listeners)}
-          className={`flex items-center gap-1.5 flex-1 min-w-0 ${isLocked ? 'cursor-not-allowed' : 'cursor-grab active:cursor-grabbing'}`}
-        >
+        {/* 图标和标题区域 */}
+        <div className="flex items-center gap-1.5 flex-1 min-w-0">
           {/* 图标 */}
           {isFolder ? (
             isExpanded ? (
