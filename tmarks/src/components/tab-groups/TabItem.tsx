@@ -53,7 +53,10 @@ export function TabItem({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: item.id })
+  } = useSortable({
+    id: item.id,
+    animateLayoutChanges: () => false, // 禁用布局动画，避免闪烁
+  })
 
   const style = {
     transform: CSS.Transform.toString(transform),
