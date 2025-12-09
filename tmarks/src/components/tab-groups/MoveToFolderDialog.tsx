@@ -114,9 +114,9 @@ export function MoveToFolderDialog({
       return (
         <div key={folder.id}>
           <div
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all ${
               isSelected
-                ? 'bg-primary text-primary-content'
+                ? 'bg-primary text-primary-foreground font-medium ring-2 ring-primary ring-offset-2 ring-offset-background'
                 : 'hover:bg-muted'
             }`}
             style={{ paddingLeft: `${level * 20 + 12}px` }}
@@ -193,9 +193,9 @@ export function MoveToFolderDialog({
         >
           {/* 根目录选项 */}
           <div
-            className={`flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors border-b ${
+            className={`flex items-center gap-2 px-3 py-2 cursor-pointer transition-all border-b ${
               selectedFolderId === null
-                ? 'bg-primary text-primary-content'
+                ? 'bg-primary text-primary-foreground font-medium ring-2 ring-primary ring-offset-2 ring-offset-background'
                 : 'hover:bg-muted'
             }`}
             style={{ borderColor: 'var(--border)' }}
