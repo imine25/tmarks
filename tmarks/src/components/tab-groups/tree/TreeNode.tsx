@@ -154,8 +154,6 @@ export function TreeNode({
       <div
         ref={setNodeRef}
         style={style}
-        {...attributes}
-        {...(isLocked ? {} : listeners)}
         className={`treeItem group flex items-center gap-1 px-3 py-1.5 hover:bg-muted relative ${
           isSelected ? 'bg-primary/10' : ''
         } ${isBeingDragged ? 'opacity-50' : ''} ${dropIndicatorClass}`}
@@ -227,8 +225,14 @@ export function TreeNode({
           )}
         </button>
 
-        {/* 图标和标题区域 */}
-        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+        {/* 图标和标题区域 - 可拖拽区域 */}
+        <div
+          {...attributes}
+          {...(isLocked ? {} : listeners)}
+          className={`flex items-center gap-1.5 flex-1 min-w-0 ${
+            isLocked ? 'cursor-not-allowed' : 'cursor-grab active:cursor-grabbing'
+          }`}
+        >
           {/* 图标 */}
           {isFolder ? (
             isExpanded ? (
