@@ -7,7 +7,6 @@ import {
   MoreHorizontal,
 } from 'lucide-react'
 import { useSortable } from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
 import { DropdownMenu } from '@/components/common/DropdownMenu'
 import { useTabGroupMenu } from '@/hooks/useTabGroupMenu'
 import { buildTreeNodeMenu } from './TreeNodeMenu'
@@ -68,7 +67,6 @@ export function TreeNode({
     attributes,
     listeners,
     setNodeRef,
-    transform,
     isDragging,
   } = useSortable({
     id: group.id,
@@ -77,15 +75,15 @@ export function TreeNode({
       parentId: group.parent_id,
     },
     disabled: isLocked,
-    // 完全禁用布局动画，避免拖拽后闪烁
+    // 完全禁用布局动画
     animateLayoutChanges: () => false,
   })
 
+  // 不应用 transform，元素保持原位置不动
+  // 只通过 DragOverlay 显示拖拽预览，通过指示器显示插入位置
   const style = {
-    transform: CSS.Translate.toString(transform),
-    transition: 'none', // 完全禁用 transition，保持元素位置不动
-    opacity: isDragging ? 0.4 : 1,
-    cursor: isLocked ? 'not-allowed' : (isDragging ? 'grabbing' : 'grab'),
+    opacity: isDragging ? 0.5 : 1,
+    cursor: isLocked ? 'not-allowed' : 'grab',
   }
 
   const handleRenameSubmit = async () => {
@@ -144,9 +142,12 @@ export function TreeNode({
 
   return (
     <div>
-      {/* 拖放指示器 - before */}
+      {/* 拖放指示器 - before（蓝色横线 + 左侧圆点） */}
       {isDropTarget && dropPosition === 'before' && (
-        <div className="h-0.5 bg-primary mx-3 -mt-0.5" />
+        <div className="relative h-1 mx-2">
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-primary border-2 border-background" />
+          <div className="absolute left-2 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-primary" />
+        </div>
       )}
 
       {/* 节点行 */}
@@ -250,9 +251,12 @@ export function TreeNode({
         )}
       </div>
 
-      {/* 拖放指示器 - after */}
+      {/* 拖放指示器 - after（蓝色横线 + 左侧圆点） */}
       {isDropTarget && dropPosition === 'after' && (
-        <div className="h-0.5 bg-primary mx-3 -mb-0.5" />
+        <div className="relative h-1 mx-2">
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-primary border-2 border-background" />
+          <div className="absolute left-2 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-primary" />
+        </div>
       )}
 
       {/* 子节点 */}
