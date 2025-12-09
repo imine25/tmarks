@@ -23,7 +23,9 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  DragOverlay,
   type DragEndEvent,
+  type DragStartEvent,
 } from '@dnd-kit/core'
 import { useTabGroupActions } from '@/hooks/useTabGroupActions'
 import { useBatchActions } from '@/hooks/useBatchActions'
@@ -54,6 +56,9 @@ export function TabGroupsPage() {
   const isMobile = useIsMobile()
   const isDesktop = useIsDesktop()
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+
+  // 拖拽状态
+  const [activeId, setActiveId] = useState<string | null>(null)
 
   // Move item dialog state
   const [moveItemDialog, setMoveItemDialog] = useState<{
@@ -325,8 +330,13 @@ export function TabGroupsPage() {
     }
   }
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string)
+  }
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
+    setActiveId(null)
 
     if (!over || active.id === over.id) return
 
@@ -762,6 +772,7 @@ export function TabGroupsPage() {
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
           <div className="grid grid-cols-1 gap-6">
@@ -873,6 +884,36 @@ export function TabGroupsPage() {
               return result
             })()}
           </div>
+
+          {/* DragOverlay - 拖拽时显示的浮动元素 */}
+          <DragOverlay>
+            {activeId ? (
+              <div
+                className="bg-card border-2 border-primary rounded shadow-xl cursor-grabbing p-3 opacity-95"
+                style={{
+                  transform: 'scale(1.05)',
+                }}
+              >
+                {(() => {
+                  // 查找被拖拽的项目
+                  for (const group of tabGroups) {
+                    const item = group.items?.find((i) => i.id === activeId)
+                    if (item) {
+                      return (
+                        <div className="flex items-center gap-3">
+                          <div className="w-4 h-4 rounded bg-primary/20 flex-shrink-0" />
+                          <span className="text-sm font-medium text-foreground truncate max-w-[300px]">
+                            {item.title}
+                          </span>
+                        </div>
+                      )
+                    }
+                  }
+                  return null
+                })()}
+              </div>
+            ) : null}
+          </DragOverlay>
         </DndContext>
       )}
 
