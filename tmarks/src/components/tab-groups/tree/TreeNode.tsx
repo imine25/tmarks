@@ -148,8 +148,7 @@ export function TreeNode({
       {/* 垂直连接线 - 绘制在整个节点容器上，包括子节点 */}
       {level > 0 && Array.from({ length: level - 1 }).map((_, idx) => {
         const shouldDrawVertical = parentLines[idx]
-        const glyphWidth = idx === 0 ? 24 : 20
-        const leftOffset = Array.from({ length: idx + 1 }).reduce((sum, _, i) => sum + (i === 0 ? 24 : 20), 12) // 12px 是 padding
+        const leftOffset = Array.from({ length: idx + 1 }).reduce((sum: number, _, i) => sum + (i === 0 ? 24 : 20), 12) // 12px 是 padding
         
         return shouldDrawVertical ? (
           <div
