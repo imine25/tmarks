@@ -137,15 +137,23 @@ export function useDragAndDrop({ tabGroups, onMoveGroup }: UseDragAndDropProps) 
     logger.log('🎯 DragEnd:', {
       draggedId: draggedGroup.id,
       draggedTitle: draggedGroup.title,
+      draggedIsFolder: draggedGroup.is_folder,
+      draggedParentId: draggedGroup.parent_id,
       targetId: targetGroup.id,
       targetTitle: targetGroup.title,
+      targetIsFolder: targetGroup.is_folder,
+      targetParentId: targetGroup.parent_id,
       dropPosition: currentDropPosition
     })
 
     // 根据拖放位置决定操作
     if (currentDropPosition === 'inside' && targetGroup.is_folder === 1) {
+      logger.log('  ✅ Conditions met for moving inside folder')
+      
       // 放入文件夹内部
       if (draggedGroup.is_folder === 1) {
+        logger.log('  🔍 Checking for circular nesting...')
+        
         const isDescendant = (parentId: string, childId: string): boolean => {
           const child = tabGroups.find(g => g.id === childId)
           if (!child || !child.parent_id) return false
@@ -157,10 +165,21 @@ export function useDragAndDrop({ tabGroups, onMoveGroup }: UseDragAndDropProps) 
           logger.log('  ❌ Cannot move folder into its descendant')
           return
         }
+        logger.log('  ✅ No circular nesting detected')
       }
 
-      logger.log('  → Moving inside folder')
-      await onMoveGroup(draggedGroup.id, targetGroup.id, 0)
+      logger.log('  → Calling onMoveGroup:', {
+        groupId: draggedGroup.id,
+        newParentId: targetGroup.id,
+        newPosition: 0
+      })
+      
+      try {
+        await onMoveGroup(draggedGroup.id, targetGroup.id, 0)
+        logger.log('  ✅ Move completed successfully')
+      } catch (error) {
+        logger.error('  ❌ Move failed:', error)
+      }
     } else {
       // 移动到同级
       const newParentId = targetGroup.parent_id || null

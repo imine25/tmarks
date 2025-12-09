@@ -78,8 +78,8 @@ export function TreeNode({
       parentId: group.parent_id,
     },
     disabled: isLocked,
-    animateLayoutChanges: ({isSorting, wasDragging}) =>
-      isSorting || wasDragging ? false : true,
+    // 完全禁用布局动画，避免拖拽后闪烁
+    animateLayoutChanges: () => false,
   })
 
   const style = {
