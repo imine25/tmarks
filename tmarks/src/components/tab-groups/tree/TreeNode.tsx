@@ -144,7 +144,7 @@ export function TreeNode({
   }
 
   return (
-    <div ref={setNodeRef} style={style}>
+    <div>
       {/* 拖放指示器 - before */}
       {isDropTarget && dropPosition === 'before' && (
         <div className="h-0.5 bg-primary mx-3 -mt-0.5" />
@@ -152,6 +152,8 @@ export function TreeNode({
 
       {/* 节点行 - OneTab 风格布局 */}
       <div
+        ref={setNodeRef}
+        style={style}
         className={`treeItem group flex items-center gap-1 px-3 py-1.5 hover:bg-muted relative ${
           isSelected ? 'bg-primary/10' : ''
         } ${isBeingDragged ? 'opacity-50' : ''} ${dropIndicatorClass}`}
