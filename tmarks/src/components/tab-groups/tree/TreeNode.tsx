@@ -257,6 +257,16 @@ export function TreeNode({
         </div>
       )}
 
+      {/* 空文件夹拖放区域 - 当拖拽到空文件夹内部时显示 */}
+      {isFolder && isDropTarget && dropPosition === 'inside' && !hasChildren && (
+        <div
+          className="mx-2 py-3 border-2 border-dashed border-primary rounded-lg bg-primary/5 text-center"
+          style={{ marginLeft: `${(level + 1) * 20 + 12}px` }}
+        >
+          <span className="text-xs text-primary font-medium">放置到此文件夹</span>
+        </div>
+      )}
+
       {/* 子节点 */}
       {isExpanded && hasChildren && group.children && (
         <div>
