@@ -195,12 +195,12 @@ export function TreeNode({
                       backgroundColor: 'var(--border, #e5e7eb)',
                     }}
                   />
-                  {/* 水平线 - 从左侧到图标 */}
+                  {/* 水平线 - 从左侧延伸到右侧 */}
                   <div
                     className="absolute left-0"
                     style={{
                       top: '50%',
-                      width: '10px',
+                      width: '100%',
                       height: '1px',
                       backgroundColor: 'var(--border, #e5e7eb)',
                     }}
