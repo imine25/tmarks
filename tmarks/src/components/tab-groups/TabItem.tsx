@@ -69,7 +69,7 @@ export function TabItem({
     <div
       ref={setNodeRef}
       style={style}
-      className={`group flex items-center gap-3 rounded border transition-all ${
+      className={`group flex items-center gap-3 rounded border ${
         isMobile ? 'p-4 min-h-[60px]' : 'p-3'
       } ${
         isHighlighted
