@@ -150,61 +150,17 @@ export function TreeNode({
         <div className="h-0.5 bg-primary mx-3 -mt-0.5" />
       )}
 
-      {/* 节点行 - OneTab 风格布局 */}
+      {/* 节点行 */}
       <div
         ref={setNodeRef}
-        style={style}
-        className={`treeItem group flex items-center gap-1 px-3 py-1.5 hover:bg-muted relative ${
+        style={{
+          ...style,
+          paddingLeft: `${level * 20 + 12}px`, // 使用缩进代替树状线
+        }}
+        className={`treeItem group flex items-center gap-1 py-1.5 pr-3 hover:bg-muted relative ${
           isSelected ? 'bg-primary/10' : ''
         } ${isBeingDragged ? 'opacity-50' : ''} ${dropIndicatorClass}`}
       >
-        {/* 树形连接线 - OneTab 风格 */}
-        {level > 0 && Array.from({ length: level }).map((_, idx) => {
-          const isLastLevel = idx === level - 1
-          const shouldDrawVertical = parentLines[idx]
-          const glyphWidth = idx === 0 ? 24 : 20
-          
-          return (
-            <div
-              key={idx}
-              className="treeGlyph relative flex-shrink-0"
-              style={{
-                width: `${glyphWidth}px`,
-                height: '100%',
-              }}
-            >
-              {/* 垂直线 - 从父节点延伸下来 */}
-              {shouldDrawVertical && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: '1px',
-                    backgroundColor: '#ababab',
-                  }}
-                />
-              )}
-              
-              {/* L 形转角 - 只在最后一层显示 */}
-              {isLastLevel && (
-                <div
-                  className="treeGlyphTop"
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    top: 0,
-                    width: '8px',
-                    height: '50%',
-                    borderLeft: '1px solid #ababab',
-                    borderBottom: '1px solid #ababab',
-                  }}
-                />
-              )}
-            </div>
-          )
-        })}
         
         {/* 展开/折叠按钮 */}
         <button
