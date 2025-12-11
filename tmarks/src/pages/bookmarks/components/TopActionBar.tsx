@@ -126,7 +126,7 @@ export function TopActionBar({
       <div className="p-4 sm:p-5 w-full">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full">
           {/* 移动端标签抽屉按钮 + 搜索框 */}
-          <div className="flex items-center gap-3 flex-1 min-w-0 w-full sm:max-w-md">
+          <div className="flex items-center gap-3 flex-1 min-w-0 w-full">
             {/* 标签抽屉按钮 - 仅移动端显示 */}
             <button
               onClick={() => setIsTagSidebarOpen(true)}
