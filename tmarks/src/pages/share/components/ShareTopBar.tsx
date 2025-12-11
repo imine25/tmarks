@@ -172,11 +172,10 @@ export function ShareTopBar({
             </div>
           </div>
 
-          <div className="flex items-center gap-1 w-full sm:w-auto overflow-x-auto scrollbar-hide pb-1 sm:pb-0">
+          <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto scrollbar-hide pb-1 sm:pb-0">
             <button
               onClick={handleSortChange}
-              className="flex items-center justify-center w-8 h-8 rounded-lg transition-all hover:bg-primary/10 flex-shrink-0"
-              style={{color: 'var(--foreground)'}}
+              className="btn btn-sm btn-ghost p-2 flex-shrink-0"
               title={`${SORT_LABELS[sortBy]} (点击切换)`}
             >
               <SortIcon sort={sortBy} />
@@ -184,14 +183,7 @@ export function ShareTopBar({
 
             <button
               onClick={handleVisibilityChange}
-              className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all flex-shrink-0 ${
-                visibilityFilter === 'all'
-                  ? 'hover:bg-primary/10'
-                  : visibilityFilter === 'public'
-                  ? 'text-success hover:bg-success/10'
-                  : 'text-warning hover:bg-warning/10'
-              }`}
-              style={{color: visibilityFilter === 'all' ? 'var(--foreground)' : undefined}}
+              className="btn btn-sm btn-ghost p-2 flex-shrink-0"
               title={`${VISIBILITY_LABELS[visibilityFilter]} (点击切换)`}
             >
               <VisibilityIcon filter={visibilityFilter} />
@@ -199,8 +191,7 @@ export function ShareTopBar({
 
             <button
               onClick={handleViewModeChange}
-              className="flex items-center justify-center w-8 h-8 rounded-lg transition-all hover:bg-primary/10 flex-shrink-0"
-              style={{color: 'var(--foreground)'}}
+              className="btn btn-sm btn-ghost p-2 flex-shrink-0"
               title={`${getViewModeLabel(viewMode)} (点击切换)`}
             >
               <ViewModeIcon mode={viewMode} />
