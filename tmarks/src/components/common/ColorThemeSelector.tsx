@@ -10,7 +10,8 @@ export function ColorThemeSelector() {
   return (
     <button
       onClick={toggleColorTheme}
-      className="btn btn-sm btn-ghost p-2"
+      className="flex items-center justify-center w-8 h-8 rounded-lg transition-all hover:bg-primary/10"
+      style={{color: 'var(--foreground)'}}
       aria-label="切换颜色主题"
       title={colorTheme === 'default' ? '切换到活力橙' : '切换到中性灰'}
     >

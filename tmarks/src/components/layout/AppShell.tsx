@@ -60,7 +60,8 @@ export function AppShell() {
             {/* 书签/标签页组切换按钮 */}
             <button
               onClick={handleToggleView}
-              className="btn btn-sm btn-ghost p-2 hidden sm:flex"
+              className="hidden sm:flex items-center justify-center w-8 h-8 rounded-lg transition-all hover:bg-primary/10"
+              style={{color: 'var(--foreground)'}}
               title={isOnTabGroupsPage ? '切换到书签' : '切换到标签页组'}
             >
               {isOnTabGroupsPage ? (
@@ -77,7 +78,8 @@ export function AppShell() {
             {user && (
               <button
                 onClick={() => navigate('/settings/general')}
-                className="btn btn-sm btn-ghost p-2"
+                className="flex items-center justify-center w-8 h-8 rounded-lg transition-all hover:bg-primary/10"
+                style={{color: 'var(--foreground)'}}
                 title={`${user.username} - 点击进入设置`}
               >
                 <User className="w-4 h-4" />

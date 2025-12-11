@@ -438,7 +438,8 @@ export function PublicSharePage() {
                       {/* 排序按钮 - 点击循环切换 */}
                       <button
                         onClick={handleSortByChange}
-                        className="btn btn-sm btn-ghost p-2 flex-shrink-0"
+                        className="flex items-center justify-center w-8 h-8 rounded-lg transition-all hover:bg-primary/10 flex-shrink-0"
+                        style={{color: 'var(--foreground)'}}
                         title={`${SORT_LABELS[sortBy]} (点击切换)`}
                         aria-label={`${SORT_LABELS[sortBy]} (点击切换)`}
                         type="button"
@@ -449,17 +450,14 @@ export function PublicSharePage() {
                       {/* 可见性筛选按钮 - 点击循环切换 */}
                       <button
                         onClick={handleVisibilityChange}
-                        className={`btn btn-sm p-2 flex-shrink-0 ${
+                        className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all flex-shrink-0 ${
                           visibilityFilter === 'all'
-                            ? 'btn-ghost'
+                            ? 'hover:bg-primary/10'
                             : visibilityFilter === 'public'
                             ? 'text-success hover:bg-success/10'
                             : 'text-warning hover:bg-warning/10'
                         }`}
-                        style={{
-                          background: visibilityFilter !== 'all' ? 'transparent' : undefined,
-                          boxShadow: 'none'
-                        }}
+                        style={{color: visibilityFilter === 'all' ? 'var(--foreground)' : undefined}}
                         title={`${VISIBILITY_LABELS[visibilityFilter]} (点击切换)`}
                         aria-label={`${VISIBILITY_LABELS[visibilityFilter]} (点击切换)`}
                         type="button"
@@ -470,7 +468,8 @@ export function PublicSharePage() {
                       {/* 视图模式按钮 - 点击循环切换 */}
                       <button
                         onClick={handleViewModeChange}
-                        className="btn btn-sm btn-ghost p-2 flex-shrink-0"
+                        className="flex items-center justify-center w-8 h-8 rounded-lg transition-all hover:bg-primary/10 flex-shrink-0"
+                        style={{color: 'var(--foreground)'}}
                         title={`${getViewModeLabel(viewMode)} (点击切换)`}
                         aria-label={`${getViewModeLabel(viewMode)} (点击切换)`}
                         type="button"
