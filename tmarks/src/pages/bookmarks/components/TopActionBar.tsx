@@ -124,13 +124,13 @@ export function TopActionBar({
   return (
     <div className="flex-shrink-0 px-3 sm:px-4 md:px-6 pt-3 sm:pt-4 md:pt-6 pb-3 sm:pb-4 w-full">
       <div className="p-4 sm:p-5 w-full">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full">
-          {/* 移动端标签抽屉按钮 + 搜索框 */}
-          <div className="flex items-center gap-3 flex-1 min-w-0 w-full">
+        <div className="flex flex-col gap-3 w-full">
+          {/* 第一行：标签抽屉按钮 + 搜索框 */}
+          <div className="flex items-center gap-3 w-full">
             {/* 标签抽屉按钮 - 仅移动端显示 */}
             <button
               onClick={() => setIsTagSidebarOpen(true)}
-              className="group lg:hidden w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-all duration-300 bg-card border border-border hover:border-primary/30 hover:bg-primary/5 active:scale-95 text-foreground shadow-sm hover:shadow-md"
+              className="group lg:hidden w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-all duration-300 bg-card border border-border hover:border-primary/30 hover:bg-primary/5 active:scale-95 text-foreground shadow-sm hover:shadow-md flex-shrink-0"
               title="打开标签"
               aria-label="打开标签"
             >
@@ -169,7 +169,8 @@ export function TopActionBar({
             </div>
           </div>
 
-          {/* 排序选择、视图切换和新增按钮 */}
+          {/* 第二行：5个操作按钮 - 移动端横向滚动，桌面端右对齐 */}
+          <div className="flex items-center gap-2 w-full overflow-x-auto scrollbar-hide pb-1 sm:pb-0 sm:justify-end">
             {/* 排序按钮 */}
             <button
               onClick={onSortByChange}
@@ -240,6 +241,7 @@ export function TopActionBar({
             >
               <Plus className="w-4 h-4 transition-transform" strokeWidth={2.5} />
             </button>
+          </div>
         </div>
       </div>
     </div>
