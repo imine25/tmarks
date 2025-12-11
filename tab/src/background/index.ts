@@ -387,6 +387,25 @@ async function handleMessage(
       }
     }
 
+    case 'UPDATE_BOOKMARK_DESCRIPTION': {
+      try {
+        const { bookmarkId, description } = message.payload;
+        
+        // 调用 API 更新描述
+        await bookmarkAPI.updateBookmarkDescription(bookmarkId, description);
+
+        return {
+          success: true,
+          data: { message: 'Description updated successfully' }
+        };
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Failed to update description'
+        };
+      }
+    }
+
     case 'REFRESH_PINNED_BOOKMARKS': {
       try {
         // 广播消息到所有 NewTab 页面，让它们刷新置顶书签

@@ -249,6 +249,7 @@ export type MessageType =
   | 'GET_CONFIG'
   | 'GET_EXISTING_TAGS'
   | 'UPDATE_BOOKMARK_TAGS'
+  | 'UPDATE_BOOKMARK_DESCRIPTION'
   | 'CAPTURE_PAGE'
   | 'CAPTURE_PAGE_V2'
   | 'PING'
@@ -290,6 +291,7 @@ export interface TabGroupItem {
 
 export interface TabGroupInput {
   title?: string;
+  parent_id?: string | null;
   items: Array<{
     title: string;
     url: string;

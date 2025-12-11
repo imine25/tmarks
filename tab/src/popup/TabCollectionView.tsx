@@ -7,8 +7,12 @@ import { useEffect, useState } from 'react';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { SuccessMessage } from '@/components/SuccessMessage';
+import { CollectionOptionsDialog, type CollectionOption } from '@/components/CollectionOptionsDialog';
 import { getCurrentWindowTabs, collectCurrentWindowTabs, closeTabs } from '@/lib/services/tab-collection';
+import { createTMarksClient } from '@/lib/api/tmarks';
+import { normalizeApiUrl } from '@/lib/constants/urls';
 import type { BookmarkSiteConfig } from '@/types';
+import type { TMarksTabGroup } from '@/lib/api/tmarks/tab-groups';
 
 interface TabCollectionViewProps {
   config: BookmarkSiteConfig;
@@ -31,9 +35,12 @@ export function TabCollectionView({ config, onBack }: TabCollectionViewProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [collectedTabIds, setCollectedTabIds] = useState<number[]>([]);
+  const [showOptionsDialog, setShowOptionsDialog] = useState(false);
+  const [groups, setGroups] = useState<TMarksTabGroup[]>([]);
 
   useEffect(() => {
     loadTabs();
+    loadGroups();
   }, []);
 
   const loadTabs = async () => {
@@ -62,6 +69,38 @@ export function TabCollectionView({ config, onBack }: TabCollectionViewProps) {
     }
   };
 
+  const loadGroups = async () => {
+    try {
+      const client = createTMarksClient({
+        baseUrl: normalizeApiUrl(config.apiUrl),
+        apiKey: config.apiKey,
+      });
+      const allGroups = await client.tabGroups.getAllTabGroups();
+      setGroups(allGroups);
+    } catch (err) {
+      console.error('加载分组失败:', err);
+      setGroups([]);
+    }
+  };
+
+  const handleCreateFolder = async (title: string): Promise<TMarksTabGroup> => {
+    try {
+      const client = createTMarksClient({
+        baseUrl: normalizeApiUrl(config.apiUrl),
+        apiKey: config.apiKey,
+      });
+      const response = await client.tabGroups.createFolder(title);
+      const newFolder = response.data.tab_group;
+      
+      // 更新本地分组列表
+      setGroups([...groups, newFolder]);
+      
+      return newFolder;
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : '创建文件夹失败');
+    }
+  };
+
   const toggleTab = (tabId: number) => {
     const newSelected = new Set(selectedTabIds);
     if (newSelected.has(tabId)) {
@@ -80,7 +119,8 @@ export function TabCollectionView({ config, onBack }: TabCollectionViewProps) {
     }
   };
 
-  const handleCollect = async () => {
+  // 快速收纳：直接创建新分组
+  const handleQuickCollect = async () => {
     if (selectedTabIds.size === 0) {
       setError('请至少选择一个标签页');
       return;
@@ -90,8 +130,39 @@ export function TabCollectionView({ config, onBack }: TabCollectionViewProps) {
     setError(null);
 
     try {
-      // Collect only selected tabs
       const result = await collectCurrentWindowTabs(config, selectedTabIds);
+
+      if (result.success) {
+        setSuccessMessage(result.message || '收纳成功');
+        setCollectedTabIds(Array.from(selectedTabIds));
+        setShowCloseConfirm(true);
+      } else {
+        setError(result.error || '收纳失败');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '收纳失败');
+    } finally {
+      setIsCollecting(false);
+    }
+  };
+
+  // 显示选项对话框
+  const handleShowOptions = () => {
+    if (selectedTabIds.size === 0) {
+      setError('请至少选择一个标签页');
+      return;
+    }
+    setShowOptionsDialog(true);
+  };
+
+  // 确认收纳（带选项）
+  const handleConfirmCollection = async (option: CollectionOption) => {
+    setShowOptionsDialog(false);
+    setIsCollecting(true);
+    setError(null);
+
+    try {
+      const result = await collectCurrentWindowTabs(config, selectedTabIds, option);
 
       if (result.success) {
         setSuccessMessage(result.message || '收纳成功');
@@ -119,12 +190,22 @@ export function TabCollectionView({ config, onBack }: TabCollectionViewProps) {
   const handleKeepTabs = () => {
     setShowCloseConfirm(false);
     setCollectedTabIds([]);
-    // Optionally close the popup
     window.close();
   };
 
   return (
     <div className="relative h-[80vh] min-h-[620px] w-[380px] overflow-hidden rounded-b-2xl bg-white text-gray-900 shadow-2xl">
+      {/* Collection Options Dialog */}
+      {showOptionsDialog && (
+        <CollectionOptionsDialog
+          tabCount={selectedTabIds.size}
+          groups={groups}
+          onConfirm={handleConfirmCollection}
+          onCancel={() => setShowOptionsDialog(false)}
+          onCreateFolder={handleCreateFolder}
+        />
+      )}
+
       {/* Error/Success Messages - 固定在最顶部 */}
       <div className="pointer-events-none fixed top-0 left-0 right-0 z-50 px-4 pt-2 space-y-2">
         {error && (
@@ -166,7 +247,14 @@ export function TabCollectionView({ config, onBack }: TabCollectionViewProps) {
                 取消
               </button>
               <button
-                onClick={handleCollect}
+                onClick={handleShowOptions}
+                disabled={isCollecting || selectedTabIds.size === 0}
+                className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-[11px] font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 active:scale-95"
+              >
+                选项
+              </button>
+              <button
+                onClick={handleQuickCollect}
                 disabled={isCollecting || selectedTabIds.size === 0}
                 className="rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-1.5 text-[11px] font-semibold text-white shadow-sm transition-all duration-200 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40 active:scale-95"
               >
@@ -288,4 +376,3 @@ export function TabCollectionView({ config, onBack }: TabCollectionViewProps) {
     </div>
   );
 }
-

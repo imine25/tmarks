@@ -6,6 +6,7 @@ interface ExistingBookmark {
   id: string;
   title: string;
   url: string;
+  description?: string;
   tags: Array<{ id: string; name: string; color: string | null }>;
   has_snapshot?: boolean;
   snapshot_count?: number;
@@ -16,6 +17,7 @@ interface BookmarkExistsDialogProps {
   bookmark: ExistingBookmark;
   newTags: string[];
   onUpdateTags: (tags: string[]) => Promise<void>;
+  onUpdateDescription: (description: string) => Promise<void>;
   onCreateSnapshot: () => Promise<void>;
   onCancel: () => void;
 }
@@ -24,13 +26,15 @@ export function BookmarkExistsDialog({
   bookmark,
   newTags,
   onUpdateTags,
+  onUpdateDescription,
   onCreateSnapshot,
   onCancel,
 }: BookmarkExistsDialogProps) {
-  const [selectedAction, setSelectedAction] = useState<'snapshot' | 'update-tags' | null>(null);
+  const [selectedAction, setSelectedAction] = useState<'snapshot' | 'update-tags' | 'update-description' | null>(null);
   const [tmarksUrl, setTmarksUrl] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingMessage, setProcessingMessage] = useState('');
+  const [descriptionInput, setDescriptionInput] = useState(bookmark.description || '');
 
   useEffect(() => {
     // Load TMarks URL from storage
@@ -96,6 +100,24 @@ export function BookmarkExistsDialog({
           setIsProcessing(false);
         }, 2000);
       }
+    } else if (selectedAction === 'update-description') {
+      setIsProcessing(true);
+      setProcessingMessage('正在更新描述...');
+      
+      try {
+        await onUpdateDescription(descriptionInput.trim());
+        setProcessingMessage('描述更新成功！');
+        
+        setTimeout(() => {
+          setIsProcessing(false);
+          onCancel();
+        }, 1500);
+      } catch (error) {
+        setProcessingMessage('描述更新失败');
+        setTimeout(() => {
+          setIsProcessing(false);
+        }, 2000);
+      }
     }
   };
 
@@ -155,6 +177,16 @@ export function BookmarkExistsDialog({
                 {formatDate(bookmark.created_at)}
               </div>
             </div>
+
+            {/* 现有描述 */}
+            {bookmark.description && (
+              <div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">描述</div>
+                <div className="text-sm text-gray-700 dark:text-gray-300">
+                  {bookmark.description}
+                </div>
+              </div>
+            )}
 
             {/* 现有标签 */}
             {bookmark.tags.length > 0 && (
@@ -298,6 +330,42 @@ export function BookmarkExistsDialog({
                 </div>
               </label>
             )}
+
+            {/* 更新描述 */}
+            <label
+              className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                selectedAction === 'update-description'
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+              }`}
+            >
+              <input
+                type="radio"
+                name="action"
+                value="update-description"
+                checked={selectedAction === 'update-description'}
+                onChange={() => setSelectedAction('update-description')}
+                className="mt-0.5 w-4 h-4 text-blue-600 focus:ring-blue-500"
+              />
+              <div className="flex-1">
+                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                  更新描述
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  修改书签的描述信息
+                </div>
+                {selectedAction === 'update-description' && (
+                  <textarea
+                    value={descriptionInput}
+                    onChange={(e) => setDescriptionInput(e.target.value)}
+                    placeholder="输入新的描述..."
+                    rows={3}
+                    className="mt-2 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                )}
+              </div>
+            </label>
           </div>
         </div>
 

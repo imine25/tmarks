@@ -258,6 +258,26 @@ export class BookmarkAPIClient {
   }
 
   /**
+   * Update bookmark description
+   */
+  async updateBookmarkDescription(bookmarkId: string, description: string): Promise<void> {
+    const client = await this.ensureClient();
+
+    try {
+      // 调用更新 API
+      await client.bookmarks.updateBookmark(bookmarkId, {
+        description
+      });
+    } catch (error: any) {
+      throw new AppError(
+        'BOOKMARK_SITE_ERROR' as ErrorCode,
+        `Failed to update description: ${error.message}`,
+        { originalError: error }
+      );
+    }
+  }
+
+  /**
    * Create a snapshot for a bookmark
    */
   async createSnapshot(

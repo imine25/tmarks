@@ -75,6 +75,7 @@ interface AppState {
   recommendTags: () => Promise<void>;
   saveBookmark: () => Promise<void>;
   updateExistingBookmarkTags: (bookmarkId: string, tags: string[]) => Promise<void>;
+  updateExistingBookmarkDescription: (bookmarkId: string, description: string) => Promise<void>;
   createSnapshotForBookmark: (bookmarkId: string) => Promise<void>;
   syncCache: () => Promise<void>;
 }
@@ -489,6 +490,47 @@ export const useAppStore = create<AppState>((set, get) => ({
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Failed to update tags',
+        isSaving: false
+      });
+    }
+  },
+
+  updateExistingBookmarkDescription: async (bookmarkId: string, description: string) => {
+    try {
+      set({ isSaving: true, error: null });
+
+      // 发送更新请求到 background
+      const result = await sendMessage({
+        type: 'UPDATE_BOOKMARK_DESCRIPTION',
+        payload: {
+          bookmarkId,
+          description
+        }
+      });
+
+      if (!result.success) {
+        throw new Error(result.error || '更新描述失败');
+      }
+
+      set({
+        successMessage: '✅ 描述已更新',
+        isSaving: false,
+        existingBookmark: null
+      });
+
+      chrome.notifications.create({
+        type: 'basic',
+        iconUrl: '/icons/icon-128.png',
+        title: 'AI 书签助手',
+        message: '描述已成功更新'
+      });
+
+      setTimeout(() => {
+        set({ successMessage: null });
+      }, 2000);
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Failed to update description',
         isSaving: false
       });
     }

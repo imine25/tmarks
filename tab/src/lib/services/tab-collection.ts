@@ -48,11 +48,21 @@ function getFaviconUrl(url: string): string {
 }
 
 /**
+ * Collection options for tab collection
+ */
+export interface CollectionOptions {
+  mode: 'new' | 'existing' | 'folder';
+  targetId?: string; // Group ID for 'existing' mode, or parent folder ID for 'folder' mode
+  title?: string; // Optional title for new group
+}
+
+/**
  * Collect selected tabs in current window and save to TMarks
  */
 export async function collectCurrentWindowTabs(
   config: BookmarkSiteConfig,
-  selectedTabIds?: Set<number>
+  selectedTabIds?: Set<number>,
+  options?: CollectionOptions
 ): Promise<TabGroupResult> {
   try {
     // Get all tabs in current window
@@ -75,17 +85,12 @@ export async function collectCurrentWindowTabs(
       };
     }
 
-    // Prepare tab group input
-    const tabGroupInput: TabGroupInput = {
-      items: validTabs.map((tab) => ({
-        title: tab.title || 'Untitled',
-        url: tab.url!,
-        favicon: getFaviconUrl(tab.url!),
-      })),
-    };
-
-    // Save to local database first
-    const localGroupId = await saveTabGroupLocally(tabGroupInput);
+    // Prepare items
+    const items = validTabs.map((tab) => ({
+      title: tab.title || 'Untitled',
+      url: tab.url!,
+      favicon: getFaviconUrl(tab.url!),
+    }));
 
     // Try to sync to TMarks
     try {
@@ -94,18 +99,42 @@ export async function collectCurrentWindowTabs(
         apiKey: config.apiKey,
       });
 
-      const response = await client.tabGroups.createTabGroup(tabGroupInput);
+      const collectionMode = options?.mode || 'new';
 
-      // Update local record with remote ID
-      await db.tabGroups.update(localGroupId, {
-        remoteId: response.data.tab_group.id,
-      });
+      if (collectionMode === 'existing' && options?.targetId) {
+        // Add to existing group
+        await client.tabGroups.addItemsToGroup(options.targetId, { items });
 
-      return {
-        success: true,
-        groupId: response.data.tab_group.id,
-        message: `成功收纳 ${validTabs.length} 个标签页`,
-      };
+        return {
+          success: true,
+          groupId: options.targetId,
+          message: `成功添加 ${validTabs.length} 个标签页到现有分组`,
+        };
+      } else {
+        // Create new group (or in folder)
+        const tabGroupInput: TabGroupInput = {
+          title: options?.title,
+          parent_id: collectionMode === 'folder' ? options?.targetId : null,
+          items,
+        };
+
+        // Save to local database first
+        const localGroupId = await saveTabGroupLocally(tabGroupInput);
+
+        const response = await client.tabGroups.createTabGroup(tabGroupInput);
+
+        // Update local record with remote ID
+        await db.tabGroups.update(localGroupId, {
+          remoteId: response.data.tab_group.id,
+        });
+
+        const modeText = collectionMode === 'folder' ? '到文件夹' : '';
+        return {
+          success: true,
+          groupId: response.data.tab_group.id,
+          message: `成功收纳 ${validTabs.length} 个标签页${modeText}`,
+        };
+      }
     } catch (error: any) {
       // 详细记录错误信息
       console.error('[TabCollection] 同步到 TMarks 失败:', {
@@ -114,6 +143,7 @@ export async function collectCurrentWindowTabs(
         status: error.status,
       });
 
+      const collectionMode = options?.mode || 'new';
       const errorCode = error?.code || '';
       const errorStatus = error?.status || 0;
       const errorMessage = error?.message || '';
@@ -136,8 +166,16 @@ export async function collectCurrentWindowTabs(
           errorMessage.includes('网络') ||
           errorMessage.includes('connect'));
 
-      if (isNetworkError) {
-        // 网络错误，返回离线保存
+      if (isNetworkError && collectionMode !== 'existing') {
+        // 网络错误且不是添加到现有分组模式，返回离线保存
+        // 注意：添加到现有分组模式下无法离线保存，因为需要远程分组ID
+        const tabGroupInput: TabGroupInput = {
+          title: options?.title,
+          parent_id: collectionMode === 'folder' ? options?.targetId : null,
+          items,
+        };
+        const localGroupId = await saveTabGroupLocally(tabGroupInput);
+        
         return {
           success: true,
           groupId: localGroupId.toString(),

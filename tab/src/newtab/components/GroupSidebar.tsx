@@ -112,12 +112,12 @@ export function GroupSidebar({ onOpenSettings }: GroupSidebarProps) {
             onContextMenu={(e) => handleRemoveGroup(e, group.id)}
             className={`relative w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
               activeGroupId === group.id
-                ? 'bg-white/25 text-white'
-                : 'text-white/60 hover:text-white hover:bg-white/15'
+                ? 'bg-white/20 text-white'
+                : 'text-white/50 hover:text-white/80 hover:bg-white/10'
             }`}
             title={group.name}
           >
-            <IconComponent className="w-5 h-5" />
+            <IconComponent className="w-4 h-4" />
             {hoveredGroup === group.id && (
               <div className="absolute left-full ml-2 px-2 py-1 rounded-lg bg-black/80 text-white text-xs whitespace-nowrap z-50 flex items-center gap-2">
                 {group.name}
@@ -142,10 +142,10 @@ export function GroupSidebar({ onOpenSettings }: GroupSidebarProps) {
           onClick={() => setShowAddMenu(!showAddMenu)}
           onMouseEnter={() => setHoveredGroup('add')}
           onMouseLeave={() => setHoveredGroup(null)}
-          className="relative w-10 h-10 rounded-xl flex items-center justify-center text-white/40 hover:text-white/70 hover:bg-white/10 transition-all"
+          className="relative w-10 h-10 rounded-xl flex items-center justify-center text-white/50 hover:text-white/80 hover:bg-white/10 transition-all"
           title="新建分组"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-4 h-4" />
           {hoveredGroup === 'add' && !showAddMenu && (
             <div className="absolute left-full ml-2 px-2 py-1 rounded-lg bg-black/80 text-white text-xs whitespace-nowrap z-50">
               新建分组
@@ -220,10 +220,10 @@ export function GroupSidebar({ onOpenSettings }: GroupSidebarProps) {
           onClick={() => window.open(tmarksUrl, '_blank')}
           onMouseEnter={() => setHoveredGroup('tmarks')}
           onMouseLeave={() => setHoveredGroup(null)}
-          className="relative w-10 h-10 rounded-xl flex items-center justify-center text-white/60 hover:text-white hover:bg-white/15 transition-all"
+          className="relative w-10 h-10 rounded-xl flex items-center justify-center text-white/50 hover:text-white/80 hover:bg-white/10 transition-all"
           title="TMarks 书签"
         >
-          <BookMarked className="w-5 h-5" />
+          <BookMarked className="w-4 h-4" />
           {hoveredGroup === 'tmarks' && (
             <div className="absolute left-full ml-2 px-2 py-1 rounded-lg bg-black/80 text-white text-xs whitespace-nowrap z-50">
               书签管理
@@ -240,10 +240,10 @@ export function GroupSidebar({ onOpenSettings }: GroupSidebarProps) {
         onClick={onOpenSettings}
         onMouseEnter={() => setHoveredGroup('settings')}
         onMouseLeave={() => setHoveredGroup(null)}
-        className="relative w-10 h-10 rounded-xl flex items-center justify-center text-white/60 hover:text-white hover:bg-white/15 transition-all"
+        className="relative w-10 h-10 rounded-xl flex items-center justify-center text-white/50 hover:text-white/80 hover:bg-white/10 transition-all"
         title="设置"
       >
-        <Settings className="w-5 h-5" />
+        <Settings className="w-4 h-4" />
         {hoveredGroup === 'settings' && (
           <div className="absolute left-full ml-2 px-2 py-1 rounded-lg bg-black/80 text-white text-xs whitespace-nowrap z-50">
             设置

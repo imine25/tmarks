@@ -11,6 +11,8 @@ export interface TMarksTabGroup {
   id: string;
   user_id: string;
   title: string;
+  parent_id: string | null;
+  is_folder: number;
   created_at: string;
   updated_at: string;
   items?: TMarksTabGroupItem[];
@@ -29,11 +31,30 @@ export interface TMarksTabGroupItem {
 
 export interface CreateTabGroupInput {
   title?: string;
+  parent_id?: string | null;
+  is_folder?: boolean;
+  items?: Array<{
+    title: string;
+    url: string;
+    favicon?: string;
+  }>;
+}
+
+export interface AddItemsToGroupInput {
   items: Array<{
     title: string;
     url: string;
     favicon?: string;
   }>;
+}
+
+export interface AddItemsToGroupResponse {
+  data: {
+    message: string;
+    added_count: number;
+    total_items: number;
+    items: TMarksTabGroupItem[];
+  };
 }
 
 export interface UpdateTabGroupInput {
@@ -113,6 +134,26 @@ export class TabGroupsAPI extends TMarksClient {
    */
   async deleteTabGroup(id: string): Promise<void> {
     return this.delete<void>(`/tab/tab-groups/${id}`);
+  }
+
+  /**
+   * 批量添加标签页项到现有分组
+   * POST /api/tab/tab-groups/:id/items/batch
+   */
+  async addItemsToGroup(id: string, input: AddItemsToGroupInput): Promise<AddItemsToGroupResponse> {
+    return this.post<AddItemsToGroupResponse>(`/tab/tab-groups/${id}/items/batch`, input);
+  }
+
+  /**
+   * 创建文件夹
+   * POST /api/tab/tab-groups
+   */
+  async createFolder(title: string, parentId?: string | null): Promise<CreateTabGroupResponse> {
+    return this.createTabGroup({
+      title,
+      parent_id: parentId,
+      is_folder: true,
+    });
   }
 
   // ============ 辅助方法 ============
