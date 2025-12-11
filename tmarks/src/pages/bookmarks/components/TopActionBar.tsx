@@ -126,7 +126,7 @@ export function TopActionBar({
       <div className="p-4 sm:p-5 w-full">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full">
           {/* 移动端标签抽屉按钮 + 搜索框 */}
-          <div className="flex items-center gap-3 flex-1 min-w-0 w-full sm:min-w-[280px]">
+          <div className="flex items-center gap-3 flex-1 min-w-0 w-full sm:max-w-md">
             {/* 标签抽屉按钮 - 仅移动端显示 */}
             <button
               onClick={() => setIsTagSidebarOpen(true)}
@@ -170,7 +170,6 @@ export function TopActionBar({
           </div>
 
           {/* 排序选择、视图切换和新增按钮 */}
-          <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto scrollbar-hide pb-1 sm:pb-0">
             {/* 排序按钮 */}
             <button
               onClick={onSortByChange}
@@ -241,7 +240,6 @@ export function TopActionBar({
             >
               <Plus className="w-4 h-4 transition-transform" strokeWidth={2.5} />
             </button>
-          </div>
         </div>
       </div>
     </div>
