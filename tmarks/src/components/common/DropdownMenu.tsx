@@ -35,6 +35,64 @@ export function DropdownMenu({ trigger, items, align = 'right' }: DropdownMenuPr
     }
   }, [isOpen, align])
 
+  // 调整菜单位置，确保不超出屏幕
+  useEffect(() => {
+    if (isOpen && menuRef.current && triggerRef.current) {
+      const menuRect = menuRef.current.getBoundingClientRect()
+      const triggerRect = triggerRef.current.getBoundingClientRect()
+      const gap = 4
+      const padding = 10 // 距离屏幕边缘的最小距离
+
+      let adjustedTop = triggerRect.bottom + gap
+      let adjustedLeft = menuPosition.left
+      let adjustedRight = menuPosition.right
+
+      // 检查垂直方向溢出
+      if (adjustedTop + menuRect.height > window.innerHeight) {
+        // 尝试显示在触发器上方
+        const topPosition = triggerRect.top - menuRect.height - gap
+        if (topPosition >= padding) {
+          adjustedTop = topPosition
+        } else {
+          // 如果上方也放不下，则贴近屏幕底部
+          adjustedTop = window.innerHeight - menuRect.height - padding
+        }
+      }
+
+      // 检查水平方向溢出
+      if (align === 'left') {
+        // 左对齐：检查右侧是否溢出
+        if (adjustedLeft + menuRect.width > window.innerWidth - padding) {
+          adjustedLeft = window.innerWidth - menuRect.width - padding
+        }
+        // 检查左侧是否溢出
+        if (adjustedLeft < padding) {
+          adjustedLeft = padding
+        }
+      } else {
+        // 右对齐：检查左侧是否溢出
+        const leftEdge = window.innerWidth - adjustedRight - menuRect.width
+        if (leftEdge < padding) {
+          adjustedRight = window.innerWidth - menuRect.width - padding
+        }
+        // 检查右侧是否溢出
+        if (adjustedRight < padding) {
+          adjustedRight = padding
+        }
+      }
+
+      // 应用调整后的位置
+      menuRef.current.style.top = `${adjustedTop}px`
+      if (align === 'left') {
+        menuRef.current.style.left = `${adjustedLeft}px`
+        menuRef.current.style.right = 'auto'
+      } else {
+        menuRef.current.style.right = `${adjustedRight}px`
+        menuRef.current.style.left = 'auto'
+      }
+    }
+  }, [isOpen, menuPosition, align])
+
   // 点击外部关闭
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
