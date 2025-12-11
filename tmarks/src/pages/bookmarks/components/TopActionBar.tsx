@@ -171,78 +171,76 @@ export function TopActionBar({
 
           {/* 排序选择、视图切换和新增按钮 */}
           <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto scrollbar-hide pb-1 sm:pb-0">
-            <div className="flex items-center gap-2 flex-shrink-0">
-              {/* 排序按钮 */}
-              <button
-                onClick={onSortByChange}
-                className="btn btn-sm btn-ghost p-2 flex-shrink-0"
-                title={`${SORT_LABELS[sortBy]} (点击切换)`}
-                aria-label={`${SORT_LABELS[sortBy]} (点击切换)`}
-                type="button"
-              >
-                <SortIcon sort={sortBy} />
-              </button>
+            {/* 排序按钮 */}
+            <button
+              onClick={onSortByChange}
+              className="btn btn-sm btn-ghost p-2 flex-shrink-0"
+              title={`${SORT_LABELS[sortBy]} (点击切换)`}
+              aria-label={`${SORT_LABELS[sortBy]} (点击切换)`}
+              type="button"
+            >
+              <SortIcon sort={sortBy} />
+            </button>
 
-              {/* 可见性筛选按钮 */}
-              <button
-                onClick={() => {
-                  const nextFilter = visibilityFilter === 'all' 
-                    ? 'public' 
-                    : visibilityFilter === 'public' 
-                      ? 'private' 
-                      : 'all'
-                  setVisibilityFilter(nextFilter)
-                }}
-                className="btn btn-sm btn-ghost p-2 flex-shrink-0"
-                title={`${VISIBILITY_LABELS[visibilityFilter]} (点击切换)`}
-                aria-label={`${VISIBILITY_LABELS[visibilityFilter]} (点击切换)`}
-                type="button"
-              >
-                <VisibilityIcon filter={visibilityFilter} />
-              </button>
+            {/* 可见性筛选按钮 */}
+            <button
+              onClick={() => {
+                const nextFilter = visibilityFilter === 'all' 
+                  ? 'public' 
+                  : visibilityFilter === 'public' 
+                    ? 'private' 
+                    : 'all'
+                setVisibilityFilter(nextFilter)
+              }}
+              className="btn btn-sm btn-ghost p-2 flex-shrink-0"
+              title={`${VISIBILITY_LABELS[visibilityFilter]} (点击切换)`}
+              aria-label={`${VISIBILITY_LABELS[visibilityFilter]} (点击切换)`}
+              type="button"
+            >
+              <VisibilityIcon filter={visibilityFilter} />
+            </button>
 
-              {/* 视图模式按钮 */}
-              <button
-                onClick={onViewModeChange}
-                className="btn btn-sm btn-ghost p-2 flex-shrink-0"
-                title={`${getViewModeLabel(viewMode)} (点击切换)`}
-                aria-label={`${getViewModeLabel(viewMode)} (点击切换)`}
-                type="button"
-              >
-                <ViewModeIcon mode={viewMode} />
-              </button>
+            {/* 视图模式按钮 */}
+            <button
+              onClick={onViewModeChange}
+              className="btn btn-sm btn-ghost p-2 flex-shrink-0"
+              title={`${getViewModeLabel(viewMode)} (点击切换)`}
+              aria-label={`${getViewModeLabel(viewMode)} (点击切换)`}
+              type="button"
+            >
+              <ViewModeIcon mode={viewMode} />
+            </button>
 
-              {/* 批量操作按钮 */}
-              <button
-                onClick={() => {
-                  setBatchMode(!batchMode)
-                  if (batchMode) {
-                    setSelectedIds([])
-                  }
-                }}
-                className={`btn btn-sm p-2 flex-shrink-0 ${
-                  batchMode
-                    ? 'btn-primary'
-                    : 'btn-ghost'
-                }`}
-                title={batchMode ? '退出批量操作' : '批量操作'}
-                aria-label={batchMode ? '退出批量操作' : '批量操作'}
-                type="button"
-              >
-                <CheckCircle className="w-4 h-4" />
-              </button>
+            {/* 批量操作按钮 */}
+            <button
+              onClick={() => {
+                setBatchMode(!batchMode)
+                if (batchMode) {
+                  setSelectedIds([])
+                }
+              }}
+              className={`btn btn-sm p-2 flex-shrink-0 ${
+                batchMode
+                  ? 'btn-primary'
+                  : 'btn-ghost'
+              }`}
+              title={batchMode ? '退出批量操作' : '批量操作'}
+              aria-label={batchMode ? '退出批量操作' : '批量操作'}
+              type="button"
+            >
+              <CheckCircle className="w-4 h-4" />
+            </button>
 
-              {/* 新增书签按钮 */}
-              <button
-                onClick={onOpenForm}
-                className="btn btn-sm btn-primary p-2 flex-shrink-0"
-                title="新增书签"
-                aria-label="新增书签"
-                type="button"
-              >
-                <Plus className="w-4 h-4 transition-transform" strokeWidth={2.5} />
-              </button>
-            </div>
+            {/* 新增书签按钮 */}
+            <button
+              onClick={onOpenForm}
+              className="btn btn-sm btn-primary p-2 flex-shrink-0"
+              title="新增书签"
+              aria-label="新增书签"
+              type="button"
+            >
+              <Plus className="w-4 h-4 transition-transform" strokeWidth={2.5} />
+            </button>
           </div>
         </div>
       </div>
