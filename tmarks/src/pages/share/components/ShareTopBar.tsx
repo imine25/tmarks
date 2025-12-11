@@ -175,7 +175,7 @@ export function ShareTopBar({
           <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto scrollbar-hide pb-1 sm:pb-0">
             <button
               onClick={handleSortChange}
-              className="btn btn-sm btn-ghost p-2 flex-shrink-0"
+              className="btn btn-sm btn-ghost p-2 flex-shrink-0 !border-0 !shadow-none"
               title={`${SORT_LABELS[sortBy]} (点击切换)`}
             >
               <SortIcon sort={sortBy} />
@@ -183,7 +183,7 @@ export function ShareTopBar({
 
             <button
               onClick={handleVisibilityChange}
-              className="btn btn-sm btn-ghost p-2 flex-shrink-0"
+              className="btn btn-sm btn-ghost p-2 flex-shrink-0 !border-0 !shadow-none"
               title={`${VISIBILITY_LABELS[visibilityFilter]} (点击切换)`}
             >
               <VisibilityIcon filter={visibilityFilter} />
@@ -191,7 +191,7 @@ export function ShareTopBar({
 
             <button
               onClick={handleViewModeChange}
-              className="btn btn-sm btn-ghost p-2 flex-shrink-0"
+              className="btn btn-sm btn-ghost p-2 flex-shrink-0 !border-0 !shadow-none"
               title={`${getViewModeLabel(viewMode)} (点击切换)`}
             >
               <ViewModeIcon mode={viewMode} />

@@ -175,7 +175,7 @@ export function TopActionBar({
               {/* 排序按钮 */}
               <button
                 onClick={onSortByChange}
-                className="btn btn-sm btn-ghost p-2 flex-shrink-0"
+                className="btn btn-sm btn-ghost p-2 flex-shrink-0 !border-0 !shadow-none"
                 title={`${SORT_LABELS[sortBy]} (点击切换)`}
                 aria-label={`${SORT_LABELS[sortBy]} (点击切换)`}
                 type="button"
@@ -193,7 +193,7 @@ export function TopActionBar({
                       : 'all'
                   setVisibilityFilter(nextFilter)
                 }}
-                className="btn btn-sm btn-ghost p-2 flex-shrink-0"
+                className="btn btn-sm btn-ghost p-2 flex-shrink-0 !border-0 !shadow-none"
                 title={`${VISIBILITY_LABELS[visibilityFilter]} (点击切换)`}
                 aria-label={`${VISIBILITY_LABELS[visibilityFilter]} (点击切换)`}
                 type="button"
@@ -204,7 +204,7 @@ export function TopActionBar({
               {/* 视图模式按钮 */}
               <button
                 onClick={onViewModeChange}
-                className="btn btn-sm btn-ghost p-2 flex-shrink-0"
+                className="btn btn-sm btn-ghost p-2 flex-shrink-0 !border-0 !shadow-none"
                 title={`${getViewModeLabel(viewMode)} (点击切换)`}
                 aria-label={`${getViewModeLabel(viewMode)} (点击切换)`}
                 type="button"
@@ -220,14 +220,11 @@ export function TopActionBar({
                     setSelectedIds([])
                   }
                 }}
-                className={`btn btn-sm p-2 flex-shrink-0 ${
+                className={`btn btn-sm p-2 flex-shrink-0 !border-0 !shadow-none ${
                   batchMode
-                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    ? '!bg-primary !text-primary-foreground hover:!bg-primary/90'
                     : 'btn-ghost'
                 }`}
-                style={{
-                  boxShadow: 'none'
-                }}
                 title={batchMode ? '退出批量操作' : '批量操作'}
                 aria-label={batchMode ? '退出批量操作' : '批量操作'}
                 type="button"
@@ -238,7 +235,7 @@ export function TopActionBar({
               {/* 新增书签按钮 */}
               <button
                 onClick={onOpenForm}
-                className="btn btn-sm p-2 flex-shrink-0 bg-gradient-to-br from-primary to-secondary text-primary-foreground hover:shadow-lg"
+                className="btn btn-sm p-2 flex-shrink-0 !bg-gradient-to-br !from-primary !to-secondary !text-primary-foreground hover:!shadow-lg !border-0 !shadow-none"
                 title="新增书签"
                 aria-label="新增书签"
                 type="button"

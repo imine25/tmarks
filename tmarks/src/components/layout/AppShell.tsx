@@ -55,10 +55,10 @@ export function AppShell() {
 
           {/* 右侧操作区 */}
           <div className="flex items-center gap-2">
-            {/* 书签/标签页组切换按钮 */}
+            {/* 书签/标签页组切换按钮 - 有容器 */}
             <button
               onClick={handleToggleView}
-              className="hidden sm:flex items-center justify-center w-11 h-11 rounded-2xl transition-all duration-300 bg-card border border-border hover:border-primary/30 hover:bg-primary/5 active:scale-95 text-foreground shadow-sm hover:shadow-md"
+              className="hidden sm:flex items-center justify-center w-11 h-11 rounded-2xl transition-all duration-300 bg-card hover:bg-primary/5 active:scale-95 text-foreground shadow-sm hover:shadow-md"
               title={isOnTabGroupsPage ? '切换到书签' : '切换到标签页组'}
             >
               {isOnTabGroupsPage ? (
@@ -68,10 +68,10 @@ export function AppShell() {
               )}
             </button>
 
-            {/* 主题切换按钮 */}
+            {/* 主题切换按钮 - 无容器 */}
             <button
               onClick={() => useThemeStore.getState().toggleTheme()}
-              className="flex items-center justify-center w-11 h-11 rounded-2xl transition-all duration-300 bg-card border border-border hover:border-primary/30 hover:bg-primary/5 active:scale-95 text-foreground shadow-sm hover:shadow-md"
+              className="flex items-center justify-center w-11 h-11 rounded-2xl transition-all duration-300 hover:bg-primary/10 text-foreground"
               title={theme === 'light' ? '切换到暗色模式' : '切换到亮色模式'}
             >
               {theme === 'light' ? (
@@ -85,10 +85,10 @@ export function AppShell() {
               )}
             </button>
 
-            {/* 颜色主题切换按钮 */}
+            {/* 颜色主题切换按钮 - 无容器 */}
             <button
               onClick={() => useThemeStore.getState().setColorTheme(colorTheme === 'default' ? 'orange' : 'default')}
-              className="flex items-center justify-center w-11 h-11 rounded-2xl transition-all duration-300 bg-card border border-border hover:border-primary/30 hover:bg-primary/5 active:scale-95 text-foreground shadow-sm hover:shadow-md"
+              className="flex items-center justify-center w-11 h-11 rounded-2xl transition-all duration-300 hover:bg-primary/10 text-foreground"
               title={colorTheme === 'default' ? '切换到活力橙' : '切换到中性灰'}
             >
               {colorTheme === 'default' ? (
@@ -102,11 +102,11 @@ export function AppShell() {
               )}
             </button>
 
-            {/* 用户按钮 - 直接跳转到设置 */}
+            {/* 用户按钮 - 有容器 */}
             {user && (
               <button
                 onClick={() => navigate('/settings/general')}
-                className="flex items-center justify-center w-11 h-11 rounded-2xl transition-all duration-300 bg-card border border-border hover:border-primary/30 hover:bg-primary/5 active:scale-95 text-foreground shadow-sm hover:shadow-md"
+                className="flex items-center justify-center w-11 h-11 rounded-2xl transition-all duration-300 bg-card hover:bg-primary/5 active:scale-95 text-foreground shadow-sm hover:shadow-md"
                 title={`${user.username} - 点击进入设置`}
               >
                 <User className="w-5 h-5" />
