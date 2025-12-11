@@ -13,6 +13,7 @@ interface ShortcutRow {
   id: string
   user_id: string
   group_id: string | null
+  folder_id: string | null
   title: string
   url: string
   favicon: string | null
@@ -29,6 +30,7 @@ interface UpdateShortcutRequest {
   url?: string
   favicon?: string
   group_id?: string | null
+  folder_id?: string | null
   position?: number
 }
 
@@ -99,6 +101,11 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[
       if (body.group_id !== undefined) {
         updates.push('group_id = ?')
         params.push(body.group_id)
+      }
+
+      if (body.folder_id !== undefined) {
+        updates.push('folder_id = ?')
+        params.push(body.folder_id)
       }
 
       if (body.position !== undefined) {

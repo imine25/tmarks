@@ -41,11 +41,11 @@ export function Poetry() {
   if (!poetry) return null;
 
   return (
-    <div className="text-center text-white/80 select-none group flex items-center justify-center gap-2">
-      <span className="text-sm font-light tracking-wide drop-shadow">
+    <div className="text-center text-white select-none group flex items-center justify-center gap-2">
+      <span className="text-sm font-light tracking-wide text-shadow-sm">
         「{poetry.content}」
       </span>
-      <span className="text-xs text-white/50">
+      <span className="text-xs text-white/70 text-shadow-sm">
         —— {poetry.author}《{poetry.title}》
       </span>
       <button

@@ -187,11 +187,11 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                   label="每行数量"
                   value={String(settings.shortcutColumns)}
                   options={[
-                    { value: '4', label: '4 个' },
                     { value: '6', label: '6 个' },
                     { value: '8', label: '8 个' },
+                    { value: '10', label: '10 个' },
                   ]}
-                  onChange={(v) => updateSettings({ shortcutColumns: Number(v) as 4 | 6 | 8 })}
+                  onChange={(v) => updateSettings({ shortcutColumns: Number(v) as 6 | 8 | 10 })}
                 />
               </SettingSection>
 

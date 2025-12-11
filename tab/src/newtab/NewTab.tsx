@@ -28,15 +28,23 @@ export function NewTab() {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const wheelTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const isWheelLocked = useRef(false);
+  
+  // 使用 ref 存储最新的状态，避免 handleWheel 频繁重建
+  const stateRef = useRef({ shortcutGroups, activeGroupId, setActiveGroup });
+  stateRef.current = { shortcutGroups, activeGroupId, setActiveGroup };
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
-  // 滚轮切换分组
+  // 滚轮切换分组 - 使用稳定的回调，通过 ref 访问最新状态
   const handleWheel = useCallback((e: WheelEvent) => {
+    const { shortcutGroups: groups, activeGroupId: currentGroupId, setActiveGroup: setGroup } = stateRef.current;
+    
     // 如果正在锁定中，忽略滚轮事件
-    if (isWheelLocked.current) return;
+    if (isWheelLocked.current) {
+      return;
+    }
     
     // 检查是否在可滚动元素内
     const target = e.target as HTMLElement;
@@ -50,9 +58,17 @@ export function NewTab() {
       }
     }
 
-    // 构建分组列表：null（全部）+ 所有分组
-    const groupIds: (string | null)[] = [null, ...shortcutGroups.map(g => g.id)];
-    const currentIndex = groupIds.indexOf(activeGroupId);
+    // 构建分组列表：所有分组的 ID
+    const groupIds = groups.map(g => g.id);
+    if (groupIds.length === 0) return;
+    
+    const currentIndex = groupIds.indexOf(currentGroupId || '');
+    
+    // 如果当前没有选中分组或找不到当前分组，默认为第一个
+    if (currentIndex === -1) {
+      setGroup(groupIds[0]);
+      return;
+    }
     
     let newIndex = currentIndex;
     if (e.deltaY > 0) {
@@ -64,26 +80,52 @@ export function NewTab() {
     }
 
     if (newIndex !== currentIndex) {
-      setActiveGroup(groupIds[newIndex]);
+      e.preventDefault(); // 阻止默认滚动行为
+      setGroup(groupIds[newIndex]);
       // 锁定一段时间，防止连续切换
       isWheelLocked.current = true;
-      if (wheelTimeoutRef.current) clearTimeout(wheelTimeoutRef.current);
+      if (wheelTimeoutRef.current) {
+        clearTimeout(wheelTimeoutRef.current);
+      }
       wheelTimeoutRef.current = setTimeout(() => {
         isWheelLocked.current = false;
       }, 300);
     }
-  }, [shortcutGroups, activeGroupId, setActiveGroup]);
+  }, []); // 空依赖数组，handleWheel 永远不会重建
+
+  // 右键菜单处理
+  const handleContextMenu = useCallback((e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+    // 排除设置面板、弹窗等区域
+    const isInModal = target.closest('[role="dialog"]') || target.closest('.glass-modal') || target.closest('.glass-modal-dark');
+    // 排除输入框
+    const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
+    
+    if (!isInModal && !isInput) {
+      e.preventDefault();
+      setContextMenu({ x: e.clientX, y: e.clientY });
+    }
+  }, []);
 
   // 监听滚轮事件
   useEffect(() => {
-    if (!settings.showShortcuts || shortcutGroups.length === 0) return;
+    if (!settings.showShortcuts) return;
     
-    window.addEventListener('wheel', handleWheel, { passive: true });
+    // 移除 passive: true，允许阻止默认行为
+    window.addEventListener('wheel', handleWheel, { passive: false });
     return () => {
       window.removeEventListener('wheel', handleWheel);
       if (wheelTimeoutRef.current) clearTimeout(wheelTimeoutRef.current);
     };
-  }, [handleWheel, settings.showShortcuts, shortcutGroups.length]);
+  }, [handleWheel, settings.showShortcuts]);
+
+  // 监听右键菜单事件
+  useEffect(() => {
+    window.addEventListener('contextmenu', handleContextMenu);
+    return () => {
+      window.removeEventListener('contextmenu', handleContextMenu);
+    };
+  }, [handleContextMenu]);
 
   if (isLoading) {
     return (
@@ -148,7 +190,7 @@ export function NewTab() {
 
         {/* 快捷方式网格 + 添加按钮 */}
         {settings.showShortcuts && (
-          <div className="w-full max-w-5xl animate-fadeIn px-4">
+          <div className="w-full max-w-5xl animate-fadeIn px-4 shortcut-area">
             <div className="flex items-start gap-4">
               <ShortcutGrid 
                 columns={settings.shortcutColumns} 

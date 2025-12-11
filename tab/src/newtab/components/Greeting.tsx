@@ -26,8 +26,8 @@ export function Greeting({ userName }: GreetingProps) {
   }, []);
 
   return (
-    <div className="text-center text-white/90 select-none">
-      <h2 className="text-2xl font-light drop-shadow-lg">
+    <div className="text-center text-white select-none">
+      <h2 className="text-2xl font-light text-shadow">
         {greeting.text}
         {userName && <span className="ml-2">{userName}</span>}
       </h2>

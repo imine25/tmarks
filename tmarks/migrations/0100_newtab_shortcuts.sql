@@ -17,11 +17,29 @@ CREATE TABLE IF NOT EXISTS newtab_groups (
 
 CREATE INDEX IF NOT EXISTS idx_newtab_groups_user ON newtab_groups(user_id, position);
 
+-- NewTab 快捷方式文件夹表
+CREATE TABLE IF NOT EXISTS newtab_folders (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    group_id TEXT,
+    name TEXT NOT NULL,
+    icon TEXT,
+    position INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (group_id) REFERENCES newtab_groups(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_newtab_folders_user ON newtab_folders(user_id, position);
+CREATE INDEX IF NOT EXISTS idx_newtab_folders_group ON newtab_folders(group_id, position);
+
 -- NewTab 快捷方式表
 CREATE TABLE IF NOT EXISTS newtab_shortcuts (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
     group_id TEXT,
+    folder_id TEXT,
     -- 基本信息
     title TEXT NOT NULL,
     url TEXT NOT NULL,
@@ -37,12 +55,14 @@ CREATE TABLE IF NOT EXISTS newtab_shortcuts (
     updated_at TEXT NOT NULL DEFAULT (datetime('now')),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (group_id) REFERENCES newtab_groups(id) ON DELETE SET NULL,
-    FOREIGN KEY (bookmark_id) REFERENCES bookmarks(id) ON DELETE SET NULL
+    FOREIGN KEY (bookmark_id) REFERENCES bookmarks(id) ON DELETE SET NULL,
+    FOREIGN KEY (folder_id) REFERENCES newtab_folders(id) ON DELETE SET NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_newtab_shortcuts_user ON newtab_shortcuts(user_id, position);
 CREATE INDEX IF NOT EXISTS idx_newtab_shortcuts_group ON newtab_shortcuts(group_id, position);
 CREATE INDEX IF NOT EXISTS idx_newtab_shortcuts_bookmark ON newtab_shortcuts(bookmark_id);
+CREATE INDEX IF NOT EXISTS idx_newtab_shortcuts_folder ON newtab_shortcuts(folder_id, position);
 
 -- NewTab 用户设置表
 CREATE TABLE IF NOT EXISTS newtab_settings (

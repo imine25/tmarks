@@ -40,8 +40,8 @@ export const SEARCH_ENGINES: SearchEngineConfig[] = [
 
 // 默认壁纸配置
 export const DEFAULT_WALLPAPER: WallpaperConfig = {
-  type: 'color',
-  value: '#1a1a2e',
+  type: 'bing',
+  value: '',
   blur: 0,
   brightness: 100,
 };
@@ -55,7 +55,7 @@ export const DEFAULT_SETTINGS: NewTabSettings = {
   showSearch: true,
   searchEngine: 'google',
   showShortcuts: true,
-  shortcutColumns: 8,
+  shortcutColumns: 8, // 支持 6 | 8 | 10
   shortcutStyle: 'icon',
   wallpaper: DEFAULT_WALLPAPER,
   showPinnedBookmarks: true,
@@ -105,13 +105,9 @@ export const BING_WALLPAPER_API = 'https://www.bing.com/HPImageArchive.aspx?form
 // 默认 Favicon 获取 URL
 export const FAVICON_API = 'https://www.google.com/s2/favicons?domain=';
 
-// 默认快捷方式分组
+// 默认快捷方式分组（只保留一个默认分组，用户自行添加）
 export const DEFAULT_GROUPS: ShortcutGroup[] = [
   { id: 'home', name: '首页', icon: 'Home', position: 0 },
-  { id: 'work', name: '工作', icon: 'Briefcase', position: 1 },
-  { id: 'study', name: '学习', icon: 'GraduationCap', position: 2 },
-  { id: 'entertainment', name: '娱乐', icon: 'Gamepad2', position: 3 },
-  { id: 'tools', name: '工具', icon: 'Wrench', position: 4 },
 ];
 
 // 可用的分组图标

@@ -15,6 +15,7 @@ interface ShortcutRow {
   id: string
   user_id: string
   group_id: string | null
+  folder_id: string | null
   title: string
   url: string
   favicon: string | null
@@ -22,6 +23,17 @@ interface ShortcutRow {
   click_count: number
   last_clicked_at: string | null
   bookmark_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+interface FolderRow {
+  id: string
+  user_id: string
+  group_id: string | null
+  name: string
+  icon: string | null
+  position: number
   created_at: string
   updated_at: string
 }
@@ -78,12 +90,20 @@ interface SyncRequest {
     url: string
     favicon?: string
     group_id?: string
+    folder_id?: string
     position: number
   }>
   groups?: Array<{
     id?: string
     name: string
     icon: string
+    position: number
+  }>
+  folders?: Array<{
+    id?: string
+    name: string
+    icon?: string
+    group_id?: string
     position: number
   }>
   settings?: {
@@ -139,6 +159,13 @@ export const onRequestGet: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[] 
         .bind(userId)
         .all<GroupRow>()
 
+      // 获取文件夹
+      const { results: folders } = await context.env.DB.prepare(
+        'SELECT * FROM newtab_folders WHERE user_id = ? ORDER BY position ASC'
+      )
+        .bind(userId)
+        .all<FolderRow>()
+
       // 获取设置
       const settings = await context.env.DB.prepare(
         'SELECT * FROM newtab_settings WHERE user_id = ?'
@@ -156,6 +183,7 @@ export const onRequestGet: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[] 
       return success({
         shortcuts: shortcuts || [],
         groups: groups || [],
+        folders: folders || [],
         settings: settings
           ? {
               columns: settings.columns,
@@ -234,6 +262,32 @@ export const onRequestPost: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[]
         }
       }
 
+      // 同步文件夹
+      if (body.folders && Array.isArray(body.folders)) {
+        await context.env.DB.prepare('DELETE FROM newtab_folders WHERE user_id = ?')
+          .bind(userId)
+          .run()
+
+        for (const item of body.folders) {
+          const id = item.id || generateUUID()
+          await context.env.DB.prepare(
+            `INSERT INTO newtab_folders (id, user_id, group_id, name, icon, position, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+          )
+            .bind(
+              id,
+              userId,
+              item.group_id || null,
+              sanitizeString(item.name, 100),
+              item.icon ? sanitizeString(item.icon, 50) : null,
+              item.position,
+              now,
+              now
+            )
+            .run()
+        }
+      }
+
       // 同步快捷方式
       if (body.shortcuts && Array.isArray(body.shortcuts)) {
         await context.env.DB.prepare('DELETE FROM newtab_shortcuts WHERE user_id = ?')
@@ -243,13 +297,14 @@ export const onRequestPost: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[]
         for (const item of body.shortcuts) {
           const id = item.id || generateUUID()
           await context.env.DB.prepare(
-            `INSERT INTO newtab_shortcuts (id, user_id, group_id, title, url, favicon, position, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            `INSERT INTO newtab_shortcuts (id, user_id, group_id, folder_id, title, url, favicon, position, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
           )
             .bind(
               id,
               userId,
               item.group_id || null,
+              item.folder_id || null,
               sanitizeString(item.title, 200),
               sanitizeString(item.url, 2000),
               item.favicon ? sanitizeString(item.favicon, 2000) : null,

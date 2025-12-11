@@ -2,12 +2,22 @@
  * NewTab 类型定义
  */
 
-// 快捷方式分组
+// 快捷方式分组（左侧导航）
 export interface ShortcutGroup {
   id: string;
   name: string;
   icon: string; // Lucide 图标名称
   position: number;
+}
+
+// 快捷方式文件夹（可包含多个快捷方式）
+export interface ShortcutFolder {
+  id: string;
+  name: string;
+  icon?: string; // 可选图标，默认显示文件夹图标
+  position: number;
+  groupId?: string; // 所属分组
+  createdAt: number;
 }
 
 // 网格项尺寸
@@ -79,6 +89,7 @@ export interface Shortcut {
   createdAt: number;
   clickCount: number;
   groupId?: string; // 所属分组 ID，undefined 表示默认分组
+  folderId?: string; // 所属文件夹 ID，undefined 表示不在文件夹内
 }
 
 // 壁纸类型
@@ -120,7 +131,7 @@ export interface NewTabSettings {
   
   // 快捷方式
   showShortcuts: boolean;
-  shortcutColumns: 4 | 6 | 8;
+  shortcutColumns: 6 | 8 | 10;
   shortcutStyle: 'icon' | 'card';
   
   // 壁纸
@@ -152,6 +163,7 @@ export interface NewTabSettings {
 export interface NewTabStorage {
   shortcuts: Shortcut[];
   shortcutGroups: ShortcutGroup[];
+  shortcutFolders?: ShortcutFolder[]; // 文件夹列表
   activeGroupId: string | null; // 当前激活的分组，null 表示全部
   settings: NewTabSettings;
   tmarksSyncedAt?: number;

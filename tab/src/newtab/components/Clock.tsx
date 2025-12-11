@@ -68,13 +68,13 @@ export function Clock({ format, showDate, showSeconds, showLunar = false }: Cloc
 
   return (
     <div className="text-center text-white select-none">
-      <div className="text-7xl font-light tracking-wider drop-shadow-lg">
+      <div className="text-7xl font-light tracking-wider text-shadow-lg">
         {formatTime()}
       </div>
       {(showDate || showLunar) && (
-        <div className="mt-2 text-lg text-white/80 drop-shadow flex items-center justify-center gap-3">
+        <div className="mt-2 text-lg text-white/90 text-shadow flex items-center justify-center gap-3">
           {showDate && <span>{formatDate()}</span>}
-          {showDate && showLunar && <span className="text-white/40">|</span>}
+          {showDate && showLunar && <span className="text-white/50">|</span>}
           {showLunar && lunarInfo && (
             <>
               <span>{lunarInfo.date}</span>

@@ -14,6 +14,7 @@ interface ShortcutRow {
   id: string
   user_id: string
   group_id: string | null
+  folder_id: string | null
   title: string
   url: string
   favicon: string | null
@@ -30,6 +31,7 @@ interface CreateShortcutRequest {
   url: string
   favicon?: string
   group_id?: string
+  folder_id?: string
   position?: number
   bookmark_id?: string
 }
@@ -94,6 +96,7 @@ export const onRequestPost: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[]
       const url = sanitizeString(body.url, 2000)
       const favicon = body.favicon ? sanitizeString(body.favicon, 2000) : null
       const groupId = body.group_id || null
+      const folderId = body.folder_id || null
       const bookmarkId = body.bookmark_id || null
 
       // 获取当前最大 position
@@ -108,10 +111,10 @@ export const onRequestPost: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[]
       const id = generateUUID()
 
       await context.env.DB.prepare(
-        `INSERT INTO newtab_shortcuts (id, user_id, group_id, title, url, favicon, position, bookmark_id, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO newtab_shortcuts (id, user_id, group_id, folder_id, title, url, favicon, position, bookmark_id, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
-        .bind(id, userId, groupId, title, url, favicon, position, bookmarkId, now, now)
+        .bind(id, userId, groupId, folderId, title, url, favicon, position, bookmarkId, now, now)
         .run()
 
       const shortcut = await context.env.DB.prepare(
@@ -142,6 +145,7 @@ export const onRequestPut: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[] 
           url: string
           favicon?: string
           group_id?: string
+          folder_id?: string
           position: number
         }>
       }
@@ -165,18 +169,20 @@ export const onRequestPut: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[] 
         const url = sanitizeString(item.url, 2000)
         const favicon = item.favicon ? sanitizeString(item.favicon, 2000) : null
         const groupId = item.group_id || null
+        const folderId = item.folder_id || null
 
         await context.env.DB.prepare(
-          `INSERT INTO newtab_shortcuts (id, user_id, group_id, title, url, favicon, position, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          `INSERT INTO newtab_shortcuts (id, user_id, group_id, folder_id, title, url, favicon, position, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         )
-          .bind(id, userId, groupId, title, url, favicon, item.position, now, now)
+          .bind(id, userId, groupId, folderId, title, url, favicon, item.position, now, now)
           .run()
 
         results.push({
           id,
           user_id: userId,
           group_id: groupId,
+          folder_id: folderId,
           title,
           url,
           favicon,
