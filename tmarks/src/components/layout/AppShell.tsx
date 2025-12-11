@@ -6,8 +6,6 @@ import {
 } from 'lucide-react'
 import { useThemeStore } from '@/stores/themeStore'
 import { useAuthStore } from '@/stores/authStore'
-import { ThemeToggle } from '@/components/common/ThemeToggle'
-import { ColorThemeSelector } from '@/components/common/ColorThemeSelector'
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav'
 
 export function AppShell() {
