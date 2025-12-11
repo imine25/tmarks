@@ -46,6 +46,8 @@ export const onRequestGet: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[] 
       const sortBy = (url.searchParams.get('sort') as 'created' | 'updated' | 'pinned') || 'created'
       const archivedParam = url.searchParams.get('archived')
       const archived = archivedParam ? archivedParam === 'true' : undefined
+      const pinnedParam = url.searchParams.get('pinned')
+      const pinned = pinnedParam ? pinnedParam === 'true' : undefined
 
       // 构建查询
       let query = `
@@ -59,6 +61,12 @@ export const onRequestGet: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[] 
       if (archived !== undefined) {
         query += ` AND b.is_archived = ?`
         params.push(archived ? 1 : 0)
+      }
+
+      // 置顶过滤
+      if (pinned !== undefined) {
+        query += ` AND b.is_pinned = ?`
+        params.push(pinned ? 1 : 0)
       }
 
       // 关键词搜索
@@ -89,18 +97,18 @@ export const onRequestGet: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[] 
         params.push(pageCursor)
       }
 
-      // 排序
+      // 排序（置顶书签按 pin_order 排序）
       let orderBy = ''
       switch (sortBy) {
         case 'updated':
-          orderBy = 'ORDER BY b.is_pinned DESC, b.updated_at DESC, b.id DESC'
+          orderBy = 'ORDER BY b.is_pinned DESC, CASE WHEN b.is_pinned = 1 THEN b.pin_order ELSE NULL END ASC, b.updated_at DESC, b.id DESC'
           break
         case 'pinned':
-          orderBy = 'ORDER BY b.is_pinned DESC, b.created_at DESC, b.id DESC'
+          orderBy = 'ORDER BY b.is_pinned DESC, CASE WHEN b.is_pinned = 1 THEN b.pin_order ELSE NULL END ASC, b.created_at DESC, b.id DESC'
           break
         case 'created':
         default:
-          orderBy = 'ORDER BY b.is_pinned DESC, b.created_at DESC, b.id DESC'
+          orderBy = 'ORDER BY b.is_pinned DESC, CASE WHEN b.is_pinned = 1 THEN b.pin_order ELSE NULL END ASC, b.created_at DESC, b.id DESC'
           break
       }
 

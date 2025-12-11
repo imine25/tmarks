@@ -271,30 +271,30 @@ export function Popup() {
 
   return (
     <div className="relative h-[80vh] min-h-[620px] w-[380px] overflow-hidden rounded-2xl bg-white text-gray-900 shadow-2xl">
+      {/* 通知消息 - 固定在最顶部 */}
+      <div className="pointer-events-none fixed top-0 left-0 right-0 z-50 px-4 pt-2 space-y-2">
+        {error && (
+          <div className="pointer-events-auto">
+            <ErrorMessage
+              message={error}
+              onDismiss={() => setError(null)}
+              onRetry={!isLoading && lastRecommendationSource === 'fallback' ? recommendTags : undefined}
+            />
+          </div>
+        )}
+        {loadingMessage && (
+          <div className="pointer-events-auto">
+            <LoadingMessage message={loadingMessage} />
+          </div>
+        )}
+        {successMessage && (
+          <div className="pointer-events-auto">
+            <SuccessMessage message={successMessage} />
+          </div>
+        )}
+      </div>
 
       <div className="relative flex h-full flex-col">
-        <div className="pointer-events-none absolute top-16 left-0 right-0 z-30 px-4 space-y-2">
-          {error && (
-            <div className="pointer-events-auto">
-              <ErrorMessage
-                message={error}
-                onDismiss={() => setError(null)}
-                onRetry={!isLoading && lastRecommendationSource === 'fallback' ? recommendTags : undefined}
-              />
-            </div>
-          )}
-          {loadingMessage && (
-            <div className="pointer-events-auto">
-              <LoadingMessage message={loadingMessage} />
-            </div>
-          )}
-          {successMessage && (
-            <div className="pointer-events-auto">
-              <SuccessMessage message={successMessage} />
-            </div>
-          )}
-        </div>
-
         <header className="fixed top-0 left-0 right-0 z-20 px-3 pt-2 pb-2.5 bg-white border-b border-gray-200 shadow-sm rounded-b-2xl">
           <div className="flex items-center gap-2">
             <button
@@ -399,7 +399,7 @@ export function Popup() {
 
           {currentPage && (
             <section className="rounded-xl border border-gray-200 bg-white p-3.5 shadow-lg">
-              <div className="mb-2.5 flex items-center justify-end gap-2">
+              <div className="mb-2.5 flex items-center justify-center gap-2">
                   <button
                     type="button"
                     onClick={() => setIsPublic(!isPublic)}
@@ -426,11 +426,11 @@ export function Popup() {
                     disabled={!currentPage.thumbnail}
                     className={`rounded-lg border px-3 py-1 text-xs font-medium transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${
                       includeThumbnail
-                        ? 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                        : 'border-amber-400 bg-amber-50 text-amber-700 shadow-sm'
+                        ? 'border-amber-400 bg-amber-50 text-amber-700 shadow-sm'
+                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
                     } ${!currentPage.thumbnail ? 'cursor-not-allowed opacity-40' : ''}`}
                   >
-                    {includeThumbnail ? '忽略封面图' : '恢复封面图'}
+                    {includeThumbnail ? '包含封面图' : '忽略封面图'}
                   </button>
 
                   <button

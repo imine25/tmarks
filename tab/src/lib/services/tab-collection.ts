@@ -245,3 +245,65 @@ export async function restoreTabGroup(groupId: number, inNewWindow: boolean = tr
   }
 }
 
+/**
+ * Sync pending tab groups that were saved offline
+ */
+export async function syncPendingTabGroups(config: BookmarkSiteConfig): Promise<number> {
+  try {
+    // Find tab groups without remoteId (not synced)
+    const pendingGroups = await db.tabGroups
+      .filter((group) => !group.remoteId)
+      .toArray();
+
+    if (pendingGroups.length === 0) {
+      return 0;
+    }
+
+    const client = createTMarksClient({
+      baseUrl: normalizeApiUrl(config.apiUrl),
+      apiKey: config.apiKey,
+    });
+
+    let synced = 0;
+
+    for (const group of pendingGroups) {
+      try {
+        // Get items for this group
+        const items = await db.tabGroupItems
+          .where('groupId')
+          .equals(group.id!)
+          .sortBy('position');
+
+        if (items.length === 0) {
+          continue;
+        }
+
+        // Create tab group on server
+        const response = await client.tabGroups.createTabGroup({
+          title: group.title,
+          items: items.map((item) => ({
+            title: item.title,
+            url: item.url,
+            favicon: item.favicon,
+          })),
+        });
+
+        // Update local record with remote ID
+        await db.tabGroups.update(group.id!, {
+          remoteId: response.data.tab_group.id,
+        });
+
+        synced++;
+      } catch (error) {
+        // Skip this group and continue with others
+        console.error('[TabCollection] Failed to sync group:', group.id, error);
+      }
+    }
+
+    return synced;
+  } catch (error) {
+    console.error('[TabCollection] syncPendingTabGroups error:', error);
+    return 0;
+  }
+}
+

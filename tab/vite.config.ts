@@ -41,7 +41,8 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         input: {
           popup: 'src/popup/index.html',
-          options: 'src/options/index.html'
+          options: 'src/options/index.html',
+          newtab: 'src/newtab/index.html'
         }
       },
       // 禁用源码映射以保护代码

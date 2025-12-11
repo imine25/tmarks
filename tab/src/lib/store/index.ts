@@ -107,12 +107,13 @@ export const useAppStore = create<AppState>((set, get) => ({
   setCurrentPage: (page) =>
     set((state) => {
       let includeThumbnail = false;
+      const defaultIncludeThumbnail = state.config?.preferences.defaultIncludeThumbnail ?? true;
 
       if (page) {
         if (state.currentPage && state.currentPage.url === page.url) {
           includeThumbnail = state.includeThumbnail && Boolean(page.thumbnail);
         } else {
-          includeThumbnail = Boolean(page.thumbnail);
+          includeThumbnail = defaultIncludeThumbnail && Boolean(page.thumbnail);
         }
       }
 
@@ -153,7 +154,9 @@ export const useAppStore = create<AppState>((set, get) => ({
           syncInterval: 24,
           maxSuggestedTags: 5,
           defaultVisibility,
-          enableAI: true
+          enableAI: true,
+          defaultIncludeThumbnail: true,
+          defaultCreateSnapshot: false
         };
 
     StorageService.saveConfig({
@@ -213,7 +216,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       const config = await StorageService.loadConfig();
       set({
         config,
-        isPublic: config.preferences.defaultVisibility === 'public'
+        isPublic: config.preferences.defaultVisibility === 'public',
+        createSnapshot: config.preferences.defaultCreateSnapshot ?? false
       });
     } catch (error) {
       set({ error: 'Failed to load configuration' });
@@ -239,6 +243,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ isLoading: true, error: null });
       const { config } = get();
       const defaultVisibility = config?.preferences.defaultVisibility ?? 'public';
+      const defaultIncludeThumbnail = config?.preferences.defaultIncludeThumbnail ?? true;
 
       const response = await sendMessage<PageInfo>({
         type: 'EXTRACT_PAGE_INFO'
@@ -248,7 +253,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         currentPage: response,
         isLoading: false,
         isPublic: defaultVisibility === 'public',
-        includeThumbnail: Boolean(response.thumbnail)
+        includeThumbnail: defaultIncludeThumbnail && Boolean(response.thumbnail)
       });
     } catch (error) {
       set({

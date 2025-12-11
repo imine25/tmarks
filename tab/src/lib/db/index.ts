@@ -59,7 +59,9 @@ export class BookmarkDB extends Dexie {
     await Promise.all([
       this.tags.clear(),
       this.bookmarks.clear(),
-      this.metadata.clear()
+      this.metadata.clear(),
+      this.tabGroups.clear(),
+      this.tabGroupItems.clear()
     ]);
   }
 }

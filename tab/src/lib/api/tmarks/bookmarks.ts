@@ -126,14 +126,36 @@ export class BookmarksAPI extends TMarksClient {
    * 置顶书签
    */
   async pinBookmark(id: string): Promise<CreateBookmarkResponse> {
-    return this.updateBookmark(id, { is_pinned: true });
+    const result = await this.updateBookmark(id, { is_pinned: true });
+    // 通知 NewTab 页面刷新置顶书签
+    this.notifyPinnedBookmarksChanged();
+    return result;
   }
 
   /**
    * 取消置顶书签
    */
   async unpinBookmark(id: string): Promise<CreateBookmarkResponse> {
-    return this.updateBookmark(id, { is_pinned: false });
+    const result = await this.updateBookmark(id, { is_pinned: false });
+    // 通知 NewTab 页面刷新置顶书签
+    this.notifyPinnedBookmarksChanged();
+    return result;
+  }
+
+  /**
+   * 通知 NewTab 页面刷新置顶书签
+   */
+  private notifyPinnedBookmarksChanged(): void {
+    try {
+      chrome.runtime.sendMessage({
+        type: 'REFRESH_PINNED_BOOKMARKS',
+        payload: { timestamp: Date.now() }
+      }).catch(() => {
+        // 忽略错误，可能在非扩展环境中
+      });
+    } catch (error) {
+      // 忽略错误
+    }
   }
 
   /**
@@ -148,5 +170,15 @@ export class BookmarksAPI extends TMarksClient {
    */
   async unarchiveBookmark(id: string): Promise<CreateBookmarkResponse> {
     return this.updateBookmark(id, { is_archived: false });
+  }
+
+  /**
+   * 批量更新置顶书签排序
+   * POST /api/tab/bookmarks/reorder-pinned
+   */
+  async reorderPinnedBookmarks(bookmarkIds: string[]): Promise<{ message: string; count: number }> {
+    return this.post<{ message: string; count: number }>('/tab/bookmarks/reorder-pinned', {
+      bookmark_ids: bookmarkIds,
+    });
   }
 }

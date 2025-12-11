@@ -2,6 +2,7 @@ import { cacheManager } from '@/lib/services/cache-manager';
 import { tagRecommender } from '@/lib/services/tag-recommender';
 import { bookmarkService } from '@/lib/services/bookmark-service';
 import { bookmarkAPI } from '@/lib/services/bookmark-api';
+import { syncPendingTabGroups } from '@/lib/services/tab-collection';
 import { StorageService } from '@/lib/utils/storage';
 import type { Message, MessageResponse } from '@/types';
 
@@ -67,6 +68,95 @@ startAutoSync().catch(() => {});
 
 // Sync pending bookmarks on startup
 bookmarkService.syncPendingBookmarks().catch(() => {});
+
+// Sync pending tab groups on startup
+(async () => {
+  try {
+    const config = await StorageService.loadConfig();
+    if (config.bookmarkSite.apiKey) {
+      await syncPendingTabGroups(config.bookmarkSite);
+    }
+  } catch (error) {
+    // Silently fail
+  }
+})();
+
+// 定时刷新置顶书签
+async function refreshPinnedBookmarksCache() {
+  try {
+    console.log('[Background] 开始刷新置顶书签缓存');
+    
+    // 清除缓存
+    await chrome.storage.local.remove('tmarks_pinned_bookmarks_cache');
+    
+    // 通知所有 NewTab 页面刷新
+    await chrome.runtime.sendMessage({
+      type: 'REFRESH_PINNED_BOOKMARKS',
+      payload: { timestamp: Date.now(), source: 'scheduled' }
+    }).catch(() => {
+      // 如果没有页面在监听，忽略错误
+    });
+    
+    console.log('[Background] 置顶书签缓存刷新完成');
+  } catch (error) {
+    console.error('[Background] 刷新置顶书签缓存失败:', error);
+  }
+}
+
+// 计算到下次刷新的毫秒数
+function getMsUntilNextRefresh(refreshTime: 'morning' | 'evening'): number {
+  const now = new Date();
+  const target = new Date(now);
+  
+  // 设置目标时间
+  if (refreshTime === 'morning') {
+    target.setHours(8, 0, 0, 0); // 早上 8:00
+  } else {
+    target.setHours(22, 0, 0, 0); // 晚上 22:00
+  }
+  
+  // 如果目标时间已过，设置为明天
+  if (target <= now) {
+    target.setDate(target.getDate() + 1);
+  }
+  
+  return target.getTime() - now.getTime();
+}
+
+// 启动定时刷新
+async function startPinnedBookmarksAutoRefresh() {
+  const scheduleNext = async () => {
+    try {
+      // 读取 NewTab 设置
+      const result = await chrome.storage.local.get('newtab');
+      const newtabData = result.newtab as any;
+      
+      if (!newtabData?.settings?.autoRefreshPinnedBookmarks) {
+        // 如果未启用自动刷新，1小时后再检查
+        setTimeout(scheduleNext, 60 * 60 * 1000);
+        return;
+      }
+      
+      const refreshTime = newtabData.settings.pinnedBookmarksRefreshTime || 'morning';
+      const delay = getMsUntilNextRefresh(refreshTime);
+      
+      console.log(`[Background] 下次置顶书签刷新时间: ${refreshTime === 'morning' ? '早上 8:00' : '晚上 22:00'}, 距离: ${Math.round(delay / 1000 / 60)} 分钟`);
+      
+      setTimeout(async () => {
+        await refreshPinnedBookmarksCache();
+        scheduleNext();
+      }, delay);
+    } catch (error) {
+      // 出错后1小时重试
+      setTimeout(scheduleNext, 60 * 60 * 1000);
+    }
+  };
+  
+  scheduleNext();
+}
+
+// 启动定时刷新
+startPinnedBookmarksAutoRefresh().catch(() => {});
 
 // Handle messages from popup/content scripts
 chrome.runtime.onMessage.addListener(
@@ -293,6 +383,34 @@ async function handleMessage(
         return {
           success: false,
           error: error instanceof Error ? error.message : 'Failed to update tags'
+        };
+      }
+    }
+
+    case 'REFRESH_PINNED_BOOKMARKS': {
+      try {
+        // 广播消息到所有 NewTab 页面，让它们刷新置顶书签
+        const tabs = await chrome.tabs.query({ url: chrome.runtime.getURL('src/newtab/index.html') });
+        
+        for (const tab of tabs) {
+          if (tab.id) {
+            chrome.tabs.sendMessage(tab.id, {
+              type: 'REFRESH_PINNED_BOOKMARKS',
+              payload: message.payload
+            }).catch(() => {
+              // 忽略错误，页面可能已关闭
+            });
+          }
+        }
+
+        return {
+          success: true,
+          data: { message: 'Pinned bookmarks refresh triggered' }
+        };
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Failed to refresh pinned bookmarks'
         };
       }
     }

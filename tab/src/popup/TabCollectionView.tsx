@@ -125,21 +125,21 @@ export function TabCollectionView({ config, onBack }: TabCollectionViewProps) {
 
   return (
     <div className="relative h-[80vh] min-h-[620px] w-[380px] overflow-hidden rounded-b-2xl bg-white text-gray-900 shadow-2xl">
-      <div className="relative flex h-full flex-col">
-        {/* Error/Success Messages */}
-        <div className="pointer-events-none absolute top-4 left-0 right-0 z-30 px-4 space-y-2">
-          {error && (
-            <div className="pointer-events-auto">
-              <ErrorMessage message={error} onDismiss={() => setError(null)} />
-            </div>
-          )}
-          {successMessage && (
-            <div className="pointer-events-auto">
-              <SuccessMessage message={successMessage} onDismiss={() => setSuccessMessage(null)} />
-            </div>
-          )}
-        </div>
+      {/* Error/Success Messages - 固定在最顶部 */}
+      <div className="pointer-events-none fixed top-0 left-0 right-0 z-50 px-4 pt-2 space-y-2">
+        {error && (
+          <div className="pointer-events-auto">
+            <ErrorMessage message={error} onDismiss={() => setError(null)} />
+          </div>
+        )}
+        {successMessage && (
+          <div className="pointer-events-auto">
+            <SuccessMessage message={successMessage} onDismiss={() => setSuccessMessage(null)} />
+          </div>
+        )}
+      </div>
 
+      <div className="relative flex h-full flex-col">
         {/* Header - Fixed */}
         <header className="fixed top-0 left-0 right-0 z-20 px-3 pt-2 pb-2.5 bg-white border-b border-gray-200 shadow-sm rounded-b-2xl">
           <div className="flex items-center gap-2">
