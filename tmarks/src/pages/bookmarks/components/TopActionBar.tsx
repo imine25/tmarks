@@ -169,8 +169,8 @@ export function TopActionBar({
             </div>
           </div>
 
-          {/* 第二行：5个操作按钮 - 移动端横向滚动，桌面端右对齐 */}
-          <div className="flex items-center gap-2 w-full overflow-x-auto scrollbar-hide pb-1 sm:pb-0 sm:justify-end">
+          {/* 第二行：5个操作按钮 - 移动端居中，桌面端右对齐 */}
+          <div className="flex items-center gap-2 w-full justify-center sm:justify-end">
             {/* 排序按钮 */}
             <button
               onClick={onSortByChange}
