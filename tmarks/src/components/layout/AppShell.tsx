@@ -56,19 +56,21 @@ export function AppShell() {
           </button>
 
           {/* 右侧操作区 */}
-          <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4">
+          <div className="flex items-center gap-2 sm:gap-2.5">
             {/* 书签/标签页组切换按钮 */}
             <button
               onClick={handleToggleView}
-              className="hidden sm:flex items-center justify-center w-10 h-10 rounded-lg border border-border hover:border-primary hover:bg-card/50 transition-all duration-200"
+              className="group hidden sm:flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-2xl border border-border hover:border-primary/30 hover:bg-primary/5 active:scale-95 transition-all duration-300 shadow-sm hover:shadow-md"
               style={{color: 'var(--foreground)'}}
               title={isOnTabGroupsPage ? '切换到书签' : '切换到标签页组'}
             >
-              {isOnTabGroupsPage ? (
-                <BookOpen className="w-5 h-5" />
-              ) : (
-                <Layers className="w-5 h-5" />
-              )}
+              <div className="transition-transform duration-300 group-hover:scale-110">
+                {isOnTabGroupsPage ? (
+                  <BookOpen className="w-5 h-5" />
+                ) : (
+                  <Layers className="w-5 h-5" />
+                )}
+              </div>
             </button>
 
             <ThemeToggle />
@@ -78,11 +80,13 @@ export function AppShell() {
             {user && (
               <button
                 onClick={() => navigate('/settings/general')}
-                className="px-3 py-2 rounded-lg border border-border hover:border-primary hover:bg-card/50 transition-all duration-200 flex items-center justify-center gap-2"
+                className="group w-11 h-11 sm:w-12 sm:h-12 rounded-2xl border border-border hover:border-primary/30 hover:bg-primary/5 active:scale-95 transition-all duration-300 flex items-center justify-center shadow-sm hover:shadow-md"
                 style={{color: 'var(--foreground)'}}
                 title={`${user.username} - 点击进入设置`}
               >
-                <User className="w-5 h-5" />
+                <div className="transition-transform duration-300 group-hover:scale-110">
+                  <User className="w-5 h-5" />
+                </div>
               </button>
             )}
           </div>
