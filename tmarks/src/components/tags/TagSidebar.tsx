@@ -181,11 +181,7 @@ export function TagSidebar({
               {/* 添加按钮 */}
               <button
                 onClick={() => setShowCreateForm(!showCreateForm)}
-                className={`btn btn-sm p-2 flex-shrink-0 ${
-                  showCreateForm
-                    ? 'btn-ghost'
-                    : 'btn-ghost'
-                }`}
+                className="btn btn-sm p-2 flex-shrink-0 btn-ghost"
                 title={showCreateForm ? '取消' : '新建标签'}
               >
                 <svg
