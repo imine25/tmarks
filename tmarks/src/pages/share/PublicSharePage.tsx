@@ -96,7 +96,7 @@ export function PublicSharePage() {
   const [debouncedSearchKeyword, setDebouncedSearchKeyword] = useState('')
   const [searchMode, setSearchMode] = useState<'bookmark' | 'tag'>('bookmark')
   const [viewMode, setViewMode] = useState<ViewMode>('card')
-  const [sortBy, setSortBy] = useState<SortOption>('popular')
+  const [sortBy, setSortBy] = useState<SortOption>('created')
   const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('all')
   const [tagLayout, setTagLayout] = useState<'grid' | 'masonry'>('grid')
   const [isTagSidebarOpen, setIsTagSidebarOpen] = useState(false)
@@ -434,16 +434,16 @@ export function PublicSharePage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
+                    <div className="flex items-center gap-1 sm:gap-1.5 w-full sm:w-auto">
                       {/* 排序按钮 - 点击循环切换 */}
                       <button
                         onClick={handleSortByChange}
-                        className="group relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-all duration-300 bg-card text-foreground border border-border hover:border-primary/30 hover:bg-primary/5 active:scale-95 touch-manipulation flex-shrink-0 shadow-sm hover:shadow-md"
+                        className="group w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all duration-200 text-foreground hover:bg-muted/50 active:scale-95 touch-manipulation flex-shrink-0"
                         title={`${SORT_LABELS[sortBy]} (点击切换)`}
                         aria-label={`${SORT_LABELS[sortBy]} (点击切换)`}
                         type="button"
                       >
-                        <div className="transition-transform duration-300 group-hover:scale-110">
+                        <div className="transition-transform duration-200 group-hover:scale-110">
                           <SortIcon sort={sortBy} />
                         </div>
                       </button>
@@ -451,18 +451,18 @@ export function PublicSharePage() {
                       {/* 可见性筛选按钮 - 点击循环切换 */}
                       <button
                         onClick={handleVisibilityChange}
-                        className={`group relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-all duration-300 border active:scale-95 touch-manipulation flex-shrink-0 shadow-sm hover:shadow-md ${
+                        className={`group w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all duration-200 active:scale-95 touch-manipulation flex-shrink-0 ${
                           visibilityFilter === 'all'
-                            ? 'bg-card text-foreground border-border hover:border-primary/30 hover:bg-primary/5'
+                            ? 'text-foreground hover:bg-muted/50'
                             : visibilityFilter === 'public'
-                            ? 'bg-success/10 text-success border-success/30 hover:bg-success/20 hover:border-success/50'
-                            : 'bg-warning/10 text-warning border-warning/30 hover:bg-warning/20 hover:border-warning/50'
+                            ? 'text-success hover:bg-success/10'
+                            : 'text-warning hover:bg-warning/10'
                         }`}
                         title={`${VISIBILITY_LABELS[visibilityFilter]} (点击切换)`}
                         aria-label={`${VISIBILITY_LABELS[visibilityFilter]} (点击切换)`}
                         type="button"
                       >
-                        <div className="transition-transform duration-300 group-hover:scale-110">
+                        <div className="transition-transform duration-200 group-hover:scale-110">
                           <VisibilityIcon filter={visibilityFilter} />
                         </div>
                       </button>
@@ -470,12 +470,12 @@ export function PublicSharePage() {
                       {/* 视图模式按钮 - 点击循环切换 */}
                       <button
                         onClick={handleViewModeChange}
-                        className="group relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-all duration-300 bg-card text-foreground border border-border hover:border-primary/30 hover:bg-primary/5 active:scale-95 touch-manipulation flex-shrink-0 shadow-sm hover:shadow-md"
+                        className="group w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all duration-200 text-foreground hover:bg-muted/50 active:scale-95 touch-manipulation flex-shrink-0"
                         title={`${getViewModeLabel(viewMode)} (点击切换)`}
                         aria-label={`${getViewModeLabel(viewMode)} (点击切换)`}
                         type="button"
                       >
-                        <div className="transition-transform duration-300 group-hover:scale-110">
+                        <div className="transition-transform duration-200 group-hover:scale-110">
                           <ViewModeIcon mode={viewMode} />
                         </div>
                       </button>

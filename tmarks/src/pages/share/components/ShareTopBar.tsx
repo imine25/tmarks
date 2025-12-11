@@ -172,39 +172,39 @@ export function ShareTopBar({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-2.5 w-full sm:w-auto overflow-x-auto scrollbar-hide pb-1 sm:pb-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 w-full sm:w-auto overflow-x-auto scrollbar-hide pb-1 sm:pb-0">
             <button
               onClick={handleSortChange}
-              className="group relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-all duration-300 bg-card text-foreground border border-border hover:border-primary/30 hover:bg-primary/5 active:scale-95 flex-shrink-0 shadow-sm hover:shadow-md"
+              className="group w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all duration-200 text-foreground hover:bg-muted/50 active:scale-95 flex-shrink-0"
               title={`${SORT_LABELS[sortBy]} (点击切换)`}
             >
-              <div className="transition-transform duration-300 group-hover:scale-110">
+              <div className="transition-transform duration-200 group-hover:scale-110">
                 <SortIcon sort={sortBy} />
               </div>
             </button>
 
             <button
               onClick={handleVisibilityChange}
-              className={`group relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-all duration-300 border active:scale-95 flex-shrink-0 shadow-sm hover:shadow-md ${
+              className={`group w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all duration-200 active:scale-95 flex-shrink-0 ${
                 visibilityFilter === 'all'
-                  ? 'bg-card text-foreground border-border hover:border-primary/30 hover:bg-primary/5'
+                  ? 'text-foreground hover:bg-muted/50'
                   : visibilityFilter === 'public'
-                  ? 'bg-success/10 text-success border-success/30 hover:bg-success/20 hover:border-success/50'
-                  : 'bg-warning/10 text-warning border-warning/30 hover:bg-warning/20 hover:border-warning/50'
+                  ? 'text-success hover:bg-success/10'
+                  : 'text-warning hover:bg-warning/10'
               }`}
               title={`${VISIBILITY_LABELS[visibilityFilter]} (点击切换)`}
             >
-              <div className="transition-transform duration-300 group-hover:scale-110">
+              <div className="transition-transform duration-200 group-hover:scale-110">
                 <VisibilityIcon filter={visibilityFilter} />
               </div>
             </button>
 
             <button
               onClick={handleViewModeChange}
-              className="group relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-all duration-300 bg-card text-foreground border border-border hover:border-primary/30 hover:bg-primary/5 active:scale-95 flex-shrink-0 shadow-sm hover:shadow-md"
+              className="group w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all duration-200 text-foreground hover:bg-muted/50 active:scale-95 flex-shrink-0"
               title={`${getViewModeLabel(viewMode)} (点击切换)`}
             >
-              <div className="transition-transform duration-300 group-hover:scale-110">
+              <div className="transition-transform duration-200 group-hover:scale-110">
                 <ViewModeIcon mode={viewMode} />
               </div>
             </button>
