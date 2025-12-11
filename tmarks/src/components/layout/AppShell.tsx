@@ -56,21 +56,18 @@ export function AppShell() {
           </button>
 
           {/* 右侧操作区 */}
-          <div className="flex items-center gap-2 sm:gap-2.5">
+          <div className="flex items-center gap-1">
             {/* 书签/标签页组切换按钮 */}
             <button
               onClick={handleToggleView}
-              className="group hidden sm:flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-2xl border border-border hover:border-primary/30 hover:bg-primary/5 active:scale-95 transition-all duration-300 shadow-sm hover:shadow-md"
-              style={{color: 'var(--foreground)'}}
+              className="btn btn-sm btn-ghost p-2 hidden sm:flex"
               title={isOnTabGroupsPage ? '切换到书签' : '切换到标签页组'}
             >
-              <div className="transition-transform duration-300 group-hover:scale-110">
-                {isOnTabGroupsPage ? (
-                  <BookOpen className="w-5 h-5" />
-                ) : (
-                  <Layers className="w-5 h-5" />
-                )}
-              </div>
+              {isOnTabGroupsPage ? (
+                <BookOpen className="w-4 h-4" />
+              ) : (
+                <Layers className="w-4 h-4" />
+              )}
             </button>
 
             <ThemeToggle />
@@ -80,13 +77,10 @@ export function AppShell() {
             {user && (
               <button
                 onClick={() => navigate('/settings/general')}
-                className="group w-11 h-11 sm:w-12 sm:h-12 rounded-2xl border border-border hover:border-primary/30 hover:bg-primary/5 active:scale-95 transition-all duration-300 flex items-center justify-center shadow-sm hover:shadow-md"
-                style={{color: 'var(--foreground)'}}
+                className="btn btn-sm btn-ghost p-2"
                 title={`${user.username} - 点击进入设置`}
               >
-                <div className="transition-transform duration-300 group-hover:scale-110">
-                  <User className="w-5 h-5" />
-                </div>
+                <User className="w-4 h-4" />
               </button>
             )}
           </div>

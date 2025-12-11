@@ -46,15 +46,15 @@ const PAGE_SIZE = 30 // 每页显示30个书签
 function ViewModeIcon({ mode }: { mode: ViewMode }) {
   switch (mode) {
     case 'card':
-      return <LayoutGrid className="w-5 h-5" />
+      return <LayoutGrid className="w-4 h-4" />
     case 'list':
-      return <List className="w-5 h-5" />
+      return <List className="w-4 h-4" />
     case 'minimal':
-      return <AlignLeft className="w-5 h-5" />
+      return <AlignLeft className="w-4 h-4" />
     case 'title':
-      return <Type className="w-5 h-5" />
+      return <Type className="w-4 h-4" />
     default:
-      return <LayoutGrid className="w-5 h-5" />
+      return <LayoutGrid className="w-4 h-4" />
   }
 }
 
@@ -62,13 +62,13 @@ function ViewModeIcon({ mode }: { mode: ViewMode }) {
 function VisibilityIcon({ filter }: { filter: VisibilityFilter }) {
   switch (filter) {
     case 'public':
-      return <Eye className="w-5 h-5" />
+      return <Eye className="w-4 h-4" />
     case 'private':
-      return <Lock className="w-5 h-5" />
+      return <Lock className="w-4 h-4" />
     case 'all':
-      return <Layers className="w-5 h-5" />
+      return <Layers className="w-4 h-4" />
     default:
-      return <Layers className="w-5 h-5" />
+      return <Layers className="w-4 h-4" />
   }
 }
 
@@ -76,15 +76,15 @@ function VisibilityIcon({ filter }: { filter: VisibilityFilter }) {
 function SortIcon({ sort }: { sort: SortOption }) {
   switch (sort) {
     case 'created':
-      return <Calendar className="w-5 h-5" />
+      return <Calendar className="w-4 h-4" />
     case 'updated':
-      return <RefreshCw className="w-5 h-5" />
+      return <RefreshCw className="w-4 h-4" />
     case 'pinned':
-      return <BookmarkIcon className="w-5 h-5" />
+      return <BookmarkIcon className="w-4 h-4" />
     case 'popular':
-      return <TrendingUp className="w-5 h-5" />
+      return <TrendingUp className="w-4 h-4" />
     default:
-      return <Calendar className="w-5 h-5" />
+      return <Calendar className="w-4 h-4" />
   }
 }
 
@@ -434,50 +434,48 @@ export function PublicSharePage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1 sm:gap-1.5 w-full sm:w-auto">
+                    <div className="flex items-center gap-1 w-full sm:w-auto">
                       {/* 排序按钮 - 点击循环切换 */}
                       <button
                         onClick={handleSortByChange}
-                        className="group w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all duration-200 text-foreground hover:bg-muted/50 active:scale-95 touch-manipulation flex-shrink-0"
+                        className="btn btn-sm btn-ghost p-2 flex-shrink-0"
                         title={`${SORT_LABELS[sortBy]} (点击切换)`}
                         aria-label={`${SORT_LABELS[sortBy]} (点击切换)`}
                         type="button"
                       >
-                        <div className="transition-transform duration-200 group-hover:scale-110">
-                          <SortIcon sort={sortBy} />
-                        </div>
+                        <SortIcon sort={sortBy} />
                       </button>
 
                       {/* 可见性筛选按钮 - 点击循环切换 */}
                       <button
                         onClick={handleVisibilityChange}
-                        className={`group w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all duration-200 active:scale-95 touch-manipulation flex-shrink-0 ${
+                        className={`btn btn-sm p-2 flex-shrink-0 ${
                           visibilityFilter === 'all'
-                            ? 'text-foreground hover:bg-muted/50'
+                            ? 'btn-ghost'
                             : visibilityFilter === 'public'
                             ? 'text-success hover:bg-success/10'
                             : 'text-warning hover:bg-warning/10'
                         }`}
+                        style={{
+                          background: visibilityFilter !== 'all' ? 'transparent' : undefined,
+                          boxShadow: 'none'
+                        }}
                         title={`${VISIBILITY_LABELS[visibilityFilter]} (点击切换)`}
                         aria-label={`${VISIBILITY_LABELS[visibilityFilter]} (点击切换)`}
                         type="button"
                       >
-                        <div className="transition-transform duration-200 group-hover:scale-110">
-                          <VisibilityIcon filter={visibilityFilter} />
-                        </div>
+                        <VisibilityIcon filter={visibilityFilter} />
                       </button>
 
                       {/* 视图模式按钮 - 点击循环切换 */}
                       <button
                         onClick={handleViewModeChange}
-                        className="group w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all duration-200 text-foreground hover:bg-muted/50 active:scale-95 touch-manipulation flex-shrink-0"
+                        className="btn btn-sm btn-ghost p-2 flex-shrink-0"
                         title={`${getViewModeLabel(viewMode)} (点击切换)`}
                         aria-label={`${getViewModeLabel(viewMode)} (点击切换)`}
                         type="button"
                       >
-                        <div className="transition-transform duration-200 group-hover:scale-110">
-                          <ViewModeIcon mode={viewMode} />
-                        </div>
+                        <ViewModeIcon mode={viewMode} />
                       </button>
                     </div>
                   </div>

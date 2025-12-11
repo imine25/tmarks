@@ -35,15 +35,15 @@ const SORT_LABELS: Record<SortOption, string> = {
 function ViewModeIcon({ mode }: { mode: ViewMode }) {
   switch (mode) {
     case 'card':
-      return <LayoutGrid className="w-5 h-5" />
+      return <LayoutGrid className="w-4 h-4" />
     case 'list':
-      return <List className="w-5 h-5" />
+      return <List className="w-4 h-4" />
     case 'minimal':
-      return <AlignLeft className="w-5 h-5" />
+      return <AlignLeft className="w-4 h-4" />
     case 'title':
-      return <Type className="w-5 h-5" />
+      return <Type className="w-4 h-4" />
     default:
-      return <LayoutGrid className="w-5 h-5" />
+      return <LayoutGrid className="w-4 h-4" />
   }
 }
 
@@ -51,13 +51,13 @@ function ViewModeIcon({ mode }: { mode: ViewMode }) {
 function VisibilityIcon({ filter }: { filter: VisibilityFilter }) {
   switch (filter) {
     case 'public':
-      return <Eye className="w-5 h-5" />
+      return <Eye className="w-4 h-4" />
     case 'private':
-      return <Lock className="w-5 h-5" />
+      return <Lock className="w-4 h-4" />
     case 'all':
-      return <Layers className="w-5 h-5" />
+      return <Layers className="w-4 h-4" />
     default:
-      return <Layers className="w-5 h-5" />
+      return <Layers className="w-4 h-4" />
   }
 }
 
@@ -65,15 +65,15 @@ function VisibilityIcon({ filter }: { filter: VisibilityFilter }) {
 function SortIcon({ sort }: { sort: SortOption }) {
   switch (sort) {
     case 'created':
-      return <Calendar className="w-5 h-5" />
+      return <Calendar className="w-4 h-4" />
     case 'updated':
-      return <RefreshCw className="w-5 h-5" />
+      return <RefreshCw className="w-4 h-4" />
     case 'pinned':
-      return <BookmarkIcon className="w-5 h-5" />
+      return <BookmarkIcon className="w-4 h-4" />
     case 'popular':
-      return <TrendingUp className="w-5 h-5" />
+      return <TrendingUp className="w-4 h-4" />
     default:
-      return <Calendar className="w-5 h-5" />
+      return <Calendar className="w-4 h-4" />
   }
 }
 
@@ -170,19 +170,17 @@ export function TopActionBar({
           </div>
 
           {/* 排序选择、视图切换和新增按钮 */}
-          <div className="flex items-center gap-1 sm:gap-1.5 w-full sm:w-auto overflow-x-auto scrollbar-hide pb-1 sm:pb-0">
-            <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+          <div className="flex items-center gap-1 w-full sm:w-auto overflow-x-auto scrollbar-hide pb-1 sm:pb-0">
+            <div className="flex items-center gap-1 flex-shrink-0">
               {/* 排序按钮 */}
               <button
                 onClick={onSortByChange}
-                className="group w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all duration-200 text-foreground hover:bg-muted/50 active:scale-95 touch-manipulation flex-shrink-0"
+                className="btn btn-sm btn-ghost p-2 flex-shrink-0"
                 title={`${SORT_LABELS[sortBy]} (点击切换)`}
                 aria-label={`${SORT_LABELS[sortBy]} (点击切换)`}
                 type="button"
               >
-                <div className="transition-transform duration-200 group-hover:scale-110">
-                  <SortIcon sort={sortBy} />
-                </div>
+                <SortIcon sort={sortBy} />
               </button>
 
               {/* 可见性筛选按钮 */}
@@ -195,33 +193,33 @@ export function TopActionBar({
                       : 'all'
                   setVisibilityFilter(nextFilter)
                 }}
-                className={`group w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all duration-200 active:scale-95 touch-manipulation flex-shrink-0 ${
+                className={`btn btn-sm p-2 flex-shrink-0 ${
                   visibilityFilter === 'all'
-                    ? 'text-foreground hover:bg-muted/50'
+                    ? 'btn-ghost'
                     : visibilityFilter === 'public'
                     ? 'text-success hover:bg-success/10'
                     : 'text-warning hover:bg-warning/10'
                 }`}
+                style={{
+                  background: visibilityFilter !== 'all' ? 'transparent' : undefined,
+                  boxShadow: 'none'
+                }}
                 title={`${VISIBILITY_LABELS[visibilityFilter]} (点击切换)`}
                 aria-label={`${VISIBILITY_LABELS[visibilityFilter]} (点击切换)`}
                 type="button"
               >
-                <div className="transition-transform duration-200 group-hover:scale-110">
-                  <VisibilityIcon filter={visibilityFilter} />
-                </div>
+                <VisibilityIcon filter={visibilityFilter} />
               </button>
 
               {/* 视图模式按钮 */}
               <button
                 onClick={onViewModeChange}
-                className="group w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all duration-200 text-foreground hover:bg-muted/50 active:scale-95 touch-manipulation flex-shrink-0"
+                className="btn btn-sm btn-ghost p-2 flex-shrink-0"
                 title={`${getViewModeLabel(viewMode)} (点击切换)`}
                 aria-label={`${getViewModeLabel(viewMode)} (点击切换)`}
                 type="button"
               >
-                <div className="transition-transform duration-200 group-hover:scale-110">
-                  <ViewModeIcon mode={viewMode} />
-                </div>
+                <ViewModeIcon mode={viewMode} />
               </button>
 
               {/* 批量操作按钮 */}
@@ -232,31 +230,33 @@ export function TopActionBar({
                     setSelectedIds([])
                   }
                 }}
-                className={`group w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all duration-200 active:scale-95 touch-manipulation flex-shrink-0 ${
+                className={`btn btn-sm p-2 flex-shrink-0 ${
                   batchMode
                     ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                    : 'text-foreground hover:bg-muted/50'
+                    : 'btn-ghost'
                 }`}
+                style={{
+                  boxShadow: 'none'
+                }}
                 title={batchMode ? '退出批量操作' : '批量操作'}
                 aria-label={batchMode ? '退出批量操作' : '批量操作'}
                 type="button"
               >
-                <div className="transition-transform duration-200 group-hover:scale-110">
-                  <CheckCircle className="w-5 h-5" />
-                </div>
+                <CheckCircle className="w-4 h-4" />
               </button>
 
               {/* 新增书签按钮 */}
               <button
                 onClick={onOpenForm}
-                className="group w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-primary to-secondary text-primary-foreground flex items-center justify-center transition-all duration-200 hover:shadow-lg active:scale-95 touch-manipulation flex-shrink-0 shadow-md"
+                className="btn btn-sm p-2 flex-shrink-0 bg-gradient-to-br from-primary to-secondary text-primary-foreground hover:shadow-lg"
+                style={{
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                }}
                 title="新增书签"
                 aria-label="新增书签"
                 type="button"
               >
-                <div className="transition-transform duration-200 group-hover:scale-110 group-hover:rotate-90">
-                  <Plus className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2.5} />
-                </div>
+                <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" strokeWidth={2.5} />
               </button>
             </div>
           </div>
