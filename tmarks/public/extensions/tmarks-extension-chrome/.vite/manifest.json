@@ -5,8 +5,8 @@
     "src": "../../../../@crx/manifest",
     "isEntry": true
   },
-  "_SuccessMessage-pbwPRQGA.js": {
-    "file": "assets/SuccessMessage-pbwPRQGA.js",
+  "_SuccessMessage-DuinNhat.js": {
+    "file": "assets/SuccessMessage-DuinNhat.js",
     "name": "SuccessMessage",
     "imports": [
       "_urls-CEh1Kean.js",
@@ -73,7 +73,7 @@
     "name": "urls"
   },
   "src/background/index.ts": {
-    "file": "assets/index.ts-B8FipFY-.js",
+    "file": "assets/index.ts-DBYOq_j_.js",
     "name": "index.ts",
     "src": "src/background/index.ts",
     "isEntry": true,
@@ -112,7 +112,7 @@
     "isDynamicEntry": true
   },
   "src/newtab/index.html": {
-    "file": "assets/newtab-AD7ghiYx.js",
+    "file": "assets/newtab-DRj9LRb2.js",
     "name": "newtab",
     "src": "src/newtab/index.html",
     "isEntry": true,
@@ -123,18 +123,18 @@
       "_index-CLpTKzGv.js"
     ],
     "css": [
-      "assets/newtab-CV6-o12b.css"
+      "assets/newtab-DEw5mmb5.css"
     ]
   },
   "src/options/index.html": {
-    "file": "assets/options-DBXlPUDn.js",
+    "file": "assets/options-DvQNHO_J.js",
     "name": "options",
     "src": "src/options/index.html",
     "isEntry": true,
     "imports": [
       "_react-DmgQkRKB.js",
       "_preload-helper-BhLMWRjL.js",
-      "_SuccessMessage-pbwPRQGA.js",
+      "_SuccessMessage-DuinNhat.js",
       "_index-CQ_a-bOA.js",
       "_prompts-CKcm-rRX.js",
       "_urls-CEh1Kean.js"
@@ -143,17 +143,17 @@
       "_index-DHRMGLhe.js"
     ],
     "css": [
-      "assets/options-Dc3bifL5.css"
+      "assets/options-D2EHSvf3.css"
     ]
   },
   "src/popup/index.html": {
-    "file": "assets/popup-B1Qj6BG1.js",
+    "file": "assets/popup-C65copOF.js",
     "name": "popup",
     "src": "src/popup/index.html",
     "isEntry": true,
     "imports": [
       "_react-DmgQkRKB.js",
-      "_SuccessMessage-pbwPRQGA.js",
+      "_SuccessMessage-DuinNhat.js",
       "_index-BbZ5549T.js",
       "_urls-CEh1Kean.js",
       "_tab-collection-Czy9PBbd.js",
@@ -161,7 +161,7 @@
       "_index-CLpTKzGv.js"
     ],
     "css": [
-      "assets/popup-DX_YUXs_.css"
+      "assets/popup-DyLGKkUb.css"
     ]
   }
 }
