@@ -1,0 +1,168 @@
+{
+  "../../../../@crx/manifest": {
+    "file": "assets/crx-manifest.js-DnDDiO2a.js",
+    "name": "crx-manifest.js",
+    "src": "../../../../@crx/manifest",
+    "isEntry": true
+  },
+  "_SuccessMessage-DuinNhat.js": {
+    "file": "assets/SuccessMessage-DuinNhat.js",
+    "name": "SuccessMessage",
+    "imports": [
+      "_urls-CEh1Kean.js",
+      "_react-DmgQkRKB.js"
+    ]
+  },
+  "_index-CK9CFPi6.js": {
+    "file": "assets/index-CK9CFPi6.js",
+    "name": "index"
+  },
+  "_index-CQ_a-bOA.js": {
+    "file": "assets/index-CQ_a-bOA.js",
+    "name": "index",
+    "imports": [
+      "_urls-CEh1Kean.js"
+    ]
+  },
+  "_index-DFgX45QT.js": {
+    "file": "assets/index-DFgX45QT.js",
+    "name": "index",
+    "imports": [
+      "_react-DmgQkRKB.js"
+    ]
+  },
+  "_index-DHRMGLhe.js": {
+    "file": "assets/index-DHRMGLhe.js",
+    "name": "index",
+    "isDynamicEntry": true,
+    "imports": [
+      "_prompts-CKcm-rRX.js",
+      "_urls-CEh1Kean.js"
+    ]
+  },
+  "_index.ts-loader-kQ42JwJ9.js": {
+    "file": "assets/index.ts-loader-kQ42JwJ9.js",
+    "src": "_index.ts-loader-kQ42JwJ9.js"
+  },
+  "_preload-helper-BhLMWRjL.js": {
+    "file": "assets/preload-helper-BhLMWRjL.js",
+    "name": "preload-helper"
+  },
+  "_prompts-CKcm-rRX.js": {
+    "file": "assets/prompts-CKcm-rRX.js",
+    "name": "prompts"
+  },
+  "_react-DmgQkRKB.js": {
+    "file": "assets/react-DmgQkRKB.js",
+    "name": "react",
+    "imports": [
+      "_urls-CEh1Kean.js"
+    ]
+  },
+  "_tab-collection-D1BE1Zsz.js": {
+    "file": "assets/tab-collection-D1BE1Zsz.js",
+    "name": "tab-collection",
+    "imports": [
+      "_index-CQ_a-bOA.js",
+      "_index-CK9CFPi6.js",
+      "_urls-CEh1Kean.js"
+    ]
+  },
+  "_urls-CEh1Kean.js": {
+    "file": "assets/urls-CEh1Kean.js",
+    "name": "urls"
+  },
+  "src/background/index.ts": {
+    "file": "assets/index.ts-Cy88FIQz.js",
+    "name": "index.ts",
+    "src": "src/background/index.ts",
+    "isEntry": true,
+    "imports": [
+      "_index-CQ_a-bOA.js",
+      "_index-DHRMGLhe.js",
+      "_urls-CEh1Kean.js",
+      "_index-CK9CFPi6.js",
+      "_tab-collection-D1BE1Zsz.js",
+      "_prompts-CKcm-rRX.js"
+    ]
+  },
+  "src/content/index.ts": {
+    "file": "assets/index.ts-Buv4h7u2.js",
+    "name": "index.ts",
+    "src": "src/content/index.ts",
+    "isEntry": true,
+    "imports": [
+      "_preload-helper-BhLMWRjL.js"
+    ],
+    "dynamicImports": [
+      "src/content/singlefile-capture.ts",
+      "src/content/singlefile-capture-v2.ts"
+    ]
+  },
+  "src/content/singlefile-capture-v2.ts": {
+    "file": "assets/singlefile-capture-v2-DXdSZKa8.js",
+    "name": "singlefile-capture-v2",
+    "src": "src/content/singlefile-capture-v2.ts",
+    "isDynamicEntry": true
+  },
+  "src/content/singlefile-capture.ts": {
+    "file": "assets/singlefile-capture-Bkt_j5oF.js",
+    "name": "singlefile-capture",
+    "src": "src/content/singlefile-capture.ts",
+    "isDynamicEntry": true
+  },
+  "src/newtab/index.html": {
+    "file": "assets/newtab-C9B9911H.js",
+    "name": "newtab",
+    "src": "src/newtab/index.html",
+    "isEntry": true,
+    "imports": [
+      "_react-DmgQkRKB.js",
+      "_preload-helper-BhLMWRjL.js",
+      "_urls-CEh1Kean.js",
+      "_index-DFgX45QT.js",
+      "_index-CK9CFPi6.js"
+    ],
+    "css": [
+      "assets/newtab-DZfqRWVk.css"
+    ]
+  },
+  "src/options/index.html": {
+    "file": "assets/options-D9_qSqZK.js",
+    "name": "options",
+    "src": "src/options/index.html",
+    "isEntry": true,
+    "imports": [
+      "_react-DmgQkRKB.js",
+      "_preload-helper-BhLMWRjL.js",
+      "_SuccessMessage-DuinNhat.js",
+      "_index-CQ_a-bOA.js",
+      "_prompts-CKcm-rRX.js",
+      "_urls-CEh1Kean.js"
+    ],
+    "dynamicImports": [
+      "_index-DHRMGLhe.js"
+    ],
+    "css": [
+      "assets/options-C-1ub3Zb.css"
+    ]
+  },
+  "src/popup/index.html": {
+    "file": "assets/popup-DRkcmhhn.js",
+    "name": "popup",
+    "src": "src/popup/index.html",
+    "isEntry": true,
+    "imports": [
+      "_react-DmgQkRKB.js",
+      "_SuccessMessage-DuinNhat.js",
+      "_index-DFgX45QT.js",
+      "_urls-CEh1Kean.js",
+      "_tab-collection-D1BE1Zsz.js",
+      "_index-CK9CFPi6.js",
+      "_index-CQ_a-bOA.js"
+    ],
+    "css": [
+      "assets/popup-BP01Ouj5.css"
+    ]
+  }
+}

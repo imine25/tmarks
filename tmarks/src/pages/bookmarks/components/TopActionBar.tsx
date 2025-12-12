@@ -1,5 +1,6 @@
 import { 
   CheckCircle,
+  CheckSquare,
   LayoutGrid, 
   List, 
   AlignLeft, 
@@ -124,13 +125,14 @@ export function TopActionBar({
   return (
     <div className="flex-shrink-0 px-3 sm:px-4 md:px-6 pt-3 sm:pt-4 md:pt-6 pb-3 sm:pb-4 w-full">
       <div className="p-4 sm:p-5 w-full">
-        <div className="flex flex-col gap-3 w-full">
+        {/* 移动端：两行布局 */}
+        <div className="flex flex-col gap-3 w-full lg:hidden">
           {/* 第一行：标签抽屉按钮 + 搜索框 */}
           <div className="flex items-center gap-3 w-full">
             {/* 标签抽屉按钮 - 仅移动端显示 */}
             <button
               onClick={() => setIsTagSidebarOpen(true)}
-              className="group lg:hidden w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-all duration-300 bg-card border border-border hover:border-primary/30 hover:bg-primary/5 active:scale-95 text-foreground shadow-sm hover:shadow-md flex-shrink-0"
+              className="group w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-all duration-300 bg-card border border-border hover:border-primary/30 hover:bg-primary/5 active:scale-95 text-foreground shadow-sm hover:shadow-md flex-shrink-0"
               title="打开标签"
               aria-label="打开标签"
             >
@@ -169,8 +171,8 @@ export function TopActionBar({
             </div>
           </div>
 
-          {/* 第二行：5个操作按钮 - 移动端居中，桌面端右对齐 */}
-          <div className="flex items-center gap-2 w-full justify-center sm:justify-end">
+          {/* 第二行：5个操作按钮 - 移动端居中 */}
+          <div className="flex items-center gap-2 w-full justify-center">
             {/* 排序按钮 */}
             <button
               onClick={onSortByChange}
@@ -240,6 +242,105 @@ export function TopActionBar({
               type="button"
             >
               <Plus className="w-4 h-4 transition-transform" strokeWidth={2.5} />
+            </button>
+          </div>
+        </div>
+
+        {/* PC端：单行布局 - 搜索框和5个图标在同一行 */}
+        <div className="hidden lg:flex items-center gap-3 w-full">
+          {/* 搜索框 */}
+          <div className="flex-1 min-w-0">
+            <div className="relative w-full">
+              {/* 搜索模式切换按钮 */}
+              <button
+                onClick={() => setSearchMode(searchMode === 'bookmark' ? 'tag' : 'bookmark')}
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center transition-all hover:text-primary hover:scale-110"
+                title={searchMode === 'bookmark' ? '切换到标签搜索' : '切换到书签搜索'}
+                aria-label={searchMode === 'bookmark' ? '切换到标签搜索' : '切换到书签搜索'}
+              >
+                {searchMode === 'bookmark' ? (
+                  <BookmarkIcon className="w-5 h-5" />
+                ) : (
+                  <TagIcon className="w-5 h-5" />
+                )}
+              </button>
+
+              {/* 搜索图标 */}
+              <Search className="absolute left-12 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+
+              {/* 搜索输入框 */}
+              <input
+                type="text"
+                className="input w-full !pl-[4.5rem] text-base"
+                placeholder={searchMode === 'bookmark' ? '搜索书签...' : '搜索标签...'}
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* 5个操作按钮 */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {/* 排序按钮 */}
+            <button
+              onClick={onSortByChange}
+              className="btn btn-sm btn-ghost p-2 flex-shrink-0"
+              title={`${SORT_LABELS[sortBy]} (点击切换)`}
+              aria-label={`${SORT_LABELS[sortBy]} (点击切换)`}
+              type="button"
+            >
+              <SortIcon sort={sortBy} />
+            </button>
+
+            {/* 可见性过滤按钮 */}
+            <button
+              onClick={() => setVisibilityFilter(visibilityFilter === 'all' ? 'public' : visibilityFilter === 'public' ? 'private' : 'all')}
+              className="btn btn-sm btn-ghost p-2 flex-shrink-0"
+              title={`${VISIBILITY_LABELS[visibilityFilter]} (点击切换)`}
+              aria-label={`${VISIBILITY_LABELS[visibilityFilter]} (点击切换)`}
+              type="button"
+            >
+              <VisibilityIcon filter={visibilityFilter} />
+            </button>
+
+            {/* 视图模式按钮 */}
+            <button
+              onClick={onViewModeChange}
+              className="btn btn-sm btn-ghost p-2 flex-shrink-0"
+              title={`${getViewModeLabel(viewMode)} (点击切换)`}
+              aria-label={`${getViewModeLabel(viewMode)} (点击切换)`}
+              type="button"
+            >
+              <ViewModeIcon mode={viewMode} />
+            </button>
+
+            {/* 批量操作按钮 */}
+            <button
+              onClick={() => {
+                setBatchMode(!batchMode)
+                if (batchMode) {
+                  setSelectedIds([])
+                }
+              }}
+              className={`btn btn-sm p-2 flex-shrink-0 ${
+                batchMode ? 'btn-primary' : 'btn-ghost'
+              }`}
+              title={batchMode ? '退出批量操作' : '批量操作'}
+              aria-label={batchMode ? '退出批量操作' : '批量操作'}
+              type="button"
+            >
+              <CheckSquare className="w-5 h-5" />
+            </button>
+
+            {/* 添加书签按钮 */}
+            <button
+              onClick={onOpenForm}
+              className="btn btn-sm btn-primary p-2 flex-shrink-0"
+              title="添加书签"
+              aria-label="添加书签"
+              type="button"
+            >
+              <Plus className="w-5 h-5" />
             </button>
           </div>
         </div>
