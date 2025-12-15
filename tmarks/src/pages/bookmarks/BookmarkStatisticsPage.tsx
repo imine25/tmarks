@@ -170,7 +170,7 @@ export function BookmarkStatisticsPage({ embedded = false }: BookmarkStatisticsP
             </button>
 
             <div className="flex items-center gap-2">
-              <div className="text-base sm:text-lg font-semibold text-foreground px-3 sm:px-4 py-2 bg-muted/30 rounded-lg min-w-[200px] sm:min-w-[280px] text-center">
+              <div className="text-base sm:text-lg font-semibold text-foreground px-3 sm:px-4 py-2 bg-card border border-border rounded-lg min-w-[200px] sm:min-w-[280px] text-center">
                 {formatCurrentRange()}
               </div>
               <button
