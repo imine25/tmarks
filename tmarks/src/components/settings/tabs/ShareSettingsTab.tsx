@@ -100,7 +100,7 @@ export function ShareSettingsTab() {
         </div>
 
         {/* 启用开关 */}
-        <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
+        <div className="flex items-center justify-between p-4 rounded-lg bg-card border border-border">
           <div>
             <div className="text-sm font-medium mb-1">启用公开分享</div>
             <div className="text-xs text-muted-foreground">

@@ -82,7 +82,7 @@ export function BasicSettingsTab() {
                 
                 <div className="space-y-3">
                     {/* 用户名 */}
-                    <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30 border border-border">
+                    <div className="flex items-center gap-3 p-4 rounded-lg bg-card border border-border">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                             <User className="w-5 h-5 text-primary" />
                         </div>
@@ -94,7 +94,7 @@ export function BasicSettingsTab() {
 
                     {/* 邮箱 */}
                     {user?.email && (
-                        <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30 border border-border">
+                        <div className="flex items-center gap-3 p-4 rounded-lg bg-card border border-border">
                             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                                 <Mail className="w-5 h-5 text-primary" />
                             </div>
@@ -106,7 +106,7 @@ export function BasicSettingsTab() {
                     )}
 
                     {/* 注册时间 */}
-                    <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30 border border-border">
+                    <div className="flex items-center gap-3 p-4 rounded-lg bg-card border border-border">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                             <Calendar className="w-5 h-5 text-primary" />
                         </div>
@@ -117,7 +117,7 @@ export function BasicSettingsTab() {
                     </div>
 
                     {/* 账户角色 */}
-                    <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30 border border-border">
+                    <div className="flex items-center gap-3 p-4 rounded-lg bg-card border border-border">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                             <Shield className="w-5 h-5 text-primary" />
                         </div>
@@ -151,7 +151,7 @@ export function BasicSettingsTab() {
                         修改密码
                     </button>
                 ) : (
-                    <form onSubmit={handleChangePassword} className="space-y-4 p-4 rounded-lg bg-muted/30 border border-border">
+                    <form onSubmit={handleChangePassword} className="space-y-4 p-4 rounded-lg bg-card border border-border">
                         {/* 当前密码 */}
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-foreground">当前密码</label>
