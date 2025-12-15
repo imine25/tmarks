@@ -82,19 +82,24 @@ export function useTabGroupActions({
         ? `即将打开 ${itemCount} 个标签页。\n\n⚠️ 如果浏览器拦截弹窗，请在地址栏点击"允许弹窗"。\n\n是否继续？`
         : `确定要打开 ${itemCount} 个标签页吗？`
 
-    if (!window.confirm(message)) {
-      return
-    }
+    setConfirmDialog({
+      isOpen: true,
+      title: '打开多个标签页',
+      message,
+      onConfirm: () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false })
 
-    // 直接打开所有标签
-    items.forEach((item, index) => {
-      setTimeout(() => {
-        window.open(item.url, '_blank', 'noopener,noreferrer')
-      }, index * 20) // 20ms 间隔
+        // 直接打开所有标签
+        items.forEach((item, index) => {
+          setTimeout(() => {
+            window.open(item.url, '_blank', 'noopener,noreferrer')
+          }, index * 20) // 20ms 间隔
+        })
+
+        // 显示成功消息
+        success(`正在打开 ${itemCount} 个标签页...`)
+      },
     })
-
-    // 显示成功消息
-    success(`正在打开 ${itemCount} 个标签页...`)
   }
 
   const handleExportMarkdown = (group: TabGroup) => {

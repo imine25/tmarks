@@ -5,6 +5,7 @@
 
 import { useState } from 'react'
 import { useCreateApiKey } from '@/hooks/useApiKeys'
+import { AlertDialog } from '@/components/common/AlertDialog'
 import {
   PERMISSION_TEMPLATES,
   getPermissionLabel,
@@ -31,6 +32,7 @@ export function CreateApiKeyModal({ onClose }: CreateApiKeyModalProps) {
   })
   const [createdKey, setCreatedKey] = useState<ApiKeyWithKey | null>(null)
   const [copied, setCopied] = useState(false)
+  const [showErrorAlert, setShowErrorAlert] = useState(false)
 
   const handleNext = () => {
     if (step === 'basic') setStep('permissions')
@@ -49,7 +51,7 @@ export function CreateApiKeyModal({ onClose }: CreateApiKeyModalProps) {
       setCreatedKey(result)
       setStep('success')
     } catch {
-      alert('创建失败，请重试')
+      setShowErrorAlert(true)
     }
   }
 
@@ -75,6 +77,14 @@ export function CreateApiKeyModal({ onClose }: CreateApiKeyModalProps) {
 
   return (
     <div className="fixed inset-0 bg-background flex items-center justify-center" style={{ zIndex: 200 }}>
+      <AlertDialog
+        isOpen={showErrorAlert}
+        title="创建失败"
+        message="创建失败，请重试"
+        type="error"
+        onConfirm={() => setShowErrorAlert(false)}
+      />
+
       <div className="card rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         {/* 步骤 1: 基本信息 */}
         {step === 'basic' && (

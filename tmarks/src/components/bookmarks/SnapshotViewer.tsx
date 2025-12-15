@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Camera, ExternalLink, Trash2 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { useAuthStore } from '@/stores/authStore';
 import { useToastStore } from '@/stores/toastStore';
 import { useQueryClient } from '@tanstack/react-query';
@@ -28,6 +29,8 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{ snapshotId: string; version: number } | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const accessToken = useAuthStore(state => state.accessToken);
   const { addToast } = useToastStore();
   const queryClient = useQueryClient();
@@ -96,16 +99,21 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
     window.open(viewUrl, '_blank');
   };
 
-  const handleDelete = async (snapshotId: string, version: number, e: React.MouseEvent) => {
+  const handleRequestDelete = (snapshotId: string, version: number, e: React.MouseEvent) => {
     e.preventDefault();
-    e.stopPropagation(); // 防止触发查看操作
-    
-    // 使用更友好的确认方式
-    const confirmed = window.confirm(`确定要删除版本 ${version} 的快照吗？\n\n删除后将无法恢复。`);
-    if (!confirmed) {
+    e.stopPropagation();
+    setPendingDelete({ snapshotId, version });
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!pendingDelete) {
+      setShowDeleteConfirm(false);
       return;
     }
 
+    const { snapshotId } = pendingDelete;
+    setShowDeleteConfirm(false);
     setDeletingId(snapshotId);
     try {
       const headers: HeadersInit = {
@@ -137,9 +145,9 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
       addToast('error', '删除快照失败');
     } finally {
       setDeletingId(null);
+      setPendingDelete(null);
     }
   };
-
 
 
   // 使用 Portal 将弹窗渲染到 body，避免被父容器限制
@@ -255,7 +263,7 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
                   </button>
                   
                   <button
-                    onClick={(e) => handleDelete(snapshot.id, snapshot.version, e)}
+                    onClick={(e) => handleRequestDelete(snapshot.id, snapshot.version, e)}
                     disabled={deletingId === snapshot.id}
                     className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all opacity-0 sm:group-hover:opacity-100 active:opacity-100 disabled:opacity-50 flex-shrink-0"
                     title="删除快照"
@@ -278,6 +286,18 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
 
   return (
     <>
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        title="删除快照"
+        message={pendingDelete ? `确定要删除版本 ${pendingDelete.version} 的快照吗？\n\n删除后将无法恢复。` : '确定要删除该快照吗？'}
+        type="warning"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => {
+          setShowDeleteConfirm(false);
+          setPendingDelete(null);
+        }}
+      />
+
       {!isOpen && snapshotCount > 0 && (
         <button
           onClick={handleOpen}

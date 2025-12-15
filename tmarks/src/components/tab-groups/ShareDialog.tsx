@@ -5,6 +5,8 @@ import { tabGroupsService } from '@/services/tab-groups'
 import type { Share } from '@/lib/types'
 import { Z_INDEX } from '@/lib/constants/z-index'
 import { useIsMobile } from '@/hooks/useMediaQuery'
+import { ConfirmDialog } from '@/components/common/ConfirmDialog'
+import { AlertDialog } from '@/components/common/AlertDialog'
 
 interface ShareDialogProps {
   groupId: string
@@ -93,6 +95,26 @@ export function ShareDialog({ groupId, groupTitle, onClose }: ShareDialogProps) 
   const dialogContent = (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6" style={{ zIndex: Z_INDEX.SHARE_DIALOG }} onClick={onClose}>
       <div className="rounded-2xl sm:rounded-3xl shadow-xl max-w-md w-full border border-border" style={{backgroundColor: 'var(--card)'}} onClick={(e) => e.stopPropagation()}>
+        <ConfirmDialog
+          isOpen={showDeleteConfirm}
+          title="确认删除"
+          message="确定要删除分享链接吗？删除后链接将失效。"
+          type="warning"
+          onConfirm={() => {
+            setShowDeleteConfirm(false)
+            handleDelete()
+          }}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
+
+        <AlertDialog
+          isOpen={showCopyError}
+          title="复制失败"
+          message="无法复制到剪贴板，请手动复制链接。"
+          type="error"
+          onConfirm={() => setShowCopyError(false)}
+        />
+
         {/* Header */}
         <div className={`flex items-center justify-between border-b border-border ${isMobile ? 'p-4' : 'p-6'}`}>
           <div className="flex items-center gap-2 sm:gap-3">
@@ -188,49 +210,6 @@ export function ShareDialog({ groupId, groupTitle, onClose }: ShareDialogProps) 
                   关闭
                 </button>
               </div>
-
-              {/* 删除确认对话框 */}
-              {showDeleteConfirm && (
-                <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4" style={{ zIndex: Z_INDEX.CONFIRM_DIALOG }} onClick={() => setShowDeleteConfirm(false)}>
-                  <div className="bg-card rounded-2xl p-6 max-w-sm w-full border border-border" onClick={(e) => e.stopPropagation()}>
-                    <h3 className="text-lg font-semibold mb-2">确认删除</h3>
-                    <p className="text-sm text-muted-foreground mb-6">确定要删除分享链接吗？删除后链接将失效。</p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setShowDeleteConfirm(false)}
-                        className="btn btn-outline flex-1 min-h-[44px]"
-                      >
-                        取消
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowDeleteConfirm(false)
-                          handleDelete()
-                        }}
-                        className="btn bg-destructive text-destructive-foreground hover:bg-destructive/90 flex-1 min-h-[44px]"
-                      >
-                        删除
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* 复制失败提示 */}
-              {showCopyError && (
-                <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4" style={{ zIndex: Z_INDEX.ALERT_DIALOG }} onClick={() => setShowCopyError(false)}>
-                  <div className="bg-card rounded-2xl p-6 max-w-sm w-full border border-border" onClick={(e) => e.stopPropagation()}>
-                    <h3 className="text-lg font-semibold mb-2">复制失败</h3>
-                    <p className="text-sm text-muted-foreground mb-6">无法复制到剪贴板，请手动复制链接。</p>
-                    <button
-                      onClick={() => setShowCopyError(false)}
-                      className="btn w-full min-h-[44px]"
-                    >
-                      确定
-                    </button>
-                  </div>
-                </div>
-              )}
             </>
           )}
         </div>

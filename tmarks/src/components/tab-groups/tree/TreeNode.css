@@ -46,7 +46,7 @@
   top: 0;
   bottom: 0;
   width: 1px;
-  background-color: var(--border, #e5e7eb);
+  background-color: var(--border);
 }
 
 /* L 形转角 - 使用伪元素 */
@@ -57,8 +57,8 @@
   top: 0;
   width: 100%;
   height: 50%;
-  border-left: 1px solid var(--border, #e5e7eb);
-  border-bottom: 1px solid var(--border, #e5e7eb);
+  border-left: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 /* 子节点容器 */
@@ -74,7 +74,7 @@
   top: 0;
   bottom: 0;
   width: 1px;
-  background-color: var(--border, #e5e7eb);
+  background-color: var(--border);
 }
 
 /* 最后一个子节点，垂直线只到节点中间 */
@@ -82,10 +82,4 @@
   bottom: 50%;
 }
 
-/* 深色主题适配 */
-.dark .tree-indent.has-vertical-line::before,
-.dark .tree-indent.has-corner::after,
-.dark .tree-children::before {
-  background-color: var(--border, #374151);
-  border-color: var(--border, #374151);
-}
+/* 深色主题适配 - 使用统一的 CSS 变量，无需单独覆盖 */

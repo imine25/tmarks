@@ -3,6 +3,7 @@ import type { TabGroup, TabGroupItem } from '@/lib/types'
 import { ExternalLink, Trash2, Check, CheckCircle2, Circle, ListTodo, MoreVertical, Edit2, FolderInput, Archive } from 'lucide-react'
 import { tabGroupsService } from '@/services/tab-groups'
 import { useToastStore } from '@/stores/toastStore'
+import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { formatDistanceToNow } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 import { DropdownMenu } from '@/components/common/DropdownMenu'
@@ -18,6 +19,12 @@ export function TodoSidebar({ tabGroups, onUpdate }: TodoSidebarProps) {
   const [processingId, setProcessingId] = useState<string | null>(null)
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    onConfirm: () => void
+  } | null>(null)
   const { success, error: showError } = useToastStore()
 
   // 收集所有TODO项
@@ -57,19 +64,25 @@ export function TodoSidebar({ tabGroups, onUpdate }: TodoSidebarProps) {
   }
 
   const handleDelete = async (itemId: string) => {
-    if (!confirm('确定要删除这个标签页吗？')) return
-
-    setProcessingId(itemId)
-    try {
-      await tabGroupsService.deleteTabGroupItem(itemId)
-      success('标签页已删除')
-      onUpdate()
-    } catch (err) {
-      console.error('Failed to delete item:', err)
-      showError('删除失败，请重试')
-    } finally {
-      setProcessingId(null)
-    }
+    setConfirmState({
+      isOpen: true,
+      title: '删除标签页',
+      message: '确定要删除这个标签页吗？',
+      onConfirm: async () => {
+        setConfirmState(null)
+        setProcessingId(itemId)
+        try {
+          await tabGroupsService.deleteTabGroupItem(itemId)
+          success('标签页已删除')
+          onUpdate()
+        } catch (err) {
+          console.error('Failed to delete item:', err)
+          showError('删除失败，请重试')
+        } finally {
+          setProcessingId(null)
+        }
+      },
+    })
   }
 
   const handleOpenTab = (url: string) => {
@@ -131,46 +144,65 @@ export function TodoSidebar({ tabGroups, onUpdate }: TodoSidebarProps) {
       showError('没有可移动到的分组')
       return
     }
-    
-    if (!confirm(`确定要将此标签页移动到"${targetGroup.title}"吗？`)) {
-      return
-    }
 
-    setProcessingId(itemId)
-    try {
-      await tabGroupsService.moveTabGroupItem(itemId, targetGroup.id)
-      success(`已移动到"${targetGroup.title}"`)
-      onUpdate()
-    } catch (err) {
-      console.error('Failed to move item:', err)
-      showError('移动失败，请重试')
-    } finally {
-      setProcessingId(null)
-    }
+    setConfirmState({
+      isOpen: true,
+      title: '移动标签页',
+      message: `确定要将此标签页移动到"${targetGroup.title}"吗？`,
+      onConfirm: async () => {
+        setConfirmState(null)
+        setProcessingId(itemId)
+        try {
+          await tabGroupsService.moveTabGroupItem(itemId, targetGroup.id)
+          success(`已移动到"${targetGroup.title}"`)
+          onUpdate()
+        } catch (err) {
+          console.error('Failed to move item:', err)
+          showError('移动失败，请重试')
+        } finally {
+          setProcessingId(null)
+        }
+      },
+    })
   }
 
   const handleArchive = async (itemId: string) => {
-    if (!confirm('确定要归档这个标签页吗？归档后可以在归档视图中查看。')) {
-      return
-    }
-
-    setProcessingId(itemId)
-    try {
-      await tabGroupsService.updateTabGroupItem(itemId, {
-        is_archived: 1,
-      })
-      success('标签页已归档')
-      onUpdate()
-    } catch (err) {
-      console.error('Failed to archive item:', err)
-      showError('归档失败，请重试')
-    } finally {
-      setProcessingId(null)
-    }
+    setConfirmState({
+      isOpen: true,
+      title: '归档标签页',
+      message: '确定要归档这个标签页吗？归档后可以在归档视图中查看。',
+      onConfirm: async () => {
+        setConfirmState(null)
+        setProcessingId(itemId)
+        try {
+          await tabGroupsService.updateTabGroupItem(itemId, {
+            is_archived: 1,
+          })
+          success('标签页已归档')
+          onUpdate()
+        } catch (err) {
+          console.error('Failed to archive item:', err)
+          showError('归档失败，请重试')
+        } finally {
+          setProcessingId(null)
+        }
+      },
+    })
   }
 
   return (
     <div className={`w-full h-full bg-card overflow-y-auto flex flex-col ${isMobile ? '' : 'border-l border-border'}`}>
+      {confirmState && (
+        <ConfirmDialog
+          isOpen={confirmState.isOpen}
+          title={confirmState.title}
+          message={confirmState.message}
+          type="warning"
+          onConfirm={confirmState.onConfirm}
+          onCancel={() => setConfirmState(null)}
+        />
+      )}
+
       {/* 标题栏 */}
       <div className={`p-4 border-b border-border bg-muted sticky top-0 z-10 shadow-md ${isMobile ? 'pt-safe-area-top' : ''}`}>
         <div className="flex items-center gap-2">

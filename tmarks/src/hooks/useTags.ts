@@ -16,7 +16,9 @@ export function useTags(
     queryFn: () => tagsService.getTags(params),
     staleTime: options?.staleTime || 60 * 60 * 1000, // 1小时 (标签很少变化)
     gcTime: options?.gcTime || 24 * 60 * 60 * 1000, // 24小时
-    refetchOnWindowFocus: true, // 启用窗口聚焦刷新
+    refetchOnWindowFocus: 'always', // 窗口聚焦时总是刷新（避免 staleTime 过长造成标签计数不同步）
+    refetchInterval: 60 * 1000,
+    refetchIntervalInBackground: false,
     enabled: options?.enabled ?? true,
   })
 }

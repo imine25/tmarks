@@ -3,6 +3,7 @@ import { Database, Download, Upload, FileJson, FileCode, Camera, Trash2 } from '
 import { useQueryClient } from '@tanstack/react-query'
 import { ExportSection } from '@/components/import-export/ExportSection'
 import { ImportSection } from '@/components/import-export/ImportSection'
+import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { BOOKMARKS_QUERY_KEY } from '@/hooks/useBookmarks'
 import { TAGS_QUERY_KEY } from '@/hooks/useTags'
 import { useToastStore } from '@/stores/toastStore'
@@ -22,6 +23,7 @@ export function DataSettingsTab() {
     details: string
   } | null>(null)
   const [isCleaningSnapshots, setIsCleaningSnapshots] = useState(false)
+  const [showCleanupConfirm, setShowCleanupConfirm] = useState(false)
 
   // 处理导出完成
   const handleExportComplete = (format: ExportFormat, options: ExportOptions) => {
@@ -47,10 +49,11 @@ export function DataSettingsTab() {
 
   // 清理所有书签的孤立快照记录
   const handleCleanupAllSnapshots = async () => {
-    if (!confirm('确定要清理所有书签的孤立快照记录吗？\n\n这将检查所有快照记录，删除 R2 文件不存在的记录。')) {
-      return
-    }
+    setShowCleanupConfirm(true)
+  }
 
+  const confirmCleanupAllSnapshots = async () => {
+    setShowCleanupConfirm(false)
     setIsCleaningSnapshots(true)
     try {
       // 获取所有书签
@@ -117,6 +120,15 @@ export function DataSettingsTab() {
 
   return (
     <div className="space-y-6">
+      <ConfirmDialog
+        isOpen={showCleanupConfirm}
+        title="清理快照记录"
+        message={'确定要清理所有书签的孤立快照记录吗？\n\n这将检查所有快照记录，删除 R2 文件不存在的记录。'}
+        type="warning"
+        onConfirm={confirmCleanupAllSnapshots}
+        onCancel={() => setShowCleanupConfirm(false)}
+      />
+
       {/* R2 存储使用情况 */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">

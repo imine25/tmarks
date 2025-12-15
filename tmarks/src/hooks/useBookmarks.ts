@@ -23,7 +23,9 @@ export function useBookmarks(params?: BookmarkQueryParams, options?: { staleTime
     queryFn: () => bookmarksService.getBookmarks(params),
     staleTime: options?.staleTime || 30 * 60 * 1000, // 30分钟 (从5分钟增加)
     gcTime: options?.gcTime || 24 * 60 * 60 * 1000, // 24小时 (从10分钟增加)
-    refetchOnWindowFocus: true, // 启用窗口聚焦刷新
+    refetchOnWindowFocus: 'always', // 窗口聚焦时总是刷新（避免 staleTime 过长造成数据不同步）
+    refetchInterval: 60 * 1000,
+    refetchIntervalInBackground: false,
   })
 }
 
@@ -49,7 +51,9 @@ export function useInfiniteBookmarks(
     getNextPageParam: (lastPage) => (lastPage.meta?.has_more ? lastPage.meta.next_cursor : undefined),
     staleTime: options?.staleTime ?? 30 * 60 * 1000, // 30分钟
     gcTime: options?.cacheTime ?? 24 * 60 * 60 * 1000, // 24小时
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: 'always',
+    refetchInterval: 60 * 1000,
+    refetchIntervalInBackground: false,
   })
 }
 
@@ -69,6 +73,7 @@ export function useCreateBookmark() {
       // 成功后刷新所有书签查询
       try {
         await queryClient.invalidateQueries({ queryKey: [BOOKMARKS_QUERY_KEY] })
+        await queryClient.invalidateQueries({ queryKey: ['tags'] })
       } catch (error) {
         console.error('Failed to invalidate queries:', error)
       }
@@ -88,6 +93,7 @@ export function useUpdateBookmark() {
     onSuccess: async () => {
       try {
         await queryClient.invalidateQueries({ queryKey: [BOOKMARKS_QUERY_KEY] })
+        await queryClient.invalidateQueries({ queryKey: ['tags'] })
       } catch (error) {
         console.error('Failed to invalidate queries:', error)
       }
@@ -106,6 +112,7 @@ export function useDeleteBookmark() {
     onSuccess: async () => {
       try {
         await queryClient.invalidateQueries({ queryKey: [BOOKMARKS_QUERY_KEY] })
+        await queryClient.invalidateQueries({ queryKey: ['tags'] })
       } catch (error) {
         console.error('Failed to invalidate queries:', error)
       }
@@ -124,6 +131,7 @@ export function useRestoreBookmark() {
     onSuccess: async () => {
       try {
         await queryClient.invalidateQueries({ queryKey: [BOOKMARKS_QUERY_KEY] })
+        await queryClient.invalidateQueries({ queryKey: ['tags'] })
       } catch (error) {
         console.error('Failed to invalidate queries:', error)
       }
@@ -152,6 +160,7 @@ export function useBatchAction() {
       // 使用 catch 来防止 invalidateQueries 的错误影响 mutation 结果
       try {
         await queryClient.invalidateQueries({ queryKey: [BOOKMARKS_QUERY_KEY] })
+        await queryClient.invalidateQueries({ queryKey: ['tags'] })
       } catch (error) {
         console.error('Failed to invalidate queries:', error)
         // 即使缓存失效失败也不应该让操作显示为失败

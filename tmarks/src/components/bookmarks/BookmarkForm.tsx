@@ -236,8 +236,8 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
 
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4" style={{ zIndex: 200 }}>
-      <div className="card w-full max-w-4xl max-h-[92vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-4">
+      <div className="card w-full max-w-4xl max-h-[92vh] flex flex-col min-h-0">
+        <div className="flex items-center justify-between mb-4 flex-shrink-0">
           <h2 className="text-xl font-bold text-foreground">
             {isEditing ? '编辑书签' : '新增书签'}
           </h2>
@@ -253,7 +253,7 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
         </div>
 
         {error && (
-          <div className="mb-3 p-2.5 bg-error/10 border border-error/30 text-error rounded-lg text-xs animate-fade-in flex items-center gap-2">
+          <div className="mb-3 p-2.5 bg-error/10 border border-error/30 text-error rounded-lg text-xs animate-fade-in flex items-center gap-2 flex-shrink-0">
             <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
@@ -261,7 +261,8 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <div className="flex-1 overflow-y-auto min-h-0 overscroll-contain" style={{ scrollbarGutter: 'stable' }}>
+          <form onSubmit={handleSubmit} className="space-y-3">
           {/* 第一行：标题和URL */}
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -414,7 +415,7 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
             )}
 
             {/* 可选标签列表 */}
-            <div className="p-2.5 bg-muted rounded-lg max-h-[120px] overflow-y-auto scrollbar-hide">
+            <div className="p-2.5 bg-muted rounded-lg max-h-[120px] overflow-y-auto scrollbar-hide min-h-0 overscroll-contain" style={{ scrollbarGutter: 'stable' }}>
               <div className="flex flex-wrap gap-1.5">
                 {tags.length === 0 ? (
                   <p className="text-xs text-muted-foreground py-1">
@@ -503,7 +504,8 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
               </button>
             </div>
           </div>
-        </form>
+          </form>
+        </div>
       </div>
 
       {/* 删除确认对话框 */}

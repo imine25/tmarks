@@ -102,8 +102,24 @@ export function BookmarksPage() {
     const allBookmarks = bookmarksQuery.data.pages.flatMap(page => page.bookmarks)
     const uniqueBookmarksMap = new Map<string, Bookmark>()
     allBookmarks.forEach(bookmark => {
-      if (!uniqueBookmarksMap.has(bookmark.id)) {
+      const existing = uniqueBookmarksMap.get(bookmark.id)
+      if (!existing) {
         uniqueBookmarksMap.set(bookmark.id, bookmark)
+        return
+      }
+
+      const existingTagCount = existing.tags?.length ?? 0
+      const nextTagCount = bookmark.tags?.length ?? 0
+
+      // 优先保留 tags 更完整的版本（避免 refetch/分页混合时出现 tags 为空覆盖）
+      if (nextTagCount > existingTagCount) {
+        uniqueBookmarksMap.set(bookmark.id, bookmark)
+        return
+      }
+
+      // 如果 tags 数量相同但新的对象字段更“新”，也用新的覆盖（例如更新时间、点击数等）
+      if (nextTagCount === existingTagCount) {
+        uniqueBookmarksMap.set(bookmark.id, { ...existing, ...bookmark })
       }
     })
     return Array.from(uniqueBookmarksMap.values())

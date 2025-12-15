@@ -1,5 +1,6 @@
 import { tabGroupsService } from '@/services/tab-groups'
 import type { TabGroup } from '@/lib/types'
+import { useDialogStore } from '@/stores/dialogStore'
 
 export interface TabGroupMenuActions {
   onOpenInNewWindow: (group: TabGroup) => void
@@ -25,10 +26,12 @@ interface UseTabGroupMenuProps {
 }
 
 export function useTabGroupMenu({ onRefresh, onStartRename, onOpenMoveDialog }: UseTabGroupMenuProps): TabGroupMenuActions {
+  const dialog = useDialogStore.getState()
+
   // 打开所有标签页
-  const openAllTabs = (group: TabGroup, mode: 'new' | 'current' | 'incognito') => {
+  const openAllTabs = async (group: TabGroup, mode: 'new' | 'current' | 'incognito') => {
     if (!group.items || group.items.length === 0) {
-      alert('没有可打开的标签页')
+      await dialog.alert({ message: '没有可打开的标签页', type: 'info' })
       return
     }
 
@@ -36,7 +39,12 @@ export function useTabGroupMenu({ onRefresh, onStartRename, onOpenMoveDialog }: 
     
     // 确认打开多个标签页
     if (group.items.length > 5) {
-      if (!confirm(`确定要在${modeText}中打开 ${group.items.length} 个标签页吗？`)) {
+      const confirmed = await dialog.confirm({
+        title: '打开多个标签页',
+        message: `确定要在${modeText}中打开 ${group.items.length} 个标签页吗？`,
+        type: 'warning',
+      })
+      if (!confirmed) {
         return
       }
     }
@@ -220,14 +228,14 @@ export function useTabGroupMenu({ onRefresh, onStartRename, onOpenMoveDialog }: 
       const newWindow = window.open(url, '_blank', 'width=800,height=600')
 
       if (newWindow) {
-        alert(`已在${modeText}中打开标签页管理器`)
+        await dialog.alert({ message: `已在${modeText}中打开标签页管理器`, type: 'success' })
         setTimeout(() => URL.revokeObjectURL(url), 5000)
       } else {
-        alert('无法打开新窗口，请检查浏览器弹窗设置')
+        await dialog.alert({ message: '无法打开新窗口，请检查浏览器弹窗设置', type: 'error' })
       }
     } catch (error) {
       console.error('Failed to open tabs:', error)
-      alert('打开标签页失败，请重试')
+      await dialog.alert({ message: '打开标签页失败，请重试', type: 'error' })
     }
   }
 
@@ -259,29 +267,37 @@ export function useTabGroupMenu({ onRefresh, onStartRename, onOpenMoveDialog }: 
       // 复制到剪贴板
       try {
         await navigator.clipboard.writeText(shareUrl)
-        alert(`分享链接已创建并复制到剪贴板：\n\n${shareUrl}\n\n有效期：30天`)
+        await dialog.alert({
+          title: '分享链接已创建',
+          message: `分享链接已创建并复制到剪贴板：\n\n${shareUrl}\n\n有效期：30天`,
+          type: 'success',
+        })
       } catch {
-        alert(`分享链接已创建：\n\n${shareUrl}\n\n有效期：30天\n\n（复制到剪贴板失败，请手动复制）`)
+        await dialog.alert({
+          title: '分享链接已创建',
+          message: `分享链接已创建：\n\n${shareUrl}\n\n有效期：30天\n\n（复制到剪贴板失败，请手动复制）`,
+          type: 'warning',
+        })
       }
     } catch (error) {
       console.error('Failed to create share:', error)
-      alert('创建分享链接失败')
+      await dialog.alert({ message: '创建分享链接失败', type: 'error' })
     }
   }
 
   const onCopyToClipboard = async (group: TabGroup) => {
     if (!group.items || group.items.length === 0) {
-      alert('此分组没有标签页')
+      await dialog.alert({ message: '此分组没有标签页', type: 'info' })
       return
     }
 
     const text = group.items.map(item => `${item.title}\n${item.url}`).join('\n\n')
     try {
       await navigator.clipboard.writeText(text)
-      alert('已复制到剪贴板')
+      await dialog.alert({ message: '已复制到剪贴板', type: 'success' })
     } catch (err) {
       console.error('Failed to copy:', err)
-      alert('复制失败')
+      await dialog.alert({ message: '复制失败', type: 'error' })
     }
   }
 
@@ -291,7 +307,7 @@ export function useTabGroupMenu({ onRefresh, onStartRename, onOpenMoveDialog }: 
       await onRefresh?.()
     } catch (err) {
       console.error('Failed to create folder:', err)
-      alert('创建文件夹失败')
+      await dialog.alert({ message: '创建文件夹失败', type: 'error' })
     }
   }
 
@@ -302,7 +318,7 @@ export function useTabGroupMenu({ onRefresh, onStartRename, onOpenMoveDialog }: 
       await onRefresh?.()
     } catch (err) {
       console.error('Failed to create folder:', err)
-      alert('创建文件夹失败')
+      await dialog.alert({ message: '创建文件夹失败', type: 'error' })
     }
   }
 
@@ -312,7 +328,7 @@ export function useTabGroupMenu({ onRefresh, onStartRename, onOpenMoveDialog }: 
       await onRefresh?.()
     } catch (err) {
       console.error('Failed to create folder:', err)
-      alert('创建文件夹失败')
+      await dialog.alert({ message: '创建文件夹失败', type: 'error' })
     }
   }
 
@@ -325,7 +341,7 @@ export function useTabGroupMenu({ onRefresh, onStartRename, onOpenMoveDialog }: 
       await onRefresh?.()
     } catch (err) {
       console.error('Failed to pin to top:', err)
-      alert('固定失败')
+      await dialog.alert({ message: '固定失败', type: 'error' })
     }
   }
 
@@ -344,18 +360,24 @@ export function useTabGroupMenu({ onRefresh, onStartRename, onOpenMoveDialog }: 
     })
 
     if (duplicates.length === 0) {
-      alert('没有找到重复项')
+      await dialog.alert({ message: '没有找到重复项', type: 'info' })
       return
     }
 
-    if (confirm(`找到 ${duplicates.length} 个重复项，是否删除？`)) {
+    const confirmed = await dialog.confirm({
+      title: '删除重复项',
+      message: `找到 ${duplicates.length} 个重复项，是否删除？`,
+      type: 'warning',
+    })
+
+    if (confirmed) {
       try {
         await Promise.all(duplicates.map(id => tabGroupsService.deleteTabGroupItem(id)))
         await onRefresh?.()
-        alert(`已删除 ${duplicates.length} 个重复项`)
+        await dialog.alert({ message: `已删除 ${duplicates.length} 个重复项`, type: 'success' })
       } catch (err) {
         console.error('Failed to remove duplicates:', err)
-        alert('删除失败')
+        await dialog.alert({ message: '删除失败', type: 'error' })
       }
     }
   }
@@ -381,7 +403,7 @@ export function useTabGroupMenu({ onRefresh, onStartRename, onOpenMoveDialog }: 
       await onRefresh?.()
     } catch (err) {
       console.error('Failed to lock/unlock:', err)
-      alert('操作失败')
+      await dialog.alert({ message: '操作失败', type: 'error' })
     }
   }
 
@@ -389,19 +411,24 @@ export function useTabGroupMenu({ onRefresh, onStartRename, onOpenMoveDialog }: 
     if (onOpenMoveDialog) {
       onOpenMoveDialog(group)
     } else {
-      alert('移动功能开发中（请使用拖拽）')
+      await dialog.alert({ message: '移动功能开发中（请使用拖拽）', type: 'info' })
     }
   }
 
   const onMoveToTrash = async (group: TabGroup) => {
-    if (!confirm(`确定要删除"${group.title}"吗？`)) return
+    const confirmed = await dialog.confirm({
+      title: '删除标签页组',
+      message: `确定要删除"${group.title}"吗？`,
+      type: 'warning',
+    })
+    if (!confirmed) return
 
     try {
       await tabGroupsService.deleteTabGroup(group.id)
       await onRefresh?.()
     } catch (err) {
       console.error('Failed to delete:', err)
-      alert('删除失败')
+      await dialog.alert({ message: '删除失败', type: 'error' })
     }
   }
 

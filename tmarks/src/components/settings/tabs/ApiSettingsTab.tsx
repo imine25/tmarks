@@ -4,6 +4,7 @@ import { useApiKeys, useRevokeApiKey, useDeleteApiKey } from '@/hooks/useApiKeys
 import { useToastStore } from '@/stores/toastStore'
 import { CreateApiKeyModal } from '@/components/api-keys/CreateApiKeyModal'
 import { ApiKeyDetailModal } from '@/components/api-keys/ApiKeyDetailModal'
+import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import type { ApiKey } from '@/services/api-keys'
 import { InfoBox } from '../InfoBox'
 
@@ -15,27 +16,45 @@ export function ApiSettingsTab() {
   
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [selectedKey, setSelectedKey] = useState<ApiKey | null>(null)
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    onConfirm: () => void
+  } | null>(null)
 
   const handleRevoke = async (id: string) => {
-    if (!confirm('确定要撤销此 API Key 吗？撤销后无法恢复。')) return
-
-    try {
-      await revokeApiKey.mutateAsync(id)
-      addToast('success', 'API Key 已撤销')
-    } catch {
-      addToast('error', '撤销失败')
-    }
+    setConfirmState({
+      isOpen: true,
+      title: '撤销 API Key',
+      message: '确定要撤销此 API Key 吗？撤销后无法恢复。',
+      onConfirm: async () => {
+        setConfirmState(null)
+        try {
+          await revokeApiKey.mutateAsync(id)
+          addToast('success', 'API Key 已撤销')
+        } catch {
+          addToast('error', '撤销失败')
+        }
+      },
+    })
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('确定要彻底删除此 API Key 吗？该操作不可恢复，并会清除所有使用记录。')) return
-
-    try {
-      await deleteApiKey.mutateAsync(id)
-      addToast('success', 'API Key 已永久删除')
-    } catch {
-      addToast('error', '删除失败')
-    }
+    setConfirmState({
+      isOpen: true,
+      title: '删除 API Key',
+      message: '确定要彻底删除此 API Key 吗？该操作不可恢复，并会清除所有使用记录。',
+      onConfirm: async () => {
+        setConfirmState(null)
+        try {
+          await deleteApiKey.mutateAsync(id)
+          addToast('success', 'API Key 已永久删除')
+        } catch {
+          addToast('error', '删除失败')
+        }
+      },
+    })
   }
 
   const handleCopy = (key: string) => {
@@ -56,6 +75,17 @@ export function ApiSettingsTab() {
 
   return (
     <div className="space-y-6">
+      {confirmState && (
+        <ConfirmDialog
+          isOpen={confirmState.isOpen}
+          title={confirmState.title}
+          message={confirmState.message}
+          type="warning"
+          onConfirm={confirmState.onConfirm}
+          onCancel={() => setConfirmState(null)}
+        />
+      )}
+
       {/* API Keys 管理 */}
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

@@ -36,5 +36,5 @@ JWT_REFRESH_TOKEN_EXPIRES_IN = "365d"
 # - ENCRYPTION_KEY
 #
 # 示例（仅供参考，请不要在仓库中提交真实密钥）：
-# JWT_SECRET = "your-long-random-jwt-secret-at-least-48-characters"
-# ENCRYPTION_KEY = "your-long-random-encryption-key-at-least-48-characters"
+JWT_SECRET = "your-long-random-jwt-secret-at-least-48-characters"
+ENCRYPTION_KEY = "your-long-random-encryption-key-at-least-48-characters"

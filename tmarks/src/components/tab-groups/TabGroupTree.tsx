@@ -143,7 +143,7 @@ export function TabGroupTree({
                         style={{
                           left: '20px',
                           width: '1px',
-                          backgroundColor: 'var(--border, #e5e7eb)',
+                          backgroundColor: 'var(--border)',
                         }}
                       />
                     )}

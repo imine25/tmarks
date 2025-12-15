@@ -7,6 +7,8 @@ import { useApiKeys, useRevokeApiKey, useDeleteApiKey } from '@/hooks/useApiKeys
 import { CreateApiKeyModal } from '@/components/api-keys/CreateApiKeyModal'
 import { ApiKeyCard } from '@/components/api-keys/ApiKeyCard'
 import { ApiKeyDetailModal } from '@/components/api-keys/ApiKeyDetailModal'
+import { ConfirmDialog } from '@/components/common/ConfirmDialog'
+import { AlertDialog } from '@/components/common/AlertDialog'
 import type { ApiKey } from '@/services/api-keys'
 
 export function ApiKeysPage() {
@@ -16,31 +18,71 @@ export function ApiKeysPage() {
 
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [selectedKey, setSelectedKey] = useState<ApiKey | null>(null)
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    onConfirm: () => void
+  } | null>(null)
+  const [alertState, setAlertState] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    type: 'success' | 'error' | 'info' | 'warning'
+  } | null>(null)
 
   const handleRevoke = async (id: string) => {
-    if (!confirm('确定要撤销此 API Key 吗？撤销后无法恢复。')) {
-      return
-    }
-
-    try {
-      await revokeApiKey.mutateAsync(id)
-      alert('API Key 已撤销')
-    } catch {
-      alert('撤销失败，请重试')
-    }
+    setConfirmState({
+      isOpen: true,
+      title: '撤销 API Key',
+      message: '确定要撤销此 API Key 吗？撤销后无法恢复。',
+      onConfirm: async () => {
+        setConfirmState(null)
+        try {
+          await revokeApiKey.mutateAsync(id)
+          setAlertState({
+            isOpen: true,
+            title: '操作成功',
+            message: 'API Key 已撤销',
+            type: 'success',
+          })
+        } catch {
+          setAlertState({
+            isOpen: true,
+            title: '操作失败',
+            message: '撤销失败，请重试',
+            type: 'error',
+          })
+        }
+      },
+    })
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('确定要彻底删除此 API Key 吗？该操作不可恢复，并会清除所有使用记录。')) {
-      return
-    }
-
-    try {
-      await deleteApiKey.mutateAsync(id)
-      alert('API Key 已永久删除')
-    } catch {
-      alert('删除失败，请重试')
-    }
+    setConfirmState({
+      isOpen: true,
+      title: '删除 API Key',
+      message: '确定要彻底删除此 API Key 吗？该操作不可恢复，并会清除所有使用记录。',
+      onConfirm: async () => {
+        setConfirmState(null)
+        try {
+          await deleteApiKey.mutateAsync(id)
+          setAlertState({
+            isOpen: true,
+            title: '操作成功',
+            message: 'API Key 已永久删除',
+            type: 'success',
+          })
+        } catch {
+          setAlertState({
+            isOpen: true,
+            title: '操作失败',
+            message: '删除失败，请重试',
+            type: 'error',
+          })
+        }
+      },
+    })
   }
 
   if (isLoading) {
@@ -56,6 +98,27 @@ export function ApiKeysPage() {
 
   return (
     <div className="w-full space-y-4 sm:space-y-6">
+      {confirmState && (
+        <ConfirmDialog
+          isOpen={confirmState.isOpen}
+          title={confirmState.title}
+          message={confirmState.message}
+          type="warning"
+          onConfirm={confirmState.onConfirm}
+          onCancel={() => setConfirmState(null)}
+        />
+      )}
+
+      {alertState && (
+        <AlertDialog
+          isOpen={alertState.isOpen}
+          title={alertState.title}
+          message={alertState.message}
+          type={alertState.type}
+          onConfirm={() => setAlertState(null)}
+        />
+      )}
+
       {/* 标题卡片 */}
       <div className="card p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
