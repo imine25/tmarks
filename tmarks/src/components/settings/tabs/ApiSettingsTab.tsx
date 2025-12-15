@@ -106,7 +106,7 @@ export function ApiSettingsTab() {
         </div>
 
         {/* 配额信息 */}
-        <div className="p-3 bg-muted/30 border border-border rounded-lg">
+        <div className="p-3 bg-card border border-border rounded-lg">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">当前使用</span>
             <span className="font-medium">

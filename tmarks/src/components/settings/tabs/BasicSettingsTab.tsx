@@ -145,7 +145,7 @@ export function BasicSettingsTab() {
                 {!showPasswordForm ? (
                     <button
                         onClick={() => setShowPasswordForm(true)}
-                        className="btn btn-secondary flex items-center gap-2"
+                        className="btn btn-primary flex items-center gap-2"
                     >
                         <Lock className="w-4 h-4" />
                         修改密码

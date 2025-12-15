@@ -160,7 +160,7 @@ export function BookmarkStatisticsPage({ embedded = false }: BookmarkStatisticsP
           <div className="flex items-center justify-center gap-2 sm:gap-4">
             <button
               onClick={() => navigateTime('prev')}
-              className="btn btn-secondary btn-sm flex items-center gap-1"
+              className="btn btn-ghost btn-sm flex items-center gap-1 hover:bg-muted/30"
               title={`上一${granularity === 'day' ? '天' : granularity === 'week' ? '周' : granularity === 'month' ? '月' : '年'}`}
             >
               <ChevronLeft className="w-4 h-4" />
@@ -184,7 +184,7 @@ export function BookmarkStatisticsPage({ embedded = false }: BookmarkStatisticsP
 
             <button
               onClick={() => navigateTime('next')}
-              className="btn btn-secondary btn-sm flex items-center gap-1"
+              className="btn btn-ghost btn-sm flex items-center gap-1 hover:bg-muted/30"
               title={`下一${granularity === 'day' ? '天' : granularity === 'week' ? '周' : granularity === 'month' ? '月' : '年'}`}
             >
               <span className="hidden sm:inline">
