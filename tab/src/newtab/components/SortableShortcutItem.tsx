@@ -6,6 +6,7 @@ import { useEffect, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useNewtabStore } from '../hooks/useNewtabStore';
+import { getFaviconUrl } from '../utils/favicon';
 import type { Shortcut } from '../types';
 
 interface SortableShortcutItemProps {
@@ -63,15 +64,7 @@ export function SortableShortcutItem({
     }
   };
 
-  const getFaviconUrl = () => {
-    if (shortcut.favicon) return shortcut.favicon;
-    try {
-      const domain = new URL(shortcut.url).hostname;
-      return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
-    } catch {
-      return '';
-    }
-  };
+  const faviconUrl = getFaviconUrl(shortcut);
 
   return (
     <div
@@ -106,9 +99,9 @@ export function SortableShortcutItem({
         <div className="glass-refraction" />
         
         {/* 图标 */}
-        {getFaviconUrl() ? (
+        {faviconUrl ? (
           <img
-            src={getFaviconUrl()}
+            src={faviconUrl}
             alt={shortcut.title}
             className="w-[85%] h-[85%] object-contain rounded-xl relative z-10"
             draggable={false}

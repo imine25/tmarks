@@ -11,6 +11,7 @@ import { getTMarksUrls } from '@/lib/constants/urls';
 
 export class BookmarkAPIClient {
   private client: ReturnType<typeof createTMarksClient> | null = null;
+  private webBaseUrl: string | null = null;
 
   async initialize(): Promise<void> {
     const configuredUrl = await StorageService.getBookmarkSiteApiUrl();
@@ -44,11 +45,35 @@ export class BookmarkAPIClient {
       apiBaseUrl = getTMarksUrls().API_BASE;
     }
 
+    this.webBaseUrl = apiBaseUrl.endsWith('/api') ? apiBaseUrl.slice(0, -4) : apiBaseUrl;
+
     // Create TMarks client with proper API key
     this.client = createTMarksClient({
       apiKey,
       baseUrl: apiBaseUrl
     });
+  }
+
+  private async notifyWebAppDataChanged(): Promise<void> {
+    if (!this.webBaseUrl) {
+      return;
+    }
+
+    try {
+      const tabs = await chrome.tabs.query({ url: [`${this.webBaseUrl}/*`] });
+      await Promise.all(
+        (tabs || [])
+          .filter(t => typeof t.id === 'number')
+          .map(t =>
+            chrome.tabs.sendMessage(t.id as number, {
+              type: 'TMARKS_WEB_DATA_CHANGED',
+              payload: { timestamp: Date.now() }
+            }).catch(() => {})
+          )
+      );
+    } catch {
+      // ignore
+    }
   }
 
   private async ensureClient(): Promise<ReturnType<typeof createTMarksClient>> {
@@ -179,6 +204,7 @@ export class BookmarkAPIClient {
       const isExisting = response.meta?.code === 'BOOKMARK_EXISTS';
       if (isExisting) {
         console.log('[BookmarkAPI] 书签已存在:', response.data.bookmark.id);
+        await this.notifyWebAppDataChanged();
         // Return the full bookmark data for the dialog
         return { 
           id: response.data.bookmark.id,
@@ -187,6 +213,7 @@ export class BookmarkAPIClient {
         };
       } else {
         console.log('[BookmarkAPI] 书签创建成功:', response.data.bookmark.id);
+        await this.notifyWebAppDataChanged();
         return { 
           id: response.data.bookmark.id,
           isExisting 
@@ -248,6 +275,8 @@ export class BookmarkAPIClient {
       await client.bookmarks.updateBookmark(bookmarkId, {
         tags  // 后端会自动处理标签创建和链接
       });
+
+      await this.notifyWebAppDataChanged();
     } catch (error: any) {
       throw new AppError(
         'BOOKMARK_SITE_ERROR' as ErrorCode,
@@ -268,6 +297,8 @@ export class BookmarkAPIClient {
       await client.bookmarks.updateBookmark(bookmarkId, {
         description
       });
+
+      await this.notifyWebAppDataChanged();
     } catch (error: any) {
       throw new AppError(
         'BOOKMARK_SITE_ERROR' as ErrorCode,
@@ -292,6 +323,8 @@ export class BookmarkAPIClient {
 
     try {
       await client.snapshots.createSnapshot(bookmarkId, data);
+
+      await this.notifyWebAppDataChanged();
     } catch (error: any) {
       throw new AppError(
         'BOOKMARK_SITE_ERROR' as ErrorCode,
@@ -348,6 +381,8 @@ export class BookmarkAPIClient {
         const error = await response.json();
         throw new Error(error.error?.message || 'Failed to create snapshot');
       }
+
+      await this.notifyWebAppDataChanged();
     } catch (error: any) {
       throw new AppError(
         'BOOKMARK_SITE_ERROR' as ErrorCode,

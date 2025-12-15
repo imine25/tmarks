@@ -234,6 +234,20 @@ export const useNewtabStore = create<NewTabState>((set, get) => ({
     set({ shortcuts: newShortcuts });
     saveData();
 
+    // 异步下载并缓存 favicon
+    (async () => {
+      try {
+        const { downloadFavicon } = await import('../utils/favicon');
+        const base64 = await downloadFavicon(newShortcut.url);
+        if (base64) {
+          const { updateShortcut } = get();
+          updateShortcut(newShortcut.id, { faviconBase64: base64 });
+        }
+      } catch (error) {
+        console.error('Failed to cache favicon:', error);
+      }
+    })();
+
     // 异步同步到后端（防抖）
     const { shortcutFolders } = get();
     debouncedSync({ shortcuts: newShortcuts, groups: shortcutGroups, folders: shortcutFolders, settings, gridItems });
@@ -417,6 +431,27 @@ export const useNewtabStore = create<NewTabState>((set, get) => ({
     set({ gridItems: newGridItems });
     saveData();
     debouncedSync({ shortcuts, groups: shortcutGroups, folders: shortcutFolders, settings, gridItems: newGridItems });
+
+    // 如果是快捷方式类型，异步下载并缓存 favicon
+    if (type === 'shortcut' && options.shortcut?.url) {
+      (async () => {
+        try {
+          const { downloadFavicon } = await import('../utils/favicon');
+          const base64 = await downloadFavicon(options.shortcut!.url);
+          if (base64) {
+            const { updateGridItem } = get();
+            updateGridItem(newItem.id, {
+              shortcut: {
+                ...options.shortcut!,
+                faviconBase64: base64,
+              },
+            });
+          }
+        } catch (error) {
+          console.error('Failed to cache favicon for grid item:', error);
+        }
+      })();
+    }
   },
 
   updateGridItem: (id, updates) => {

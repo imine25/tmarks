@@ -1,5 +1,11 @@
 import type { PageInfo, Message, MessageResponse } from '@/types';
 
+chrome.runtime.onMessage.addListener((message: any) => {
+  if (message?.type === 'TMARKS_WEB_DATA_CHANGED') {
+    window.dispatchEvent(new CustomEvent('tmarks:data-changed'));
+  }
+});
+
 /**
  * Content script for extracting page information
  */

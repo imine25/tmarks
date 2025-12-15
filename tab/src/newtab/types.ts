@@ -73,6 +73,7 @@ export interface GridItem {
     url: string;
     title: string;
     favicon?: string;
+    faviconBase64?: string; // 离线缓存的 base64 图标
   };
   // 组件配置（非快捷方式时使用）
   config?: WidgetConfig;
@@ -85,6 +86,7 @@ export interface Shortcut {
   url: string;
   title: string;
   favicon?: string;
+  faviconBase64?: string; // 离线缓存的 base64 图标
   position: number;
   createdAt: number;
   clickCount: number;
@@ -95,12 +97,22 @@ export interface Shortcut {
 // 壁纸类型
 export type WallpaperType = 'color' | 'image' | 'bing' | 'unsplash';
 
+// Bing 壁纸信息
+export interface BingWallpaperInfo {
+  url: string;
+  title: string;
+  copyright: string;
+  date: string;
+}
+
 // 壁纸配置
 export interface WallpaperConfig {
   type: WallpaperType;
   value: string; // 颜色值或图片 URL
   blur: number;
   brightness: number;
+  bingHistoryIndex?: number; // Bing 历史图片索引 (0-7)
+  showBingInfo?: boolean; // 是否显示 Bing 图片信息
 }
 
 // 搜索引擎

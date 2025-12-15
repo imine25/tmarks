@@ -171,6 +171,11 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                   onChange={(v) => updateSettings({ searchEngine: v as SearchEngine })}
                 />
               </SettingSection>
+
+              {/* 离线缓存 */}
+              <SettingSection title="离线缓存">
+                <CacheFaviconsButton />
+              </SettingSection>
             </div>
           )}
 
@@ -220,6 +225,38 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                       updateSettings({ wallpaper: { ...settings.wallpaper, value: v } })
                     }
                   />
+                )}
+                {settings.wallpaper.type === 'bing' && (
+                  <>
+                    <SelectItem
+                      label="历史图片"
+                      value={String(settings.wallpaper.bingHistoryIndex || 0)}
+                      options={[
+                        { value: '0', label: '今天' },
+                        { value: '1', label: '昨天' },
+                        { value: '2', label: '2 天前' },
+                        { value: '3', label: '3 天前' },
+                        { value: '4', label: '4 天前' },
+                        { value: '5', label: '5 天前' },
+                        { value: '6', label: '6 天前' },
+                        { value: '7', label: '7 天前' },
+                      ]}
+                      onChange={(v) =>
+                        updateSettings({
+                          wallpaper: { ...settings.wallpaper, bingHistoryIndex: Number(v) },
+                        })
+                      }
+                    />
+                    <ToggleItem
+                      label="显示图片信息"
+                      checked={settings.wallpaper.showBingInfo || false}
+                      onChange={(v) =>
+                        updateSettings({
+                          wallpaper: { ...settings.wallpaper, showBingInfo: v },
+                        })
+                      }
+                    />
+                  </>
                 )}
                 {settings.wallpaper.type === 'image' && (
                   <TextItem
@@ -468,6 +505,141 @@ function RangeItem({
           className="w-24"
         />
         <span className="text-xs text-white/60 w-8">{value}</span>
+      </div>
+    </div>
+  );
+}
+
+// 缓存图标按钮
+function CacheFaviconsButton() {
+  const { shortcuts, updateShortcut, gridItems, updateGridItem } = useNewtabStore();
+  const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState({ current: 0, total: 0 });
+  const [storageInfo, setStorageInfo] = useState<{ used: number; total: number } | null>(null);
+
+  // 加载存储信息
+  useEffect(() => {
+    const loadStorageInfo = async () => {
+      try {
+        const bytes = await chrome.storage.local.getBytesInUse();
+        const quota = chrome.storage.local.QUOTA_BYTES || 10485760; // 10MB 默认配额
+        setStorageInfo({ used: bytes, total: quota });
+      } catch (error) {
+        console.error('Failed to get storage info:', error);
+      }
+    };
+    loadStorageInfo();
+  }, [isLoading]);
+
+  const handleCacheFavicons = async () => {
+    setIsLoading(true);
+    setProgress({ current: 0, total: 0 });
+
+    try {
+      const { batchDownloadFavicons } = await import('../utils/favicon');
+      let totalCached = 0;
+      
+      // 缓存旧版快捷方式图标
+      if (shortcuts.length > 0) {
+        const results = await batchDownloadFavicons(shortcuts, (current, total) => {
+          setProgress({ current, total });
+        });
+        
+        // 更新快捷方式
+        results.forEach((base64, id) => {
+          updateShortcut(id, { faviconBase64: base64 });
+        });
+        totalCached += results.size;
+      }
+
+      // 缓存网格项中的快捷方式图标
+      const gridShortcuts = gridItems.filter(item => item.type === 'shortcut' && item.shortcut);
+      if (gridShortcuts.length > 0) {
+        const gridResults = await batchDownloadFavicons(
+          gridShortcuts.map(item => ({
+            id: item.id,
+            url: item.shortcut!.url,
+            favicon: item.shortcut!.favicon,
+            faviconBase64: item.shortcut!.faviconBase64,
+          })),
+          (current, total) => {
+            setProgress({ current: current + shortcuts.length, total: total + shortcuts.length });
+          }
+        );
+
+        // 更新网格项
+        gridResults.forEach((base64, id) => {
+          const item = gridItems.find(i => i.id === id);
+          if (item?.shortcut) {
+            updateGridItem(id, {
+              shortcut: {
+                ...item.shortcut,
+                faviconBase64: base64,
+              },
+            });
+          }
+        });
+        totalCached += gridResults.size;
+      }
+
+      alert(`成功缓存 ${totalCached} 个图标`);
+    } catch (error) {
+      console.error('Failed to cache favicons:', error);
+      alert('缓存图标失败，请重试');
+    } finally {
+      setIsLoading(false);
+      setProgress({ current: 0, total: 0 });
+    }
+  };
+
+  const totalShortcuts = shortcuts.length + gridItems.filter(item => item.type === 'shortcut').length;
+  const cachedCount = shortcuts.filter(s => s.faviconBase64).length + 
+    gridItems.filter(item => item.type === 'shortcut' && item.shortcut?.faviconBase64).length;
+
+  const formatBytes = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <div className="text-sm text-white/80">下载并缓存所有图标</div>
+          <div className="text-xs text-white/50 mt-1">
+            已缓存 {cachedCount} / {totalShortcuts} 个图标
+          </div>
+          {storageInfo && (
+            <div className="text-xs text-white/40 mt-0.5">
+              存储占用: {formatBytes(storageInfo.used)} / {formatBytes(storageInfo.total)} 
+              ({((storageInfo.used / storageInfo.total) * 100).toFixed(1)}%)
+            </div>
+          )}
+        </div>
+        <button
+          onClick={handleCacheFavicons}
+          disabled={isLoading}
+          className="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 disabled:bg-white/20 text-white text-sm transition-colors"
+        >
+          {isLoading ? '缓存中...' : '立即缓存'}
+        </button>
+      </div>
+      {isLoading && progress.total > 0 && (
+        <div className="space-y-1">
+          <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+            <div
+              className="h-full bg-blue-500 transition-all duration-300"
+              style={{ width: `${(progress.current / progress.total) * 100}%` }}
+            />
+          </div>
+          <div className="text-xs text-white/50 text-center">
+            {progress.current} / {progress.total}
+          </div>
+        </div>
+      )}
+      <div className="text-xs text-white/40 leading-relaxed">
+        图标会自动压缩到 10KB 以内，离线时可正常显示
       </div>
     </div>
   );

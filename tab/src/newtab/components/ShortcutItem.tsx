@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { X, Pencil } from 'lucide-react';
 import { useNewtabStore } from '../hooks/useNewtabStore';
+import { getFaviconUrl } from '../utils/favicon';
 import type { Shortcut } from '../types';
 
 interface ShortcutItemProps {
@@ -34,15 +35,7 @@ export function ShortcutItem({ shortcut, style }: ShortcutItemProps) {
     removeShortcut(shortcut.id);
   };
 
-  const getFaviconUrl = () => {
-    if (shortcut.favicon) return shortcut.favicon;
-    try {
-      const domain = new URL(shortcut.url).hostname;
-      return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
-    } catch {
-      return '';
-    }
-  };
+  const faviconUrl = getFaviconUrl(shortcut);
 
   return (
     <div
@@ -75,9 +68,9 @@ export function ShortcutItem({ shortcut, style }: ShortcutItemProps) {
 
       {/* 图标 */}
       <div className="w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden">
-        {getFaviconUrl() ? (
+        {faviconUrl ? (
           <img
-            src={getFaviconUrl()}
+            src={faviconUrl}
             alt={shortcut.title}
             className="w-10 h-10 rounded-lg object-contain"
             onError={(e) => {

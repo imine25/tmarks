@@ -44,6 +44,8 @@ export const DEFAULT_WALLPAPER: WallpaperConfig = {
   value: '',
   blur: 0,
   brightness: 100,
+  bingHistoryIndex: 0,
+  showBingInfo: false,
 };
 
 // 默认设置

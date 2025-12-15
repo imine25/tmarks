@@ -5,7 +5,7 @@
 import { memo } from 'react';
 import { X } from 'lucide-react';
 import type { WidgetRendererProps } from './types';
-import { FAVICON_API } from '../../constants';
+import { getFaviconUrl } from '../../utils/favicon';
 
 export const ShortcutWidget = memo(function ShortcutWidget({
   item,
@@ -24,8 +24,7 @@ export const ShortcutWidget = memo(function ShortcutWidget({
     }
   };
 
-  const domain = shortcut.url ? new URL(shortcut.url).hostname : '';
-  const favicon = shortcut.favicon || `${FAVICON_API}${domain}&sz=64`;
+  const favicon = getFaviconUrl(shortcut);
 
   return (
     <a

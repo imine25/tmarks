@@ -4,11 +4,12 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Plus, Link, FolderPlus } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
-  rectIntersection,
+  pointerWithin,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -17,6 +18,7 @@ import {
   type DragStartEvent,
   type DragEndEvent,
   type DragOverEvent,
+  type CollisionDetection,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -28,6 +30,7 @@ import { SortableShortcutItem } from './SortableShortcutItem';
 import { ShortcutFolderItem } from './ShortcutFolderItem';
 import { FolderModal } from './FolderModal';
 import { AddFolderModal } from './AddFolderModal';
+import { Z_INDEX } from '../constants/z-index';
 import { AddShortcutModal } from './AddShortcutModal';
 import { DragOverlayItem } from './DragOverlayItem';
 import { FAVICON_API } from '../constants';
@@ -121,13 +124,16 @@ export function ShortcutGrid({ columns, style, onAddClick, onBatchEditClick }: S
     })
   );
 
-  // 自定义碰撞检测
-  const collisionDetection = useCallback(
-    (args: Parameters<typeof closestCenter>[0]) => {
-      const overlapCollisions = rectIntersection(args);
-      if (overlapCollisions.length > 0) {
-        return overlapCollisions;
+  // 自定义碰撞检测 - 参考 iTabs 实现
+  const collisionDetection: CollisionDetection = useCallback(
+    (args) => {
+      // 1. 优先使用指针位置检测（最精确）
+      const pointerCollisions = pointerWithin(args);
+      if (pointerCollisions && pointerCollisions.length > 0) {
+        return pointerCollisions;
       }
+      
+      // 2. 使用最近中心点检测（作为后备）
       return closestCenter(args);
     }, 
     []
@@ -313,14 +319,6 @@ export function ShortcutGrid({ columns, style, onAddClick, onBatchEditClick }: S
     : null;
 
   // 文件夹操作
-  const handleEditFolder = () => {
-    if (openFolder) {
-      setEditingFolder(openFolder);
-      setOpenFolderId(null);
-      setShowAddFolderModal(true);
-    }
-  };
-
   const handleSaveFolder = (name: string) => {
     if (editingFolder) {
       updateFolder(editingFolder.id, { name });
@@ -353,63 +351,78 @@ export function ShortcutGrid({ columns, style, onAddClick, onBatchEditClick }: S
 
   // 添加菜单状态
   const [showAddMenu, setShowAddMenu] = useState(false);
-  const addMenuRef = useRef<HTMLDivElement>(null);
 
-  // 点击外部关闭菜单
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (addMenuRef.current && !addMenuRef.current.contains(e.target as Node)) {
-        setShowAddMenu(false);
-      }
-    };
-    if (showAddMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showAddMenu]);
+  // 处理添加菜单切换
+  const handleToggleAddMenu = () => {
+    setShowAddMenu(!showAddMenu);
+  };
 
   // 统一添加按钮（点击显示菜单，右键批量编辑）
   const AddButton = () => (
-    <div ref={addMenuRef} className="relative flex flex-col items-center gap-2 w-16">
-      <button
-        onClick={() => setShowAddMenu(!showAddMenu)}
-        onContextMenu={(e) => {
-          e.preventDefault();
-          if (onBatchEditClick) onBatchEditClick();
-        }}
-        className="w-14 h-14 rounded-[18px] bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all border border-white/10 cursor-pointer group"
-        title="添加 | 右键批量编辑"
-      >
-        <Plus className={`w-6 h-6 text-white/60 transition-transform ${showAddMenu ? 'rotate-45' : ''}`} />
-      </button>
-      <span className="text-sm text-white/60">添加</span>
+    <>
+      <div className="relative flex flex-col items-center gap-2 w-16">
+        <button
+          onClick={handleToggleAddMenu}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            if (onBatchEditClick) onBatchEditClick();
+          }}
+          className="w-14 h-14 rounded-[18px] bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all border border-white/10 cursor-pointer group"
+          title="添加 | 右键批量编辑"
+        >
+          <Plus className={`w-6 h-6 text-white/60 transition-transform ${showAddMenu ? 'rotate-45' : ''}`} />
+        </button>
+        <span className="text-sm text-white/60">添加</span>
+      </div>
       
-      {/* 下拉菜单 */}
-      {showAddMenu && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 min-w-[140px] py-2 rounded-xl bg-black/70 backdrop-blur-xl border border-white/10 shadow-xl animate-scaleIn">
-          <button
-            onClick={() => {
-              setShowAddMenu(false);
-              if (onAddClick) onAddClick();
-            }}
-            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white/80 hover:bg-white/10 transition-colors"
+      {/* 添加选项弹窗 - 居中显示 */}
+      {showAddMenu && createPortal(
+        <div 
+          className="fixed inset-0 flex items-center justify-center bg-black/60 animate-fadeIn"
+          style={{ zIndex: Z_INDEX.MODAL_BACKDROP }}
+          onClick={() => setShowAddMenu(false)}
+        >
+          {/* 弹窗内容 */}
+          <div 
+            className="relative w-64 rounded-2xl glass-modal-dark overflow-hidden"
+            style={{ zIndex: Z_INDEX.MODAL_CONTENT, animation: 'modalScale 0.2s ease-out' }}
+            onClick={(e) => e.stopPropagation()}
           >
-            <Link className="w-4 h-4" />
-            快捷方式
-          </button>
-          <button
-            onClick={() => {
-              setShowAddMenu(false);
-              setShowAddFolderModal(true);
-            }}
-            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white/80 hover:bg-white/10 transition-colors"
-          >
-            <FolderPlus className="w-4 h-4" />
-            文件夹
-          </button>
-        </div>
+            {/* 头部 */}
+            <div className="px-4 py-3 border-b border-white/10">
+              <h3 className="text-base font-medium text-white">选择类型</h3>
+            </div>
+            
+            {/* 选项列表 */}
+            <div className="p-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowAddMenu(false);
+                  if (onAddClick) onAddClick();
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:bg-white/10 transition-colors rounded-lg"
+              >
+                <Link className="w-5 h-5 text-blue-400" />
+                <span>新建快捷方式</span>
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowAddMenu(false);
+                  setShowAddFolderModal(true);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:bg-white/10 transition-colors rounded-lg"
+              >
+                <FolderPlus className="w-5 h-5 text-amber-400" />
+                <span>新建文件夹</span>
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 
   return (
@@ -489,8 +502,6 @@ export function ShortcutGrid({ columns, style, onAddClick, onBatchEditClick }: S
           folder={openFolder}
           shortcuts={openFolderShortcuts}
           onClose={() => setOpenFolderId(null)}
-          onAddShortcut={() => setShowAddToFolderModal(true)}
-          onEditFolder={handleEditFolder}
           onDeleteFolder={handleDeleteFolder}
         />
       )}

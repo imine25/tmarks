@@ -129,6 +129,12 @@ export function NewTab() {
     };
   }, [handleContextMenu]);
 
+  // 壁纸刷新回调
+  const handleWallpaperRefresh = useCallback(() => {
+    // 壁纸刷新后的回调，可以在这里添加提示等
+    console.log('Wallpaper refreshed');
+  }, []);
+
   if (isLoading) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-[#1a1a2e]">
@@ -140,7 +146,7 @@ export function NewTab() {
   return (
     <div className="relative w-full h-full overflow-hidden">
       {/* 壁纸背景 */}
-      <Wallpaper config={settings.wallpaper} />
+      <Wallpaper config={settings.wallpaper} onRefresh={handleWallpaperRefresh} />
 
 
 

@@ -8,6 +8,7 @@ import { Folder } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { ShortcutFolder, Shortcut } from '../types';
+import { getFaviconUrl } from '../utils/favicon';
 
 interface ShortcutFolderItemProps {
   folder: ShortcutFolder;
@@ -18,11 +19,13 @@ interface ShortcutFolderItemProps {
 
 // 迷你图标组件
 function MiniIcon({ shortcut }: { shortcut: Shortcut }) {
+  const faviconUrl = getFaviconUrl(shortcut);
+  
   return (
     <div className="aspect-square rounded-md overflow-hidden liquid-glass-mini flex items-center justify-center">
-      {shortcut.favicon ? (
+      {faviconUrl ? (
         <img
-          src={shortcut.favicon}
+          src={faviconUrl}
           alt=""
           className="w-full h-full object-cover rounded-md"
           onError={(e) => {
@@ -146,13 +149,6 @@ export function ShortcutFolderItem({
       <span className="text-xs text-white truncate w-full text-center px-1 text-shadow-sm">
         {folder.name}
       </span>
-
-      {/* 数量角标 */}
-      {shortcuts.length > 0 && (
-        <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-blue-500/90 text-white text-[10px] flex items-center justify-center font-medium">
-          {shortcuts.length}
-        </div>
-      )}
     </div>
   );
 }
