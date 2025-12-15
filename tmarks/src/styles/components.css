@@ -26,6 +26,14 @@ html {
   border: 1px solid oklch(from var(--border) l c h / 0.5);
 }
 
+.toast-surface {
+  background: oklch(from var(--card) l c h / 0.98);
+}
+
+[data-theme='dark'] .toast-surface {
+  background: oklch(from var(--card) l c h / 0.92);
+}
+
 /* 悬浮阴影效果 */
 .shadow-float {
   box-shadow:

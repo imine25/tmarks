@@ -20,28 +20,28 @@ const ICONS = {
 
 const COLORS = {
   success: {
-    bg: 'bg-card',
+    bg: 'toast-surface',
     bgOverlay: 'bg-success/10',
     border: 'border-success',
     icon: 'text-success',
     text: 'text-foreground',
   },
   error: {
-    bg: 'bg-card',
+    bg: 'toast-surface',
     bgOverlay: 'bg-destructive/10',
     border: 'border-destructive',
     icon: 'text-destructive',
     text: 'text-foreground',
   },
   info: {
-    bg: 'bg-card',
+    bg: 'toast-surface',
     bgOverlay: 'bg-primary/10',
     border: 'border-primary',
     icon: 'text-primary',
     text: 'text-foreground',
   },
   warning: {
-    bg: 'bg-card',
+    bg: 'toast-surface',
     bgOverlay: 'bg-warning/10',
     border: 'border-warning',
     icon: 'text-warning',
@@ -65,16 +65,16 @@ export function Toast({ id, type, message, duration = 3000, onClose }: ToastProp
 
   return (
     <div
-      className={`relative flex items-start gap-3 p-4 rounded-lg border-2 shadow-lg ${colors.bg} ${colors.border} min-w-[320px] max-w-md animate-slide-in backdrop-blur-sm`}
+      className={`relative flex items-start gap-3 p-4 rounded-lg border-2 shadow-lg ${colors.bg} ${colors.border} min-w-[320px] max-w-md animate-slide-in backdrop-blur-sm overflow-hidden`}
     >
       {/* 半透明彩色覆盖层 */}
-      <div className={`absolute inset-0 rounded-lg ${colors.bgOverlay} -z-10`}></div>
+      <div className={`absolute inset-0 rounded-lg ${colors.bgOverlay} z-0 pointer-events-none`}></div>
       
-      <Icon className={`w-5 h-5 ${colors.icon} flex-shrink-0 mt-0.5`} />
-      <p className={`flex-1 text-sm font-medium ${colors.text}`}>{message}</p>
+      <Icon className={`relative z-10 w-5 h-5 ${colors.icon} flex-shrink-0 mt-0.5`} />
+      <p className={`relative z-10 flex-1 text-sm font-medium ${colors.text}`}>{message}</p>
       <button
         onClick={() => onClose(id)}
-        className={`${colors.icon} hover:opacity-70 transition-opacity flex-shrink-0`}
+        className={`relative z-10 ${colors.icon} hover:opacity-70 transition-opacity flex-shrink-0`}
         aria-label="关闭"
       >
         <X className="w-5 h-5" />
