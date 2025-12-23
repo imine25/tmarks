@@ -468,3 +468,29 @@ select.input option {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* 主题滚动条（用于局部需要显示滚动条的容器） */
+.scrollbar-theme {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.scrollbar-theme::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-theme::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-theme::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.scrollbar-theme::-webkit-scrollbar-thumb:hover {
+  background-color: var(--muted-foreground);
+}

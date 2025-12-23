@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { logger } from '@/lib/logger'
 import { useCreateBookmark, useUpdateBookmark, useDeleteBookmark } from '@/hooks/useBookmarks'
 import { useCreateTag, useTags } from '@/hooks/useTags'
@@ -14,6 +14,9 @@ interface BookmarkFormProps {
 
 export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps) {
   const isEditing = !!bookmark
+
+  const availableTagsScrollRef = useRef<HTMLDivElement | null>(null)
+  const availableTagsInnerRef = useRef<HTMLDivElement | null>(null)
 
   const [title, setTitle] = useState(bookmark?.title || '')
   const [url, setUrl] = useState(bookmark?.url || '')
@@ -167,6 +170,31 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
     } else {
       setSelectedTagIds([...selectedTagIds, tagId])
     }
+  }
+
+  const handleAvailableTagsWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    const scrollEl = availableTagsScrollRef.current
+    if (!scrollEl) return
+
+    // 让滚轮只影响当前标签列表，不去滚动外层弹窗
+    e.preventDefault()
+    e.stopPropagation()
+
+    const innerEl = availableTagsInnerRef.current
+    const firstItem = innerEl?.querySelector('button') as HTMLButtonElement | null
+    const itemHeight = firstItem?.getBoundingClientRect().height ?? 24
+
+    let rowGap = 0
+    if (innerEl) {
+      const style = window.getComputedStyle(innerEl)
+      const gapValue = style.rowGap || style.gap
+      const parsed = Number.parseFloat(gapValue)
+      rowGap = Number.isFinite(parsed) ? parsed : 0
+    }
+
+    const step = Math.max(1, Math.round(itemHeight + rowGap))
+    const direction = e.deltaY > 0 ? 1 : -1
+    scrollEl.scrollBy({ top: direction * step, behavior: 'auto' })
   }
 
   const handleTagInputKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -415,8 +443,13 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
             )}
 
             {/* 可选标签列表 */}
-            <div className="p-2.5 bg-muted rounded-lg max-h-[120px] overflow-y-auto scrollbar-hide min-h-0 overscroll-contain" style={{ scrollbarGutter: 'stable' }}>
-              <div className="flex flex-wrap gap-1.5">
+            <div
+              ref={availableTagsScrollRef}
+              onWheelCapture={handleAvailableTagsWheel}
+              className="p-2.5 bg-muted rounded-lg max-h-[120px] overflow-y-auto scrollbar-theme min-h-0 overscroll-contain"
+              style={{ scrollbarGutter: 'stable' }}
+            >
+              <div ref={availableTagsInnerRef} className="flex flex-wrap gap-1.5">
                 {tags.length === 0 ? (
                   <p className="text-xs text-muted-foreground py-1">
                     暂无标签，在上方输入框输入后按 Enter 创建

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Save, RotateCcw, Settings, Zap, Palette, Chrome, Key, Share2, Database, LogOut, BarChart3, Camera } from 'lucide-react'
+import { Save, RotateCcw, Settings, Zap, Palette, Chrome, Key, Share2, Database, LogOut, BarChart3, Camera, Bot } from 'lucide-react'
 import { usePreferences, useUpdatePreferences } from '@/hooks/usePreferences'
 import { useAuthStore } from '@/stores/authStore'
 import { useToastStore } from '@/stores/toastStore'
@@ -16,6 +16,7 @@ import { ShareSettingsTab } from '@/components/settings/tabs/ShareSettingsTab'
 import { DataSettingsTab } from '@/components/settings/tabs/DataSettingsTab'
 import { BookmarkStatisticsPage } from '@/pages/bookmarks/BookmarkStatisticsPage'
 import { SnapshotSettingsTab } from '@/components/settings/tabs/SnapshotSettingsTab'
+import { AiSettingsTab } from '@/components/settings/tabs/AiSettingsTab'
 
 export function GeneralSettingsPage() {
   const navigate = useNavigate()
@@ -100,6 +101,7 @@ export function GeneralSettingsPage() {
     { id: 'automation', label: '自动化', icon: <Zap className="w-4 h-4" /> },
     { id: 'appearance', label: '外观', icon: <Palette className="w-4 h-4" /> },
     { id: 'snapshot', label: '快照', icon: <Camera className="w-4 h-4" /> },
+    { id: 'ai', label: 'AI', icon: <Bot className="w-4 h-4" /> },
     { id: 'browser', label: '浏览器', icon: <Chrome className="w-4 h-4" /> },
     { id: 'api', label: 'API', icon: <Key className="w-4 h-4" /> },
     { id: 'share', label: '分享', icon: <Share2 className="w-4 h-4" /> },
@@ -188,6 +190,8 @@ export function GeneralSettingsPage() {
               onAutoCleanupDaysChange={(days) => handleUpdate({ snapshot_auto_cleanup_days: days })}
             />
           )}
+
+          {activeTab === 'ai' && <AiSettingsTab />}
 
           {activeTab === 'browser' && <BrowserSettingsTab />}
 
