@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect, memo } from 'react';
-import { RefreshCw, BookOpen, X } from 'lucide-react';
+import { RefreshCw, BookOpen } from 'lucide-react';
 import { DEFAULT_POETRY } from '../../constants';
 import type { Poetry as PoetryType } from '../../types';
 import type { WidgetRendererProps } from './types';
@@ -13,8 +13,8 @@ const POETRY_CACHE_KEY = 'newtab_poetry';
 
 export const PoetryWidget = memo(function PoetryWidget({
   item,
-  onRemove,
-  isEditing,
+  onRemove: _onRemove,
+  isEditing: _isEditing,
 }: WidgetRendererProps) {
   const [poetry, setPoetry] = useState<PoetryType | null>(null);
   const { rows } = getSizeSpan(item.size);
@@ -48,16 +48,6 @@ export const PoetryWidget = memo(function PoetryWidget({
 
   return (
     <div className="group relative h-full p-3 rounded-xl glass-card flex flex-col items-center justify-center">
-      {isEditing && onRemove && (
-        <button
-          onClick={() => onRemove(item.id)}
-          className="absolute -top-1 -right-1 p-1 rounded-full bg-red-500 text-white 
-                     opacity-0 group-hover:opacity-100 transition-opacity z-10"
-        >
-          <X className="w-3 h-3" />
-        </button>
-      )}
-
       {isLarge ? (
         // 大尺寸布局
         <div className="flex flex-col items-center gap-2 text-center">

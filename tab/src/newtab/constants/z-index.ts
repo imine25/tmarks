@@ -29,6 +29,11 @@ export const Z_INDEX = {
   MODAL_BACKDROP: 100,
   MODAL_CONTENT: 110,
   
+  // 批量编辑底栏 (120-129) - 需要在模态框之上
+  BATCH_EDIT_BAR: 120,
+
+  DRAG_OVERLAY: 1000,
+  
   // 组件选择器层 (200-209) - 最高层级
   WIDGET_SELECTOR_BACKDROP: 200,
   WIDGET_SELECTOR_CONTENT: 201,

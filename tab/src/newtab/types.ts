@@ -8,6 +8,7 @@ export interface ShortcutGroup {
   name: string;
   icon: string; // Lucide 图标名称
   position: number;
+  bookmarkFolderId?: string | null;
 }
 
 // 快捷方式文件夹（可包含多个快捷方式）
@@ -26,6 +27,7 @@ export type GridItemSize = '1x1' | '2x1' | '1x2' | '2x2' | '2x3' | '2x4';
 // 网格项类型
 export type GridItemType = 
   | 'shortcut' 
+  | 'bookmarkFolder'
   | 'weather' 
   | 'clock' 
   | 'todo' 
@@ -68,12 +70,18 @@ export interface GridItem {
   size: GridItemSize;
   position: number;
   groupId?: string;
+  parentId?: string | null;
+  browserBookmarkId?: string;
+  tmarksBookmarkId?: string; // TMarks 服务器书签 ID，用于同步
   // 快捷方式数据（仅 type='shortcut' 时使用）
   shortcut?: {
     url: string;
     title: string;
     favicon?: string;
     faviconBase64?: string; // 离线缓存的 base64 图标
+  };
+  bookmarkFolder?: {
+    title: string;
   };
   // 组件配置（非快捷方式时使用）
   config?: WidgetConfig;
@@ -167,6 +175,23 @@ export interface NewTabSettings {
   
   // 热搜类型（用于网格组件配置）
   hotSearchType: HotSearchType;
+
+  enableWorkspaceAiOrganize?: boolean;
+  workspaceAiOrganizeRules?: string;
+  workspaceAiOrganizeMaxBookmarks?: number;
+  enableHistoryHeat?: boolean;
+  historyDays?: number;
+  historyHeatTopN?: number;
+  workspaceAiOrganizeStrictHierarchy?: boolean;
+  workspaceAiOrganizeAllowNewFolders?: boolean;
+  workspaceAiOrganizePreferOriginalPaths?: boolean;
+  workspaceAiOrganizeVerboseLogs?: boolean;
+  workspaceAiOrganizeTopLevelCount?: number;
+
+  enableWorkspaceAiOrganizeCustomPrompt?: boolean;
+  workspaceAiOrganizePrompt?: string;
+
+  showEditGuide?: boolean;
 
 
 }

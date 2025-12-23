@@ -154,7 +154,7 @@ export const buildConfig = {
 
   // 版本信息
   version: {
-    number: '1.0.0',
+    number: '1.0.1',
     date: '2024-11-19',
   },
 }

@@ -71,7 +71,7 @@ export const WidgetConfigModal = memo(function WidgetConfigModal({
             </h3>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+              className="p-1.5 rounded-xl hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white/20"
             >
               <X className="w-4 h-4 text-white/60" />
             </button>
@@ -149,7 +149,7 @@ export const WidgetConfigModal = memo(function WidgetConfigModal({
             {/* 删除按钮 */}
             <button
               onClick={handleRemove}
-              className="w-full py-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors text-sm"
+              className="w-full py-2 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30"
             >
               删除组件
             </button>

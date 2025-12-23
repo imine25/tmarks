@@ -19,6 +19,19 @@ export const WIDGET_REGISTRY: Record<GridItemType, WidgetMeta> = {
       minHeight: 1,
     },
   },
+  bookmarkFolder: {
+    type: 'bookmarkFolder',
+    name: '文件夹',
+    icon: 'Folder',
+    description: '用于组织书签与快捷方式',
+    sizeConfig: {
+      type: 'bookmarkFolder',
+      defaultSize: '1x1',
+      allowedSizes: ['1x1'],
+      minWidth: 1,
+      minHeight: 1,
+    },
+  },
   weather: {
     type: 'weather',
     name: '天气',

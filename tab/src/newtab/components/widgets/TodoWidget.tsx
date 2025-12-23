@@ -4,14 +4,15 @@
 
 import { useState, memo } from 'react';
 import { Plus, Check, X, CheckSquare } from 'lucide-react';
+import { EmptyState } from '../ui/EmptyState';
 import { useTodoStore } from '../../hooks/useTodoStore';
 import type { WidgetRendererProps } from './types';
 import { getSizeSpan } from './widgetRegistry';
 
 export const TodoWidget = memo(function TodoWidget({
   item,
-  onRemove,
-  isEditing,
+  onRemove: _onRemove,
+  isEditing: _isEditing,
 }: WidgetRendererProps) {
   const { todos, addTodo, toggleTodo, removeTodo } = useTodoStore();
   const [newTodo, setNewTodo] = useState('');
@@ -37,16 +38,6 @@ export const TodoWidget = memo(function TodoWidget({
 
   return (
     <div className="group relative h-full p-3 rounded-xl glass-card flex flex-col">
-      {isEditing && onRemove && (
-        <button
-          onClick={() => onRemove(item.id)}
-          className="absolute -top-1 -right-1 p-1 rounded-full bg-red-500 text-white 
-                     opacity-0 group-hover:opacity-100 transition-opacity z-10"
-        >
-          <X className="w-3 h-3" />
-        </button>
-      )}
-
       {/* 标题栏 */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2 text-white/80">
@@ -81,7 +72,7 @@ export const TodoWidget = memo(function TodoWidget({
         />
         <button
           onClick={handleAdd}
-          className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+          className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors focus:outline-none focus:ring-2 focus:ring-white/20"
         >
           <Plus className="w-4 h-4 text-white/70" />
         </button>
@@ -90,9 +81,7 @@ export const TodoWidget = memo(function TodoWidget({
       {/* 待办列表 */}
       <div className="flex-1 space-y-1 overflow-y-auto">
         {displayTodos.length === 0 ? (
-          <div className="text-center text-white/40 text-sm py-4">
-            暂无待办事项
-          </div>
+          <EmptyState type="todo" />
         ) : (
           displayTodos.slice(0, maxItems).map((todo) => (
             <div

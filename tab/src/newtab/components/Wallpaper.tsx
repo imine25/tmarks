@@ -183,7 +183,7 @@ export function Wallpaper({ config, onRefresh }: WallpaperProps) {
   const url = config.type === 'bing' || config.type === 'unsplash' ? imageUrl : config.value;
 
   if (!url) {
-    return <div className="absolute inset-0 z-0 bg-[#1a1a2e]" />;
+    return <div className="absolute inset-0 z-0" style={{ backgroundColor: 'var(--background)' }} />;
   }
 
   return (
@@ -195,7 +195,7 @@ export function Wallpaper({ config, onRefresh }: WallpaperProps) {
       
       {/* 刷新按钮和信息按钮 */}
       {(config.type === 'bing' || config.type === 'unsplash') && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2">
+        <div className="fixed bottom-6 right-24 z-50 flex items-center gap-2">
           {/* Bing 信息按钮 */}
           {config.type === 'bing' && config.showBingInfo && bingInfo && (
             <button
@@ -221,7 +221,7 @@ export function Wallpaper({ config, onRefresh }: WallpaperProps) {
 
       {/* Bing 图片信息面板 */}
       {config.type === 'bing' && config.showBingInfo && showInfo && bingInfo && (
-        <div className="fixed bottom-20 right-6 z-50 w-80 glass-modal-dark rounded-xl p-4 animate-fadeIn">
+        <div className="fixed bottom-20 right-24 z-50 w-80 glass-modal-dark rounded-xl p-4 animate-fadeIn">
           <div className="flex items-start justify-between mb-3">
             <h3 className="text-sm font-medium text-white">图片信息</h3>
             <button

@@ -42,8 +42,35 @@ export default defineConfig(({ mode }) => {
         input: {
           popup: 'src/popup/index.html',
           options: 'src/options/index.html',
-          newtab: 'src/newtab/index.html'
-        }
+          newtab: 'src/newtab/index.html',
+        },
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('react') || id.includes('scheduler')) {
+                return 'react-vendor';
+              }
+              if (id.includes('@dnd-kit')) {
+                return 'dnd-kit';
+              }
+              if (id.includes('lucide-react')) {
+                return 'icon-vendor';
+              }
+              if (id.includes('dexie')) {
+                return 'dexie';
+              }
+              return 'vendor';
+            }
+
+            if (id.includes(`${path.sep}src${path.sep}newtab${path.sep}components${path.sep}SettingsPanel`)) {
+              return 'settings-panel';
+            }
+            if (id.includes(`${path.sep}src${path.sep}newtab${path.sep}components${path.sep}WidgetGrid`)) {
+              return 'widget-grid';
+            }
+            return undefined;
+          },
+        },
       },
       // 禁用源码映射以保护代码
       sourcemap: false,

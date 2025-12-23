@@ -20,11 +20,11 @@ export function SuccessMessage({ message, onDismiss, autoHideDuration = 3000 }: 
   }, [onDismiss, autoHideDuration]);
 
   return (
-    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 shadow-lg animate-in slide-in-from-top-5 fade-in duration-300">
+    <div className="bg-[color:var(--tab-message-success-bg)] border border-[color:var(--tab-message-success-border)] rounded-lg p-3 shadow-lg animate-in slide-in-from-top-5 fade-in duration-300 text-[var(--tab-message-success-icon)]">
       <div className="flex items-start gap-3">
-        <div className="bg-green-100 dark:bg-green-900/30 rounded-full p-1.5 flex-shrink-0">
+        <div className="bg-[color:var(--tab-message-success-icon-bg)] rounded-full p-1.5 flex-shrink-0">
           <svg
-            className="w-5 h-5 text-green-600 dark:text-green-400"
+            className="w-5 h-5 text-[var(--tab-message-success-icon)]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -38,14 +38,14 @@ export function SuccessMessage({ message, onDismiss, autoHideDuration = 3000 }: 
           </svg>
         </div>
         <div className="flex-1 pt-0.5">
-          <p className="text-sm font-medium text-gray-900 dark:text-white">
+          <p className="text-sm font-medium">
             {message}
           </p>
         </div>
         {onDismiss && (
           <button
             onClick={onDismiss}
-            className="flex-shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+            className="flex-shrink-0 opacity-80 hover:opacity-100 transition-opacity"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

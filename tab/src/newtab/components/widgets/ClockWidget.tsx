@@ -3,15 +3,14 @@
  */
 
 import { useState, useEffect, memo, useMemo } from 'react';
-import { X } from 'lucide-react';
 import { Lunar } from 'lunar-javascript';
 import type { WidgetRendererProps } from './types';
 import { getSizeSpan } from './widgetRegistry';
 
 export const ClockWidget = memo(function ClockWidget({
   item,
-  onRemove,
-  isEditing,
+  onRemove: _onRemove,
+  isEditing: _isEditing,
 }: WidgetRendererProps) {
   const [time, setTime] = useState(new Date());
   const { rows } = getSizeSpan(item.size);
@@ -75,16 +74,6 @@ export const ClockWidget = memo(function ClockWidget({
 
   return (
     <div className="group relative h-full p-3 rounded-xl glass-card flex flex-col items-center justify-center">
-      {isEditing && onRemove && (
-        <button
-          onClick={() => onRemove(item.id)}
-          className="absolute -top-1 -right-1 p-1 rounded-full bg-red-500 text-white 
-                     opacity-0 group-hover:opacity-100 transition-opacity z-10"
-        >
-          <X className="w-3 h-3" />
-        </button>
-      )}
-
       <div className={`text-white font-light tracking-wider ${isLarge ? 'text-5xl' : 'text-3xl'}`}>
         {formatTime()}
       </div>

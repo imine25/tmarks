@@ -40,11 +40,13 @@ function SortableBookmarkItem({
   isHovered, 
   onHover,
   wasDragged,
+  onRecordClick,
 }: {
   bookmark: TMarksBookmark;
   isHovered: boolean;
   onHover: (id: string | null) => void;
   wasDragged: boolean;
+  onRecordClick: (id: string) => void;
 }) {
   const {
     attributes,
@@ -72,7 +74,7 @@ function SortableBookmarkItem({
     >
       <a
         href={bookmark.url}
-        className="relative block w-11 h-11 rounded-xl bg-white/10 hover:bg-white/20 transition-all duration-200 overflow-hidden"
+        className="relative block w-11 h-11 rounded-xl bg-white/10 hover:bg-white/20 active:scale-90 transition-all duration-200 overflow-hidden"
         style={{
           transform: isHovered && !isDragging ? 'translateY(-8px) scale(1.15)' : 'translateY(0) scale(1)',
         }}
@@ -82,6 +84,9 @@ function SortableBookmarkItem({
           // 如果正在拖拽或刚拖拽完，阻止跳转
           if (isDragging || wasDragged) {
             e.preventDefault();
+          } else {
+            // 记录点击次数
+            onRecordClick(bookmark.id);
           }
         }}
       >
@@ -120,7 +125,7 @@ function SortableBookmarkItem({
 }
 
 export function DockBar() {
-  const { syncState, pinnedBookmarks, fetchPinnedBookmarks, reorderPinnedBookmarks } = useTMarksSync();
+  const { syncState, pinnedBookmarks, fetchPinnedBookmarks, reorderPinnedBookmarks, recordBookmarkClick } = useTMarksSync();
   const [hasLoaded, setHasLoaded] = useState(false);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -203,6 +208,7 @@ export function DockBar() {
 
   return (
     <div 
+      data-dock-bar="1"
       className={`fixed bottom-4 left-1/2 -translate-x-1/2 z-40 transition-opacity duration-300 ${
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
@@ -228,6 +234,7 @@ export function DockBar() {
                 isHovered={hoveredId === bookmark.id}
                 onHover={setHoveredId}
                 wasDragged={wasDragged}
+                onRecordClick={recordBookmarkClick}
               />
             ))}
           </div>

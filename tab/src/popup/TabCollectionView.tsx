@@ -194,7 +194,7 @@ export function TabCollectionView({ config, onBack }: TabCollectionViewProps) {
   };
 
   return (
-    <div className="relative h-[80vh] min-h-[620px] w-[380px] overflow-hidden rounded-b-2xl bg-white text-gray-900 shadow-2xl">
+    <div className="relative h-[80vh] min-h-[620px] w-[380px] overflow-hidden rounded-b-2xl bg-[color:var(--tab-popup-bg)] text-[var(--tab-text)] shadow-2xl">
       {/* Collection Options Dialog */}
       {showOptionsDialog && (
         <CollectionOptionsDialog
@@ -222,45 +222,49 @@ export function TabCollectionView({ config, onBack }: TabCollectionViewProps) {
 
       <div className="relative flex h-full flex-col">
         {/* Header - Fixed */}
-        <header className="fixed top-0 left-0 right-0 z-20 px-3 pt-2 pb-2.5 bg-white border-b border-gray-200 shadow-sm rounded-b-2xl">
+        <header className="fixed top-0 left-0 right-0 z-20 px-3 pt-2 pb-2.5 bg-[color:var(--tab-surface)] border-b border-[color:var(--tab-border)] shadow-sm rounded-b-2xl">
           <div className="flex items-center gap-2">
             <button
               onClick={onBack}
-              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-gray-600 transition-all duration-200 hover:bg-gray-100 active:scale-95"
+              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-[var(--tab-text-muted)] transition-all duration-200 hover:bg-[color:var(--tab-surface-muted)] active:scale-95"
               title="返回"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <span className="inline-flex flex-shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[10px] text-emerald-600 font-medium">
+            <span className="inline-flex flex-shrink-0 items-center gap-1 rounded-full bg-[color:var(--tab-message-success-bg)] px-2 py-1 text-[10px] text-[var(--tab-message-success-icon)] font-medium">
               共 {tabs.length} 个
             </span>
-            <span className="inline-flex flex-shrink-0 items-center gap-1 rounded-full bg-teal-50 px-2 py-1 text-[10px] text-teal-600 font-medium">
+            <span className="inline-flex flex-shrink-0 items-center gap-1 rounded-full bg-[color:var(--tab-message-success-bg)] px-2 py-1 text-[10px] text-[var(--tab-message-success-icon)] font-medium">
               已选 {selectedTabIds.size} 个
             </span>
             <div className="ml-auto flex gap-1.5">
               <button
                 onClick={onBack}
-                className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-[11px] font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50 active:scale-95"
+                className="rounded-lg border border-[color:var(--tab-border-strong)] bg-[color:var(--tab-surface)] px-3 py-1.5 text-[11px] font-medium text-[var(--tab-text)] transition-all duration-200 hover:bg-[color:var(--tab-surface-muted)] active:scale-95"
               >
                 取消
               </button>
               <button
                 onClick={handleShowOptions}
                 disabled={isCollecting || selectedTabIds.size === 0}
-                className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-[11px] font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 active:scale-95"
+                className="rounded-lg border border-[color:var(--tab-border-strong)] bg-[color:var(--tab-surface)] px-3 py-1.5 text-[11px] font-medium text-[var(--tab-text)] transition-all duration-200 hover:bg-[color:var(--tab-surface-muted)] disabled:cursor-not-allowed disabled:opacity-40 active:scale-95"
               >
                 选项
               </button>
               <button
                 onClick={handleQuickCollect}
                 disabled={isCollecting || selectedTabIds.size === 0}
-                className="rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-1.5 text-[11px] font-semibold text-white shadow-sm transition-all duration-200 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40 active:scale-95"
+                className="rounded-lg px-4 py-1.5 text-[11px] font-semibold shadow-sm transition-all duration-200 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40 active:scale-95"
+                style={{
+                  background: `linear-gradient(90deg, var(--tab-popup-success-from), var(--tab-popup-success-to))`,
+                  color: 'var(--tab-popup-success-text)',
+                }}
               >
                 {isCollecting ? (
                   <span className="flex items-center justify-center gap-1">
-                    <svg className="h-3.5 w-3.5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                    <svg className="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24" style={{ color: 'var(--tab-popup-success-text)' }}>
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
@@ -277,16 +281,21 @@ export function TabCollectionView({ config, onBack }: TabCollectionViewProps) {
         {/* Close Confirm Dialog - Fixed at top */}
         {showCloseConfirm && (
           <div className="fixed top-[60px] left-0 right-0 z-40 px-4 pt-2 animate-in slide-in-from-top-5 fade-in duration-300">
-            <section className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-4 shadow-lg">
+            <section
+              className="rounded-2xl border border-[color:var(--tab-message-success-border)] p-4 shadow-lg"
+              style={{
+                background: `linear-gradient(135deg, var(--tab-message-success-bg), var(--tab-message-success-icon-bg))`,
+              }}
+            >
               <div className="mb-3 flex items-start gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100">
-                  <svg className="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[color:var(--tab-message-success-icon-bg)]">
+                  <svg className="h-5 w-5 text-[var(--tab-message-success-icon)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-sm font-semibold text-gray-800">收纳成功</h3>
-                  <p className="mt-1 text-xs text-gray-600">
+                  <h3 className="text-sm font-semibold text-[var(--tab-text)]">收纳成功</h3>
+                  <p className="mt-1 text-xs text-[var(--tab-text-muted)]">
                     已成功收纳 {collectedTabIds.length} 个标签页。是否关闭这些标签页？
                   </p>
                 </div>
@@ -294,13 +303,17 @@ export function TabCollectionView({ config, onBack }: TabCollectionViewProps) {
               <div className="flex gap-2">
                 <button
                   onClick={handleKeepTabs}
-                  className="flex-1 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50 active:scale-95"
+                  className="flex-1 rounded-xl border border-[color:var(--tab-border-strong)] bg-[color:var(--tab-surface)] px-4 py-2 text-sm font-medium text-[var(--tab-text)] transition-all duration-200 hover:bg-[color:var(--tab-surface-muted)] active:scale-95"
                 >
                   保留标签页
                 </button>
                 <button
                   onClick={handleCloseTabs}
-                  className="flex-1 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
+                  className="flex-1 rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
+                  style={{
+                    background: `linear-gradient(90deg, var(--tab-popup-success-from), var(--tab-popup-success-to))`,
+                    color: 'var(--tab-popup-success-text)',
+                  }}
                 >
                   关闭标签页
                 </button>
@@ -310,22 +323,22 @@ export function TabCollectionView({ config, onBack }: TabCollectionViewProps) {
         )}
 
         {/* Main Content */}
-        <main className={`relative flex-1 space-y-3 overflow-y-auto px-4 pb-5 bg-white ${showCloseConfirm ? 'pt-[180px]' : 'pt-[60px]'}`}>
+        <main className={`relative flex-1 space-y-3 overflow-y-auto px-4 pb-5 bg-[color:var(--tab-popup-bg)] ${showCloseConfirm ? 'pt-[180px]' : 'pt-[60px]'}`}>
           {isLoading ? (
-            <section className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4 text-sm text-gray-700 shadow-sm">
+            <section className="flex items-center gap-3 rounded-2xl border border-[color:var(--tab-border)] bg-[color:var(--tab-surface)] p-4 text-sm text-[var(--tab-text)] shadow-sm">
               <LoadingSpinner />
               <p>正在加载标签页...</p>
             </section>
           ) : (
             <>
               {/* Select All Button */}
-              <section className="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm">
+              <section className="rounded-2xl border border-[color:var(--tab-border)] bg-[color:var(--tab-surface)] p-3 shadow-sm">
                 <button
                   onClick={toggleAll}
-                  className="flex w-full items-center justify-between rounded-xl bg-gray-50 px-4 py-2 text-sm font-medium text-gray-800 transition-all duration-200 hover:bg-gray-100 active:scale-95"
+                  className="flex w-full items-center justify-between rounded-xl bg-[color:var(--tab-surface-muted)] px-4 py-2 text-sm font-medium text-[var(--tab-text)] transition-all duration-200 hover:opacity-90 active:scale-95"
                 >
                   <span>{selectedTabIds.size === tabs.length ? '取消全选' : '全选'}</span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-[var(--tab-text-muted)]">
                     {selectedTabIds.size} / {tabs.length}
                   </span>
                 </button>
@@ -341,18 +354,18 @@ export function TabCollectionView({ config, onBack }: TabCollectionViewProps) {
                       onClick={() => toggleTab(tab.id)}
                       className={`group w-full rounded-2xl border p-3 text-left transition-all duration-200 active:scale-[0.98] ${
                         isSelected
-                          ? 'border-emerald-300 bg-emerald-50 shadow-md'
-                          : 'border-gray-200 bg-white hover:bg-gray-50'
+                          ? 'border-[color:var(--tab-message-success-border)] bg-[color:var(--tab-message-success-bg)] shadow-md'
+                          : 'border-[color:var(--tab-border)] bg-[color:var(--tab-surface)] hover:bg-[color:var(--tab-surface-muted)]'
                       }`}
                     >
                       <div className="flex items-start gap-3">
                         <div className={`mt-0.5 flex h-5 w-5 items-center justify-center rounded-md border-2 transition-all duration-200 ${
                           isSelected
-                            ? 'border-emerald-500 bg-emerald-500'
-                            : 'border-gray-300 bg-white'
+                            ? 'border-[color:var(--tab-popup-success-from)] bg-[color:var(--tab-popup-success-from)]'
+                            : 'border-[color:var(--tab-border-strong)] bg-[color:var(--tab-surface)]'
                         }`}>
                           {isSelected && (
-                            <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                            <svg className="h-3 w-3 text-[var(--tab-popup-success-text)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                             </svg>
                           )}
@@ -361,8 +374,8 @@ export function TabCollectionView({ config, onBack }: TabCollectionViewProps) {
                           <img src={tab.favIconUrl} alt="" className="h-5 w-5 rounded" />
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className="truncate text-sm font-medium text-gray-800">{tab.title}</p>
-                          <p className="truncate text-xs text-gray-500">{tab.url}</p>
+                          <p className="truncate text-sm font-medium text-[var(--tab-text)]">{tab.title}</p>
+                          <p className="truncate text-xs text-[var(--tab-text-muted)]">{tab.url}</p>
                         </div>
                       </div>
                     </button>

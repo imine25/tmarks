@@ -37,7 +37,7 @@ export function SearchBar({ engine, enableSuggestions = true, onEngineChange }: 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   const { shortcuts } = useNewtabStore();
-  const { searchBookmarks } = useTMarksSync();
+  const { searchBookmarks, recordBookmarkClick } = useTMarksSync();
 
   const engineConfig = SEARCH_ENGINES.find((e) => e.id === engine) || SEARCH_ENGINES[0];
 
@@ -123,6 +123,10 @@ export function SearchBar({ engine, enableSuggestions = true, onEngineChange }: 
   }, [query, engineConfig]);
 
   const handleSelect = (result: SearchResult) => {
+    // 如果是书签，记录点击次数
+    if (result.source === 'bookmark') {
+      recordBookmarkClick(result.id);
+    }
     window.location.href = result.url;
   };
 
@@ -181,7 +185,7 @@ export function SearchBar({ engine, enableSuggestions = true, onEngineChange }: 
         {/* 书签搜索模式切换按钮 */}
         <button
           onClick={() => setBookmarkMode(!bookmarkMode)}
-          className={`p-2 rounded-full transition-all ${
+          className={`p-2 rounded-full transition-all active:scale-90 ${
             bookmarkMode
               ? 'bg-blue-500/30 text-blue-400'
               : 'text-white/40 hover:text-white/70 hover:bg-white/10'

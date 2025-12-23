@@ -69,6 +69,20 @@ export const DEFAULT_SETTINGS: NewTabSettings = {
   showLunar: true,
   showPoetry: true,
   hotSearchType: 'baidu',
+  enableWorkspaceAiOrganize: true,
+  workspaceAiOrganizeRules: '',
+  workspaceAiOrganizeMaxBookmarks: 300,
+  enableHistoryHeat: false,
+  historyDays: 30,
+  historyHeatTopN: 20,
+  workspaceAiOrganizeStrictHierarchy: false,
+  workspaceAiOrganizeAllowNewFolders: true,
+  workspaceAiOrganizePreferOriginalPaths: true,
+  workspaceAiOrganizeVerboseLogs: true,
+  workspaceAiOrganizeTopLevelCount: 5,
+  enableWorkspaceAiOrganizeCustomPrompt: false,
+  workspaceAiOrganizePrompt: '',
+  showEditGuide: true,
 };
 
 // 热搜类型配置
@@ -105,7 +119,7 @@ export const STORAGE_KEY = 'newtab';
 export const BING_WALLPAPER_API = 'https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1';
 
 // 默认 Favicon 获取 URL
-export const FAVICON_API = 'https://www.google.com/s2/favicons?domain=';
+export const FAVICON_API = 'https://icon.ooo/';
 
 // 默认快捷方式分组（只保留一个默认分组，用户自行添加）
 export const DEFAULT_GROUPS: ShortcutGroup[] = [

@@ -25,6 +25,7 @@ import {
   Settings,
 } from 'lucide-react';
 import { useNewtabStore } from '../hooks/useNewtabStore';
+import { ConfirmModal } from './ui/ConfirmModal';
 import { GROUP_ICONS } from '../constants';
 import { StorageService } from '@/lib/utils/storage';
 import { getTMarksUrls } from '@/lib/constants/urls';
@@ -64,6 +65,7 @@ export function GroupSidebar({ onOpenSettings }: GroupSidebarProps) {
   const [selectedIcon, setSelectedIcon] = useState('Folder');
   const [tmarksUrl, setTmarksUrl] = useState('');
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
+  const [deleteGroupId, setDeleteGroupId] = useState<string | null>(null);
 
   // 加载用户配置的 TMarks URL
   useEffect(() => {
@@ -91,8 +93,13 @@ export function GroupSidebar({ onOpenSettings }: GroupSidebarProps) {
   const handleRemoveGroup = (e: React.MouseEvent, groupId: string) => {
     e.stopPropagation();
     e.preventDefault();
-    if (confirm('删除分组后，该分组的快捷方式将移到"首页"。确定删除？')) {
-      removeGroup(groupId);
+    setDeleteGroupId(groupId);
+  };
+
+  const confirmRemoveGroup = () => {
+    if (deleteGroupId) {
+      removeGroup(deleteGroupId);
+      setDeleteGroupId(null);
     }
   };
 
@@ -104,20 +111,24 @@ export function GroupSidebar({ onOpenSettings }: GroupSidebarProps) {
         const canDelete = group.id !== 'home';
         const IconComponent = getIconComponent(group.icon);
         return (
-          <button
+          <div
             key={group.id}
-            onClick={() => setActiveGroup(group.id)}
+            className="relative"
             onMouseEnter={() => setHoveredGroup(group.id)}
             onMouseLeave={() => setHoveredGroup(null)}
-            onContextMenu={(e) => handleRemoveGroup(e, group.id)}
-            className={`relative w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
-              activeGroupId === group.id
-                ? 'bg-white/20 text-white'
-                : 'text-white/50 hover:text-white/80 hover:bg-white/10'
-            }`}
-            title={group.name}
           >
-            <IconComponent className="w-4 h-4" />
+            <button
+              onClick={() => setActiveGroup(group.id)}
+              data-group-id={group.id}
+              className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all active:scale-90 ${
+                activeGroupId === group.id
+                  ? 'bg-white/20 text-white'
+                  : 'text-white/50 hover:text-white/80 hover:bg-white/10'
+              }`}
+              title={group.name}
+            >
+              <IconComponent className="w-4 h-4" />
+            </button>
             {hoveredGroup === group.id && (
               <div className="absolute left-full ml-2 px-2 py-1 rounded-lg bg-black/80 text-white text-xs whitespace-nowrap z-50 flex items-center gap-2">
                 {group.name}
@@ -129,7 +140,7 @@ export function GroupSidebar({ onOpenSettings }: GroupSidebarProps) {
                 )}
               </div>
             )}
-          </button>
+          </div>
         );
       })}
 
@@ -142,7 +153,7 @@ export function GroupSidebar({ onOpenSettings }: GroupSidebarProps) {
           onClick={() => setShowAddMenu(!showAddMenu)}
           onMouseEnter={() => setHoveredGroup('add')}
           onMouseLeave={() => setHoveredGroup(null)}
-          className="relative w-10 h-10 rounded-xl flex items-center justify-center text-white/50 hover:text-white/80 hover:bg-white/10 transition-all"
+          className="relative w-11 h-11 rounded-xl flex items-center justify-center text-white/50 hover:text-white/80 hover:bg-white/10 transition-all active:scale-90"
           title="新建分组"
         >
           <Plus className="w-4 h-4" />
@@ -220,7 +231,7 @@ export function GroupSidebar({ onOpenSettings }: GroupSidebarProps) {
           onClick={() => window.open(tmarksUrl, '_blank')}
           onMouseEnter={() => setHoveredGroup('tmarks')}
           onMouseLeave={() => setHoveredGroup(null)}
-          className="relative w-10 h-10 rounded-xl flex items-center justify-center text-white/50 hover:text-white/80 hover:bg-white/10 transition-all"
+          className="relative w-11 h-11 rounded-xl flex items-center justify-center text-white/50 hover:text-white/80 hover:bg-white/10 transition-all"
           title="TMarks 书签"
         >
           <BookMarked className="w-4 h-4" />
@@ -240,7 +251,7 @@ export function GroupSidebar({ onOpenSettings }: GroupSidebarProps) {
         onClick={onOpenSettings}
         onMouseEnter={() => setHoveredGroup('settings')}
         onMouseLeave={() => setHoveredGroup(null)}
-        className="relative w-10 h-10 rounded-xl flex items-center justify-center text-white/50 hover:text-white/80 hover:bg-white/10 transition-all"
+        className="relative w-11 h-11 rounded-xl flex items-center justify-center text-white/50 hover:text-white/80 hover:bg-white/10 transition-all"
         title="设置"
       >
         <Settings className="w-4 h-4" />
@@ -250,6 +261,24 @@ export function GroupSidebar({ onOpenSettings }: GroupSidebarProps) {
           </div>
         )}
       </button>
+
+      {/* 删除分组确认弹窗 */}
+      <ConfirmModal
+        isOpen={!!deleteGroupId}
+        title="删除分组"
+        message={(() => {
+          const group = shortcutGroups.find((g) => g.id === deleteGroupId);
+          if (group?.bookmarkFolderId) {
+            return "删除分组后，该分组的所有内容将被一并删除。确定删除？";
+          }
+          return "删除分组后，该分组的快捷方式将移到「首页」。确定删除？";
+        })()}
+        confirmText="删除"
+        cancelText="取消"
+        confirmVariant="danger"
+        onConfirm={confirmRemoveGroup}
+        onCancel={() => setDeleteGroupId(null)}
+      />
     </div>
   );
 }

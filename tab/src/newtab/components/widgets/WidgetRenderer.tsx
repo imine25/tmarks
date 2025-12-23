@@ -15,10 +15,12 @@ import { NotesWidget } from './NotesWidget';
 import { HotSearchWidget } from './HotSearchWidget';
 import { PoetryWidget } from './PoetryWidget';
 import { ShortcutWidget } from './ShortcutWidget';
+import { BookmarkFolderWidget } from './BookmarkFolderWidget';
 
 // 组件映射
 const WIDGET_COMPONENTS: Record<string, React.ComponentType<WidgetRendererProps>> = {
   shortcut: ShortcutWidget,
+  bookmarkFolder: BookmarkFolderWidget,
   weather: WeatherWidget,
   clock: ClockWidget,
   todo: TodoWidget,
@@ -32,6 +34,11 @@ interface Props {
   onUpdate?: (id: string, updates: Partial<GridItem>) => void;
   onRemove?: (id: string) => void;
   isEditing?: boolean;
+  onOpenFolder?: (folderId: string) => void;
+  isBatchMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (id: string) => void;
+  shortcutStyle?: 'icon' | 'card';
 }
 
 export const WidgetRenderer = memo(function WidgetRenderer({
@@ -39,6 +46,11 @@ export const WidgetRenderer = memo(function WidgetRenderer({
   onUpdate,
   onRemove,
   isEditing = false,
+  onOpenFolder,
+  isBatchMode,
+  isSelected,
+  onToggleSelect,
+  shortcutStyle,
 }: Props) {
   const Component = WIDGET_COMPONENTS[item.type];
   const { cols, rows } = getSizeSpan(item.size);
@@ -64,6 +76,11 @@ export const WidgetRenderer = memo(function WidgetRenderer({
         onUpdate={onUpdate}
         onRemove={onRemove}
         isEditing={isEditing}
+        onOpenFolder={onOpenFolder}
+        isBatchMode={isBatchMode}
+        isSelected={isSelected}
+        onToggleSelect={onToggleSelect}
+        shortcutStyle={shortcutStyle}
       />
     </div>
   );

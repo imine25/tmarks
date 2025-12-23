@@ -1,3 +1,8 @@
+/**
+ * Background service worker for Chrome Extension
+ * 主入口文件 - 负责消息监听和事件处理
+ */
+
 import { cacheManager } from '@/lib/services/cache-manager';
 import { tagRecommender } from '@/lib/services/tag-recommender';
 import { bookmarkService } from '@/lib/services/bookmark-service';
@@ -6,22 +11,47 @@ import { syncPendingTabGroups } from '@/lib/services/tab-collection';
 import { StorageService } from '@/lib/utils/storage';
 import type { Message, MessageResponse } from '@/types';
 
-/**
- * Background service worker for Chrome Extension
- */
+import {
+  ensureNewtabWorkspaceFolders,
+  handleBookmarkNodeRemoved,
+  handleBookmarkNodeMoved,
+} from './services/newtab-folder';
+import { reportAiOrganizeProgress } from './services/progress-reporter';
+import { handleExtractPageInfo } from './handlers/page-info';
+import {
+  handleSaveToNewtab,
+  handleImportAllBookmarksToNewtab,
+  handleGetNewtabFolders,
+} from './handlers/newtab-folders';
+import { handleRecommendNewtabFolder } from './handlers/ai-recommend';
+import { handleAiOrganizeNewtabWorkspace } from './handlers/ai-organize';
+
+// 确保 Service Worker 启动时就检查一次
+ensureNewtabWorkspaceFolders().catch(() => {});
 
 // Preload AI context
-tagRecommender.preloadContext().catch(() => {
-  // Silently fail - AI features will work on-demand
-});
+tagRecommender.preloadContext().catch(() => {});
 
 // Initialize on install
 chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason === 'install') {
-    // First time install - maybe show welcome page
+    // First time install
   } else if (details.reason === 'update') {
     // Extension updated
   }
+  ensureNewtabWorkspaceFolders().catch(() => {});
+});
+
+chrome.runtime.onStartup.addListener(() => {
+  ensureNewtabWorkspaceFolders().catch(() => {});
+});
+
+chrome.bookmarks.onRemoved.addListener((id) => {
+  handleBookmarkNodeRemoved(id).catch(() => {});
+});
+
+chrome.bookmarks.onMoved.addListener((id) => {
+  handleBookmarkNodeMoved(id).catch(() => {});
 });
 
 // Auto-sync cache periodically
@@ -29,11 +59,9 @@ function getMsUntilNextDailySync(): number {
   const now = new Date();
   const target = new Date(now);
   target.setHours(23, 0, 0, 0);
-
   if (target <= now) {
     target.setDate(target.getDate() + 1);
   }
-
   return target.getTime() - now.getTime();
 }
 
@@ -43,27 +71,23 @@ async function runAutoSync() {
     if (!config.preferences.autoSync) {
       return;
     }
-
     await cacheManager.autoSync(config.preferences.syncInterval);
-  } catch (error) {
-    // Silently fail - will retry on next schedule
+  } catch {
+    // Silently fail
   }
 }
 
 async function startAutoSync() {
   const scheduleNext = () => {
     const delay = getMsUntilNextDailySync();
-
     setTimeout(async () => {
       await runAutoSync();
       scheduleNext();
     }, delay);
   };
-
   scheduleNext();
 }
 
-// Start auto-sync
 startAutoSync().catch(() => {});
 
 // Sync pending bookmarks on startup
@@ -76,7 +100,7 @@ bookmarkService.syncPendingBookmarks().catch(() => {});
     if (config.bookmarkSite.apiKey) {
       await syncPendingTabGroups(config.bookmarkSite);
     }
-  } catch (error) {
+  } catch {
     // Silently fail
   }
 })();
@@ -85,78 +109,64 @@ bookmarkService.syncPendingBookmarks().catch(() => {});
 async function refreshPinnedBookmarksCache() {
   try {
     console.log('[Background] 开始刷新置顶书签缓存');
-    
-    // 清除缓存
     await chrome.storage.local.remove('tmarks_pinned_bookmarks_cache');
-    
-    // 通知所有 NewTab 页面刷新
-    await chrome.runtime.sendMessage({
-      type: 'REFRESH_PINNED_BOOKMARKS',
-      payload: { timestamp: Date.now(), source: 'scheduled' }
-    }).catch(() => {
-      // 如果没有页面在监听，忽略错误
-    });
-    
+    await chrome.runtime
+      .sendMessage({
+        type: 'REFRESH_PINNED_BOOKMARKS',
+        payload: { timestamp: Date.now(), source: 'scheduled' },
+      })
+      .catch(() => {});
     console.log('[Background] 置顶书签缓存刷新完成');
   } catch (error) {
     console.error('[Background] 刷新置顶书签缓存失败:', error);
   }
 }
 
-// 计算到下次刷新的毫秒数
 function getMsUntilNextRefresh(refreshTime: 'morning' | 'evening'): number {
   const now = new Date();
   const target = new Date(now);
-  
-  // 设置目标时间
   if (refreshTime === 'morning') {
-    target.setHours(8, 0, 0, 0); // 早上 8:00
+    target.setHours(8, 0, 0, 0);
   } else {
-    target.setHours(22, 0, 0, 0); // 晚上 22:00
+    target.setHours(22, 0, 0, 0);
   }
-  
-  // 如果目标时间已过，设置为明天
   if (target <= now) {
     target.setDate(target.getDate() + 1);
   }
-  
   return target.getTime() - now.getTime();
 }
 
-// 启动定时刷新
 async function startPinnedBookmarksAutoRefresh() {
   const scheduleNext = async () => {
     try {
-      // 读取 NewTab 设置
       const result = await chrome.storage.local.get('newtab');
       const newtabData = result.newtab as any;
-      
       if (!newtabData?.settings?.autoRefreshPinnedBookmarks) {
-        // 如果未启用自动刷新，1小时后再检查
         setTimeout(scheduleNext, 60 * 60 * 1000);
         return;
       }
-      
       const refreshTime = newtabData.settings.pinnedBookmarksRefreshTime || 'morning';
       const delay = getMsUntilNextRefresh(refreshTime);
-      
-      console.log(`[Background] 下次置顶书签刷新时间: ${refreshTime === 'morning' ? '早上 8:00' : '晚上 22:00'}, 距离: ${Math.round(delay / 1000 / 60)} 分钟`);
-      
+      console.log(
+        `[Background] 下次置顶书签刷新时间: ${refreshTime === 'morning' ? '早上 8:00' : '晚上 22:00'}, 距离: ${Math.round(delay / 1000 / 60)} 分钟`
+      );
       setTimeout(async () => {
         await refreshPinnedBookmarksCache();
         scheduleNext();
       }, delay);
-    } catch (error) {
-      // 出错后1小时重试
+    } catch {
       setTimeout(scheduleNext, 60 * 60 * 1000);
     }
   };
-  
   scheduleNext();
 }
 
-// 启动定时刷新
 startPinnedBookmarksAutoRefresh().catch(() => {});
+
+console.log('[BG] init', {
+  runtimeId: chrome.runtime.id,
+  loadedAt: new Date().toISOString(),
+});
 
 // Handle messages from popup/content scripts
 chrome.runtime.onMessage.addListener(
@@ -165,17 +175,26 @@ chrome.runtime.onMessage.addListener(
     sender: chrome.runtime.MessageSender,
     sendResponse: (response: MessageResponse) => void
   ) => {
-    // Handle async operations
+    try {
+      console.log('[BG] onMessage', {
+        runtimeId: chrome.runtime.id,
+        senderId: sender?.id,
+        senderUrl: sender?.url,
+        rawType: (message as any)?.type,
+      });
+    } catch {
+      // ignore
+    }
+
     handleMessage(message, sender)
-      .then(response => sendResponse(response))
-      .catch(error => {
+      .then((response) => sendResponse(response))
+      .catch((error) => {
         sendResponse({
           success: false,
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: error instanceof Error ? error.message : 'Unknown error',
         });
       });
 
-    // Return true to indicate async response
     return true;
   }
 );
@@ -185,341 +204,181 @@ chrome.runtime.onMessage.addListener(
  */
 async function handleMessage(
   message: Message,
-  _sender: chrome.runtime.MessageSender
+  sender: chrome.runtime.MessageSender
 ): Promise<MessageResponse> {
-  switch (message.type) {
-    case 'EXTRACT_PAGE_INFO': {
-      // 获取当前活动标签页
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const type = String((message as any)?.type ?? '')
+    .trim()
+    .toUpperCase();
 
-      if (!tab || !tab.id) {
-        throw new Error('No active tab found');
-      }
+  switch (type) {
+    case 'AI_ORGANIZE_PROGRESS':
+      return { success: true, data: {} };
 
-      // 检查URL是否可访问（排除chrome://等特殊页面）
-      const url = tab.url || '';
-      if (url.startsWith('chrome://') || 
-          url.startsWith('chrome-extension://') || 
-          url.startsWith('edge://') ||
-          url.startsWith('about:') ||
-          !url) {
-        return {
-          success: true,
-          data: {
-            title: tab.title || 'Untitled',
-            url: url,
-            description: '',
-            content: '',
-            thumbnail: ''
-          }
-        };
-      }
-
-      // 辅助函数：带超时的消息发送
-      const sendMessageWithTimeout = async (tabId: number, msg: Message, timeoutMs: number = 3000): Promise<MessageResponse> => {
-        return Promise.race([
-          chrome.tabs.sendMessage(tabId, msg),
-          new Promise<MessageResponse>((_, reject) => 
-            setTimeout(() => reject(new Error('Message timeout')), timeoutMs)
-          )
-        ]);
-      };
-
-      // 辅助函数：获取基本页面信息作为fallback
-      const getBasicPageInfo = async (tabId: number) => {
-        try {
-          const currentTab = await chrome.tabs.get(tabId);
-          return {
-            success: true,
-            data: {
-              title: currentTab.title || 'Untitled',
-              url: currentTab.url || '',
-              description: '',
-              content: '',
-              thumbnail: ''
-            }
-          };
-        } catch (error) {
-          return {
-            success: true,
-            data: {
-              title: 'Untitled',
-              url: url,
-              description: '',
-              content: '',
-              thumbnail: ''
-            }
-          };
-        }
-      };
-
-      // 步骤1: 检测content script是否存活
-      let isContentScriptAlive = false;
-      try {
-        await sendMessageWithTimeout(tab.id, { type: 'PING' }, 1000);
-        isContentScriptAlive = true;
-      } catch (pingError) {
-        // Content script not responding, will try to inject
-      }
-
-      // 步骤2: 如果content script不存在，尝试注入
-      if (!isContentScriptAlive) {
-        try {
-          // 获取manifest中的content script配置
-          const manifest = chrome.runtime.getManifest();
-          const contentScripts = manifest.content_scripts?.[0];
-          
-          if (!contentScripts || !contentScripts.js || contentScripts.js.length === 0) {
-            return await getBasicPageInfo(tab.id);
-          }
-
-          const scriptPath = contentScripts.js[0];
-          
-          // 注入content script
-          await chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            files: [scriptPath]
-          });
-
-          // 等待脚本初始化，并验证注入是否成功
-          await new Promise(resolve => setTimeout(resolve, 300));
-          
-          // 验证注入是否成功
-          try {
-            await sendMessageWithTimeout(tab.id, { type: 'PING' }, 1000);
-            isContentScriptAlive = true;
-          } catch (verifyError) {
-            return await getBasicPageInfo(tab.id);
-          }
-        } catch (injectError) {
-          return await getBasicPageInfo(tab.id);
-        }
-      }
-
-      // 步骤3: 发送实际的提取请求
-      if (isContentScriptAlive) {
-        try {
-          const response = await sendMessageWithTimeout(tab.id, message, 5000);
-          
-          // 验证响应数据的完整性
-          if (response.success && response.data) {
-            return response;
-          } else {
-            return await getBasicPageInfo(tab.id);
-          }
-        } catch (extractError) {
-          return await getBasicPageInfo(tab.id);
-        }
-      }
-
-      // 步骤4: 最终fallback
-      return await getBasicPageInfo(tab.id);
-    }
+    case 'EXTRACT_PAGE_INFO':
+      return handleExtractPageInfo(message);
 
     case 'RECOMMEND_TAGS': {
       const pageInfo = message.payload;
       const result = await tagRecommender.recommendTags(pageInfo);
-
-      return {
-        success: true,
-        data: result
-      };
+      return { success: true, data: result };
     }
 
     case 'SAVE_BOOKMARK': {
-      try {
-        const bookmark = message.payload;
-        const result = await bookmarkService.saveBookmark(bookmark);
+      const bookmark = message.payload;
+      const result = await bookmarkService.saveBookmark(bookmark);
+      return { success: true, data: result };
+    }
 
-        return {
-          success: true,
-          data: result
-        };
+    case 'AI_ORGANIZE_NEWTAB_WORKSPACE': {
+      try {
+        return await handleAiOrganizeNewtabWorkspace(message);
       } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : 'Failed to save bookmark'
-        };
+        const rawMsg = error instanceof Error ? error.message : 'Failed to organize';
+        const msg = (() => {
+          const m = String(rawMsg || '');
+          if (m.includes('429') || m.includes('rate_limit_exceeded')) {
+            return 'AI 服务当前拥塞/触发限流（429）。请稍后重试，或切换到其他模型/供应商。';
+          }
+          return rawMsg;
+        })();
+        try {
+          const payload = (message.payload || {}) as { sessionId?: string };
+          const sessionId =
+            typeof payload.sessionId === 'string' && payload.sessionId.trim()
+              ? payload.sessionId.trim()
+              : String(Date.now());
+          await reportAiOrganizeProgress({
+            sessionId,
+            level: 'error',
+            step: 'fatal',
+            message: msg,
+            detail: {
+              rawMessage: rawMsg,
+              stack: error instanceof Error ? error.stack : undefined,
+            },
+          });
+        } catch {
+          // ignore
+        }
+        return { success: false, error: msg };
       }
     }
+
+    case 'SAVE_TO_NEWTAB':
+      return handleSaveToNewtab(message);
+
+    case 'IMPORT_ALL_BOOKMARKS_TO_NEWTAB':
+      return handleImportAllBookmarksToNewtab();
+
+    case 'GET_NEWTAB_FOLDER':
+    case 'GET_NEWTAB_FOLDERS':
+      return handleGetNewtabFolders();
+
+    case 'RECOMMEND_NEWTAB_FOLDER':
+      return handleRecommendNewtabFolder(message, sender);
 
     case 'SYNC_CACHE': {
       const result = await cacheManager.fullSync();
-
-      return {
-        success: result.success,
-        data: result,
-        error: result.error
-      };
+      return { success: result.success, data: result, error: result.error };
     }
 
     case 'GET_EXISTING_TAGS': {
-      try {
-        const tags = await bookmarkAPI.getTags();
-        return {
-          success: true,
-          data: tags
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : 'Failed to load tags'
-        };
-      }
+      const tags = await bookmarkAPI.getTags();
+      return { success: true, data: tags };
     }
 
     case 'UPDATE_BOOKMARK_TAGS': {
-      try {
-        const { bookmarkId, tags } = message.payload;
-        
-        // 调用 API 更新标签
-        await bookmarkAPI.updateBookmarkTags(bookmarkId, tags);
-
-        return {
-          success: true,
-          data: { message: 'Tags updated successfully' }
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : 'Failed to update tags'
-        };
-      }
+      const { bookmarkId, tags } = message.payload;
+      await bookmarkAPI.updateBookmarkTags(bookmarkId, tags);
+      return { success: true, data: { message: 'Tags updated successfully' } };
     }
 
     case 'UPDATE_BOOKMARK_DESCRIPTION': {
-      try {
-        const { bookmarkId, description } = message.payload;
-        
-        // 调用 API 更新描述
-        await bookmarkAPI.updateBookmarkDescription(bookmarkId, description);
-
-        return {
-          success: true,
-          data: { message: 'Description updated successfully' }
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : 'Failed to update description'
-        };
-      }
+      const { bookmarkId, description } = message.payload;
+      await bookmarkAPI.updateBookmarkDescription(bookmarkId, description);
+      return { success: true, data: { message: 'Description updated successfully' } };
     }
 
     case 'REFRESH_PINNED_BOOKMARKS': {
-      try {
-        // 广播消息到所有 NewTab 页面，让它们刷新置顶书签
-        const tabs = await chrome.tabs.query({ url: chrome.runtime.getURL('src/newtab/index.html') });
-        
-        for (const tab of tabs) {
-          if (tab.id) {
-            chrome.tabs.sendMessage(tab.id, {
+      const tabs = await chrome.tabs.query({
+        url: chrome.runtime.getURL('src/newtab/index.html'),
+      });
+      for (const tab of tabs) {
+        if (tab.id) {
+          chrome.tabs
+            .sendMessage(tab.id, {
               type: 'REFRESH_PINNED_BOOKMARKS',
-              payload: message.payload
-            }).catch(() => {
-              // 忽略错误，页面可能已关闭
-            });
-          }
+              payload: message.payload,
+            })
+            .catch(() => {});
         }
-
-        return {
-          success: true,
-          data: { message: 'Pinned bookmarks refresh triggered' }
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : 'Failed to refresh pinned bookmarks'
-        };
       }
+      return { success: true, data: { message: 'Pinned bookmarks refresh triggered' } };
     }
 
     case 'CREATE_SNAPSHOT': {
-      try {
-        const { bookmarkId, title, url } = message.payload;
-        
-        // Get the current tab
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (!tab || !tab.id) {
-          throw new Error('No active tab found');
-        }
-
-        // Capture page using V2 method (separate images)
-        let captureResult: { html: string; images: any[] };
-        try {
-          const capturePromise = chrome.tabs.sendMessage(tab.id, {
-            type: 'CAPTURE_PAGE_V2',
-            options: {
-              inlineCSS: true,
-              extractImages: true,
-              inlineFonts: false,
-              removeScripts: true,
-              removeHiddenElements: false,
-              maxImageSize: 100 * 1024 * 1024, // 提高到 100MB
-              timeout: 30000
-            }
-          });
-          
-          const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Capture timeout')), 35000);
-          });
-          
-          const response = await Promise.race([capturePromise, timeoutPromise]) as any;
-          
-          if (response.success) {
-            captureResult = response.data;
-          } else {
-            throw new Error(response.error || 'Capture failed');
-          }
-        } catch (error) {
-          throw error;
-        }
-        
-        // Prepare images for upload
-        const images = captureResult.images.map((img: any) => ({
-          hash: img.hash,
-          data: img.data, // base64
-          type: img.type,
-        }));
-
-        // Create snapshot via V2 API
-        await bookmarkAPI.createSnapshotV2(bookmarkId, {
-          html_content: captureResult.html,
-          title,
-          url,
-          images,
-        });
-
-        return {
-          success: true,
-          data: { 
-            message: 'Snapshot created successfully (V2)',
-            imageCount: images.length,
-          }
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : 'Failed to create snapshot'
-        };
+      const { bookmarkId, title, url } = message.payload;
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab || !tab.id) {
+        throw new Error('No active tab found');
       }
+
+      const capturePromise = chrome.tabs.sendMessage(tab.id, {
+        type: 'CAPTURE_PAGE_V2',
+        options: {
+          inlineCSS: true,
+          extractImages: true,
+          inlineFonts: false,
+          removeScripts: true,
+          removeHiddenElements: false,
+          maxImageSize: 100 * 1024 * 1024,
+          timeout: 30000,
+        },
+      });
+
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Capture timeout')), 35000);
+      });
+
+      const response = (await Promise.race([capturePromise, timeoutPromise])) as any;
+
+      if (!response.success) {
+        throw new Error(response.error || 'Capture failed');
+      }
+
+      const captureResult = response.data as { html: string; images: any[] };
+      const images = captureResult.images.map((img: any) => ({
+        hash: img.hash,
+        data: img.data,
+        type: img.type,
+      }));
+
+      await bookmarkAPI.createSnapshotV2(bookmarkId, {
+        html_content: captureResult.html,
+        title,
+        url,
+        images,
+      });
+
+      return {
+        success: true,
+        data: { message: 'Snapshot created successfully (V2)', imageCount: images.length },
+      };
     }
 
     case 'GET_CONFIG': {
       const config = await StorageService.loadConfig();
-
-      return {
-        success: true,
-        data: config
-      };
+      return { success: true, data: config };
     }
 
     default:
-      throw new Error(`Unknown message type: ${message.type}`);
+      throw new Error(
+        `Unknown message type: ${type || '(empty)'} (runtimeId=${chrome.runtime.id})`
+      );
   }
 }
 
-// Handle extension icon click (optional)
+// Handle extension icon click
 chrome.action.onClicked.addListener(async () => {
   // The popup will open automatically due to manifest.json configuration
 });

@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect, memo } from 'react';
-import { Cloud, CloudRain, CloudSnow, Sun, Wind, Droplets, Eye, X, MapPin, RefreshCw } from 'lucide-react';
+import { Cloud, CloudRain, CloudSnow, Sun, Wind, Droplets, Eye, MapPin, RefreshCw } from 'lucide-react';
 import type { WidgetRendererProps } from './types';
 import { getSizeSpan } from './widgetRegistry';
 
@@ -60,8 +60,8 @@ function getWeatherIcon(condition: string) {
 export const WeatherWidget = memo(function WeatherWidget({
   item,
   onUpdate,
-  onRemove,
-  isEditing,
+  onRemove: _onRemove,
+  isEditing: _isEditing,
 }: WidgetRendererProps) {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -160,16 +160,6 @@ export const WeatherWidget = memo(function WeatherWidget({
 
   return (
     <div className="group relative h-full p-3 rounded-xl glass-card flex flex-col">
-      {isEditing && onRemove && (
-        <button
-          onClick={() => onRemove(item.id)}
-          className="absolute -top-1 -right-1 p-1 rounded-full bg-red-500 text-white 
-                     opacity-0 group-hover:opacity-100 transition-opacity z-10"
-        >
-          <X className="w-3 h-3" />
-        </button>
-      )}
-
       {/* 标题栏 */}
       <div className="flex items-center justify-between mb-2">
         <button

@@ -63,7 +63,7 @@ export function ShortcutContextMenu({ x, y, items, onClose }: ShortcutContextMen
   return createPortal(
     <div
       ref={menuRef}
-      className="fixed z-[9999] min-w-[180px] rounded-lg glass-dark border border-white/10 shadow-xl py-1 animate-fadeIn"
+      className="fixed z-[9999] min-w-[180px] rounded-2xl glass-dark border border-white/10 shadow-xl py-2 animate-fadeIn overflow-hidden"
       style={{ left: x, top: y }}
     >
       {items.map((item, index) => (

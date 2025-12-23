@@ -19,4 +19,9 @@ export interface WidgetRendererProps {
   onUpdate?: (id: string, updates: Partial<GridItem>) => void;
   onRemove?: (id: string) => void;
   isEditing?: boolean;
+  onOpenFolder?: (folderId: string) => void;
+  isBatchMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (id: string) => void;
+  shortcutStyle?: 'icon' | 'card';
 }

@@ -88,7 +88,7 @@ export async function downloadFavicon(url: string, maxSizeKB: number = 10): Prom
   try {
     const domain = new URL(url).hostname;
     // 使用较小的尺寸以减少存储空间
-    const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+    const faviconUrl = `https://icon.ooo/${domain}?size=32&v=${Date.now()}`;
     
     const response = await fetch(faviconUrl);
     if (!response.ok) return null;
@@ -117,16 +117,33 @@ export function getFaviconUrl(shortcut: { url: string; favicon?: string; favicon
   if (shortcut.faviconBase64) {
     return shortcut.faviconBase64;
   }
-  
-  // 2. 使用在线 favicon URL
+
   if (shortcut.favicon) {
-    return shortcut.favicon;
+    if (!(shortcut.favicon.includes('icon.ooo') && shortcut.favicon.includes('&sz='))) {
+      return shortcut.favicon;
+    }
   }
-  
-  // 3. 生成默认的 Google favicon API URL
+
   try {
-    const domain = new URL(shortcut.url).hostname;
-    return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+    const url = new URL(shortcut.url);
+
+    const ua = typeof navigator !== 'undefined' ? navigator.userAgent.toLowerCase() : '';
+    const isFirefox = ua.includes('firefox');
+    const isChromium =
+      !isFirefox &&
+      typeof globalThis !== 'undefined' &&
+      typeof (globalThis as any).chrome !== 'undefined' &&
+      !!(globalThis as any).chrome?.runtime?.id;
+
+    const href = typeof location !== 'undefined' ? location.href : '';
+    const isNewtabPage = href.includes('/src/newtab/') || href.includes('/newtab/');
+
+    if (isChromium && isNewtabPage) {
+      return `chrome://favicon2/?size=64&page_url=${encodeURIComponent(url.href)}`;
+    }
+
+    const domain = url.hostname;
+    return `https://icon.ooo/${domain}?size=64&v=1`;
   } catch {
     return '';
   }

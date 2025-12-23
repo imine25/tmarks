@@ -45,7 +45,7 @@ export function SearchEngineSelector({ current, onChange }: SearchEngineSelector
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+        className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-white/20"
       >
         <EngineIcon icon={currentEngine.icon} name={currentEngine.name} />
         <ChevronDown className={`w-3 h-3 text-white/60 transition-transform ${isOpen ? 'rotate-180' : ''}`} />

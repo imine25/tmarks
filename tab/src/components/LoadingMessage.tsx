@@ -4,12 +4,12 @@ interface LoadingMessageProps {
 
 export function LoadingMessage({ message }: LoadingMessageProps) {
   return (
-    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 shadow-lg animate-in slide-in-from-top-5 fade-in duration-300">
+    <div className="bg-[color:var(--tab-message-info-bg)] border border-[color:var(--tab-message-info-border)] rounded-lg p-3 shadow-lg animate-in slide-in-from-top-5 fade-in duration-300 text-[var(--tab-message-info-icon)]">
       <div className="flex items-start gap-3">
-        <div className="bg-blue-100 dark:bg-blue-900/30 rounded-full p-1.5 flex-shrink-0">
+        <div className="bg-[color:var(--tab-message-info-icon-bg)] rounded-full p-1.5 flex-shrink-0">
           {/* Spinning loader icon */}
           <svg
-            className="w-5 h-5 text-blue-600 dark:text-blue-400 animate-spin"
+            className="w-5 h-5 text-[var(--tab-message-info-icon)] animate-spin"
             fill="none"
             viewBox="0 0 24 24"
           >
@@ -29,14 +29,14 @@ export function LoadingMessage({ message }: LoadingMessageProps) {
           </svg>
         </div>
         <div className="flex-1 pt-0.5">
-          <p className="text-sm font-medium text-gray-900 dark:text-white">
+          <p className="text-sm font-medium">
             {message}
           </p>
           {/* Progress dots animation */}
           <div className="flex gap-1 mt-2">
-            <span className="w-1.5 h-1.5 bg-blue-600 dark:bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-            <span className="w-1.5 h-1.5 bg-blue-600 dark:bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-            <span className="w-1.5 h-1.5 bg-blue-600 dark:bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            <span className="w-1.5 h-1.5 bg-[var(--tab-message-info-icon)] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+            <span className="w-1.5 h-1.5 bg-[var(--tab-message-info-icon)] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+            <span className="w-1.5 h-1.5 bg-[var(--tab-message-info-icon)] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
           </div>
         </div>
       </div>

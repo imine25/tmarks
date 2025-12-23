@@ -3,15 +3,15 @@
  */
 
 import { useState, useEffect, useRef, memo } from 'react';
-import { StickyNote, X } from 'lucide-react';
+import { StickyNote } from 'lucide-react';
 import type { WidgetRendererProps } from './types';
 
 const NOTES_STORAGE_KEY = 'newtab_notes';
 
 export const NotesWidget = memo(function NotesWidget({
-  item,
-  onRemove,
-  isEditing,
+  item: _item,
+  onRemove: _onRemove,
+  isEditing: _isEditing,
 }: WidgetRendererProps) {
   const [content, setContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -47,16 +47,6 @@ export const NotesWidget = memo(function NotesWidget({
 
   return (
     <div className="group relative h-full p-3 rounded-xl glass-card flex flex-col">
-      {isEditing && onRemove && (
-        <button
-          onClick={() => onRemove(item.id)}
-          className="absolute -top-1 -right-1 p-1 rounded-full bg-red-500 text-white 
-                     opacity-0 group-hover:opacity-100 transition-opacity z-10"
-        >
-          <X className="w-3 h-3" />
-        </button>
-      )}
-
       {/* 标题栏 */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2 text-white/80">

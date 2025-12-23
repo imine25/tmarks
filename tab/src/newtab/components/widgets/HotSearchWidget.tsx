@@ -3,7 +3,8 @@
  */
 
 import { useState, useEffect, memo } from 'react';
-import { Flame, ChevronDown, RefreshCw, ExternalLink, X } from 'lucide-react';
+import { Flame, ChevronDown, RefreshCw, ExternalLink } from 'lucide-react';
+import { EmptyState } from '../ui/EmptyState';
 import { HOT_SEARCH_TYPES } from '../../constants';
 import type { HotSearchItem, HotSearchType } from '../../types';
 import type { WidgetRendererProps } from './types';
@@ -22,8 +23,8 @@ const HOT_SEARCH_APIS: Record<HotSearchType, string> = {
 export const HotSearchWidget = memo(function HotSearchWidget({
   item,
   onUpdate,
-  onRemove,
-  isEditing,
+  onRemove: _onRemove,
+  isEditing: _isEditing,
 }: WidgetRendererProps) {
   const [items, setItems] = useState<HotSearchItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -89,16 +90,6 @@ export const HotSearchWidget = memo(function HotSearchWidget({
 
   return (
     <div className="group relative h-full p-3 rounded-xl glass-card flex flex-col">
-      {isEditing && onRemove && (
-        <button
-          onClick={() => onRemove(item.id)}
-          className="absolute -top-1 -right-1 p-1 rounded-full bg-red-500 text-white 
-                     opacity-0 group-hover:opacity-100 transition-opacity z-10"
-        >
-          <X className="w-3 h-3" />
-        </button>
-      )}
-
       {/* 标题栏 */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
@@ -147,9 +138,11 @@ export const HotSearchWidget = memo(function HotSearchWidget({
       {/* 热搜列表 */}
       <div className="flex-1 space-y-0.5 overflow-y-auto">
         {items.length === 0 ? (
-          <div className="text-center text-white/40 text-sm py-4">
-            {loading ? '加载中...' : '暂无数据'}
-          </div>
+          loading ? (
+            <div className="text-center text-white/40 text-sm py-4">加载中...</div>
+          ) : (
+            <EmptyState type="hotsearch" />
+          )
         ) : (
           items.slice(0, maxItems).map((hotItem, index) => (
             <a
