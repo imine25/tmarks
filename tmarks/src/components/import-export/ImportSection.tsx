@@ -2,6 +2,11 @@
  * 导入功能组件
  * 提供书签数据导入功能的用户界面
  * 支持 AI 智能整理
+ * 
+ * 流程:
+ * 1. upload: 选择格式 → 上传文件 → 验证 → 解析 → 选择是否启用 AI
+ * 2. ai-organize: 输入 API Key → 配置选项 → 执行整理
+ * 3. ai-preview: 预览对比 → 手动调整 → 确认导入
  */
 
 import { useState, useEffect } from 'react'
@@ -13,8 +18,6 @@ import {
   Loader2,
   ArrowRight,
   ArrowLeft,
-  Copy,
-  Check,
   Sparkles
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -33,32 +36,6 @@ import type { OrganizeResult, OrganizedBookmark } from '@/lib/ai/organize'
 interface ImportSectionProps {
   onImport?: (result: ImportResult) => void
 }
-
-// AI 转换提示词
-const HTML_PROMPT = `你是一个书签格式转换专家。请将浏览器导出的 HTML 书签文件清理并标准化为规范的 HTML 格式。
-
-【重要】严格按照以下格式输出，不要添加任何解释或额外内容：
-
-<!DOCTYPE NETSCAPE-Bookmark-file-1>
-<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
-<TITLE>Bookmarks</TITLE>
-<H1>Bookmarks</H1>
-<DL><p>
-    <DT><H3>工作</H3>
-    <DL><p>
-        <DT><A HREF="https://github.com/" TAGS="开发,代码">GitHub</A>
-        <DD>代码托管平台
-    </DL><p>
-</DL><p>
-
-转换规则：
-1. 保留 HTML 书签标准结构
-2. 移除时间戳和 ICON 属性
-3. 保留或添加 TAGS 属性
-4. 标签要简洁（2-5 个字）
-
-我的 HTML 书签文件：
-[在这里粘贴你的 HTML 书签文件内容]`
 
 // 格式选项
 const formatOptions = [
@@ -112,8 +89,6 @@ export function ImportSection({ onImport }: ImportSectionProps) {
     validationResult,
     options,
     setOptions,
-    copiedPrompt,
-    setCopiedPrompt,
     fileInputRef
   } = state
 
@@ -131,7 +106,7 @@ export function ImportSection({ onImport }: ImportSectionProps) {
     onImport
   })
 
-  const { handleFileSelect, handleImport, handleReset, copyPrompt } = actions
+  const { handleFileSelect, handleImport, handleReset } = actions
 
   // 当文件验证通过后，解析书签
   useEffect(() => {
@@ -424,25 +399,32 @@ export function ImportSection({ onImport }: ImportSectionProps) {
         </div>
       </div>
 
-      {/* AI 整理开关 */}
-      {selectedFile && validationResult?.valid && parsedBookmarks.length > 0 && (
-        <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+      {/* AI 整理开关 - 文件验证通过后显示 */}
+      {selectedFile && validationResult?.valid && (
+        <div className={`p-4 rounded-lg border ${enableAiOrganize ? 'bg-primary/10 border-primary' : 'bg-primary/5 border-primary/20'}`}>
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center gap-3">
-              <Sparkles className="w-5 h-5 text-primary" />
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${enableAiOrganize ? 'bg-primary text-primary-foreground' : 'bg-primary/10'}`}>
+                <Sparkles className="w-5 h-5" />
+              </div>
               <div>
-                <div className="text-sm font-medium text-foreground">启用 AI 智能整理</div>
+                <div className="text-sm font-medium text-foreground">✨ 启用 AI 智能整理</div>
                 <div className="text-xs text-muted-foreground">
-                  已解析 {parsedBookmarks.length} 个书签，使用 AI 自动生成标签
+                  {parsedBookmarks.length > 0 
+                    ? `已解析 ${parsedBookmarks.length} 个书签，AI 自动生成标签和描述`
+                    : '解析书签中...'}
                 </div>
               </div>
             </div>
-            <input
-              type="checkbox"
-              checked={enableAiOrganize}
-              onChange={(e) => setEnableAiOrganize(e.target.checked)}
-              className="w-5 h-5 text-primary border-border rounded focus:ring-primary"
-            />
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">{enableAiOrganize ? '已启用' : '未启用'}</span>
+              <input
+                type="checkbox"
+                checked={enableAiOrganize}
+                onChange={(e) => setEnableAiOrganize(e.target.checked)}
+                className="w-5 h-5 text-primary border-border rounded focus:ring-primary"
+              />
+            </div>
           </label>
         </div>
       )}
@@ -453,11 +435,11 @@ export function ImportSection({ onImport }: ImportSectionProps) {
           {enableAiOrganize ? (
             <button
               onClick={() => setCurrentStep('ai-organize')}
-              disabled={!selectedFile || !validationResult?.valid || isImporting || isValidating}
+              disabled={!selectedFile || !validationResult?.valid || isImporting || isValidating || parsedBookmarks.length === 0}
               className="w-full flex items-center justify-center space-x-2 px-4 py-3 sm:py-2 text-sm font-medium text-primary-foreground bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
             >
               <Sparkles className="h-4 w-4" />
-              <span>下一步：AI 整理</span>
+              <span>{parsedBookmarks.length === 0 ? '解析中...' : `下一步：AI 整理 (${parsedBookmarks.length} 个书签)`}</span>
               <ArrowRight className="h-4 w-4" />
             </button>
           ) : (
@@ -474,29 +456,6 @@ export function ImportSection({ onImport }: ImportSectionProps) {
               <span>{isImporting ? '导入中...' : '开始导入'}</span>
             </button>
           )}
-        </div>
-      )}
-
-      {/* 格式转换提示 */}
-      {!importResult && (
-        <div className="bg-muted/30 rounded-lg border border-border p-3">
-          <div className="space-y-2.5">
-            <div className="flex items-center justify-between">
-              <h4 className="text-sm font-medium text-foreground">需要转换格式？</h4>
-              <p className="text-xs text-muted-foreground">使用 AI 工具</p>
-            </div>
-
-            <button
-              onClick={() => copyPrompt(HTML_PROMPT, setCopiedPrompt)}
-              className="w-full flex items-center justify-center space-x-2 p-3 bg-card border border-border rounded-md hover:border-primary/50 hover:bg-muted transition-colors"
-            >
-              <FileText className="h-4 w-4 text-muted-foreground" />
-              <div className="text-sm font-medium text-foreground">复制格式转换提示词</div>
-              <div className="flex items-center space-x-1 text-xs text-primary">
-                {copiedPrompt ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              </div>
-            </button>
-          </div>
         </div>
       )}
     </div>

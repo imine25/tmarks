@@ -184,21 +184,9 @@ export function useImportActions({
     }
   }
 
-  // 复制提示词
-  const copyPrompt = async (prompt: string, setCopiedPrompt: (copied: boolean) => void) => {
-    try {
-      await navigator.clipboard.writeText(prompt)
-      setCopiedPrompt(true)
-      setTimeout(() => setCopiedPrompt(false), 2000)
-    } catch (error) {
-      console.error('Failed to copy:', error)
-    }
-  }
-
   return {
     handleFileSelect,
     handleImport,
     handleReset,
-    copyPrompt,
   }
 }

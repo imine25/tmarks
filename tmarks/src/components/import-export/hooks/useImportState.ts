@@ -32,7 +32,6 @@ export function useImportState() {
     default_tag_color: 'hsl(var(--primary))',
     folder_as_tag: true
   })
-  const [copiedPrompt, setCopiedPrompt] = useState<boolean>(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -53,8 +52,6 @@ export function useImportState() {
     setValidationResult,
     options,
     setOptions,
-    copiedPrompt,
-    setCopiedPrompt,
     fileInputRef,
   }
 }
