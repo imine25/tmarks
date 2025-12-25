@@ -233,6 +233,36 @@ export function ImportSection({ onImport }: ImportSectionProps) {
   // 渲染上传步骤
   const renderUploadStep = () => (
     <div className="space-y-6">
+      {/* AI 整理开关 - 始终显示在最前面 */}
+      <div className={`p-4 rounded-lg border ${enableAiOrganize ? 'bg-primary/10 border-primary' : 'bg-primary/5 border-primary/20'}`}>
+        <label className="flex items-center justify-between cursor-pointer">
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${enableAiOrganize ? 'bg-primary text-primary-foreground' : 'bg-primary/10'}`}>
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-sm font-medium text-foreground">✨ 启用 AI 智能整理</div>
+              <div className="text-xs text-muted-foreground">
+                {selectedFile && validationResult?.valid
+                  ? (parsedBookmarks.length > 0 
+                      ? `已解析 ${parsedBookmarks.length} 个书签，AI 自动生成标签和描述`
+                      : '解析书签中...')
+                  : '上传文件后，AI 将自动生成标签和描述'}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">{enableAiOrganize ? '已启用' : '未启用'}</span>
+            <input
+              type="checkbox"
+              checked={enableAiOrganize}
+              onChange={(e) => setEnableAiOrganize(e.target.checked)}
+              className="w-5 h-5 text-primary border-border rounded focus:ring-primary"
+            />
+          </div>
+        </label>
+      </div>
+
       {/* 格式选择 */}
       <div className="space-y-3">
         <label className="block text-sm font-medium text-foreground">选择格式</label>
@@ -398,36 +428,6 @@ export function ImportSection({ onImport }: ImportSectionProps) {
           )}
         </div>
       </div>
-
-      {/* AI 整理开关 - 文件验证通过后显示 */}
-      {selectedFile && validationResult?.valid && (
-        <div className={`p-4 rounded-lg border ${enableAiOrganize ? 'bg-primary/10 border-primary' : 'bg-primary/5 border-primary/20'}`}>
-          <label className="flex items-center justify-between cursor-pointer">
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${enableAiOrganize ? 'bg-primary text-primary-foreground' : 'bg-primary/10'}`}>
-                <Sparkles className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="text-sm font-medium text-foreground">✨ 启用 AI 智能整理</div>
-                <div className="text-xs text-muted-foreground">
-                  {parsedBookmarks.length > 0 
-                    ? `已解析 ${parsedBookmarks.length} 个书签，AI 自动生成标签和描述`
-                    : '解析书签中...'}
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">{enableAiOrganize ? '已启用' : '未启用'}</span>
-              <input
-                type="checkbox"
-                checked={enableAiOrganize}
-                onChange={(e) => setEnableAiOrganize(e.target.checked)}
-                className="w-5 h-5 text-primary border-border rounded focus:ring-primary"
-              />
-            </div>
-          </label>
-        </div>
-      )}
 
       {/* 操作按钮 */}
       {!importResult && (
