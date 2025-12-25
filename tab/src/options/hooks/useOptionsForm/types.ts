@@ -18,7 +18,6 @@ export interface OptionsFormData {
   maxSuggestedTags: number;
   defaultVisibility: 'public' | 'private';
   enableAI: boolean;
-  aiBookmarkClassifyScope: 'newtab_root' | 'bookmarks_bar' | 'all';
   defaultIncludeThumbnail: boolean;
   defaultCreateSnapshot: boolean;
   tagTheme: 'classic' | 'mono' | 'bw';
@@ -48,7 +47,6 @@ export const DEFAULT_FORM_DATA: OptionsFormData = {
   maxSuggestedTags: 5,
   defaultVisibility: 'public',
   enableAI: true,
-  aiBookmarkClassifyScope: 'newtab_root',
   defaultIncludeThumbnail: true,
   defaultCreateSnapshot: false,
   tagTheme: 'classic',

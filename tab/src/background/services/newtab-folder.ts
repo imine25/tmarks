@@ -59,10 +59,10 @@ function extractUUIDFromTitle(title: string): string | null {
 }
 
 /**
- * 生成带 UUID 的文件夹标题
+ * 生成带 UUID 的文件夹标题（现在只返回基础标题，UUID 存储在 storage 中）
  */
-function generateTitleWithUUID(uuid: string): string {
-  return `${TMARKS_ROOT_TITLE} [${uuid}]`;
+function generateTitleWithUUID(_uuid: string): string {
+  return TMARKS_ROOT_TITLE;
 }
 
 /**
@@ -197,11 +197,11 @@ export async function ensureNewtabRootFolder(): Promise<EnsureNewtabRootFolderRe
               console.warn('[TMarks Background] 无法移动根文件夹到书签栏:', error);
             }
           }
-          // 如果是旧格式（没有 UUID），升级标题
-          if (!titleUUID) {
+          // 如果是旧格式（带 UUID），升级标题（移除 UUID）
+          if (titleUUID) {
             try {
-              await chrome.bookmarks.update(savedId, { title: generateTitleWithUUID(workspaceUUID) });
-              console.log('[TMarks Background] 已升级文件夹标题，添加 UUID');
+              await chrome.bookmarks.update(savedId, { title: TMARKS_ROOT_TITLE });
+              console.log('[TMarks Background] 已升级文件夹标题，移除 UUID');
             } catch {
               // ignore
             }
@@ -212,10 +212,11 @@ export async function ensureNewtabRootFolder(): Promise<EnsureNewtabRootFolderRe
       console.log('[TMarks Background] 保存的根文件夹 ID 无效，尝试通过 UUID 查找...');
     }
 
-    // 2. 通过 UUID 查找
+    // 2. 通过 UUID 查找（兼容旧格式 TMarks [uuid]）
     const barChildren = await chrome.bookmarks.getChildren(barId);
     const expectedTitle = generateTitleWithUUID(workspaceUUID);
     
+    // 先查找带 UUID 的旧格式
     const existingByUUID = barChildren.find((c) => {
       if (c.url) return false;
       const titleUUID = extractUUIDFromTitle(c.title);
@@ -223,6 +224,13 @@ export async function ensureNewtabRootFolder(): Promise<EnsureNewtabRootFolderRe
     });
 
     if (existingByUUID) {
+      // 升级旧格式：移除标题中的 UUID
+      try {
+        await chrome.bookmarks.update(existingByUUID.id, { title: TMARKS_ROOT_TITLE });
+        console.log('[TMarks Background] 已升级文件夹标题，移除 UUID');
+      } catch {
+        // ignore
+      }
       await saveNewtabRootFolderId(existingByUUID.id);
       console.log('[TMarks Background] 通过 UUID 找到根文件夹:', existingByUUID.id);
       return { id: existingByUUID.id, wasRecreated: false };

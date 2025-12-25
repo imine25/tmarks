@@ -20,7 +20,6 @@ export interface OptionsFormData {
   maxSuggestedTags: number;
   defaultVisibility: 'public' | 'private';
   enableAI: boolean;
-  aiBookmarkClassifyScope: 'newtab_root' | 'bookmarks_bar' | 'all';
   defaultIncludeThumbnail: boolean;
   defaultCreateSnapshot: boolean;
   tagTheme: 'classic' | 'mono' | 'bw';
@@ -57,7 +56,6 @@ export function useOptionsForm() {
     maxSuggestedTags: 5,
     defaultVisibility: 'public',
     enableAI: true,
-    aiBookmarkClassifyScope: 'newtab_root',
     defaultIncludeThumbnail: true,
     defaultCreateSnapshot: false,
     tagTheme: 'classic',
@@ -226,7 +224,6 @@ export function useOptionsForm() {
       maxSuggestedTags: config.preferences.maxSuggestedTags,
       defaultVisibility: config.preferences.defaultVisibility,
       enableAI: config.preferences.enableAI ?? true,
-      aiBookmarkClassifyScope: config.preferences.aiBookmarkClassifyScope ?? 'newtab_root',
       defaultIncludeThumbnail: config.preferences.defaultIncludeThumbnail ?? true,
       defaultCreateSnapshot: config.preferences.defaultCreateSnapshot ?? false,
       tagTheme: config.preferences.tagTheme ?? 'classic',
@@ -354,7 +351,6 @@ export function useOptionsForm() {
           maxSuggestedTags: formData.maxSuggestedTags,
           defaultVisibility: formData.defaultVisibility,
           enableAI: formData.enableAI,
-          aiBookmarkClassifyScope: formData.aiBookmarkClassifyScope,
           defaultIncludeThumbnail: formData.defaultIncludeThumbnail,
           defaultCreateSnapshot: formData.defaultCreateSnapshot,
           tagTheme: formData.tagTheme,
@@ -449,7 +445,6 @@ export function useOptionsForm() {
         maxSuggestedTags: 5,
         defaultVisibility: 'public',
         enableAI: true,
-        aiBookmarkClassifyScope: 'newtab_root',
         defaultIncludeThumbnail: true,
         defaultCreateSnapshot: false,
         tagTheme: 'classic',

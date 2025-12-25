@@ -74,8 +74,6 @@ export interface UserPreferences {
   defaultCreateSnapshot: boolean; // 默认是否创建快照
   tagTheme?: 'classic' | 'mono' | 'bw';
 
-  aiBookmarkClassifyScope?: 'newtab_root' | 'bookmarks_bar' | 'all';
-
   // NewTab：Popup「保存到 NewTab」的文件夹 AI 推荐数量（10-20）
   newtabFolderRecommendCount?: number;
 

@@ -47,7 +47,7 @@ export const buildConfig = {
       outputFile: 'tmarks-extension-firefox.zip',
       color: 'orange',
       enabled: true,
-      supportedBrowsers: ['Firefox 109+'],
+      supportedBrowsers: ['Firefox 57+'],
       category: 'international',
     },
     {

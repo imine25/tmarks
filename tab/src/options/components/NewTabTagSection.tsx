@@ -7,7 +7,6 @@ interface NewTabTagSectionProps {
     newtabFolderRecommendCount: number;
     enableNewtabFolderPrompt: boolean;
     newtabFolderPrompt: string;
-    aiBookmarkClassifyScope: 'newtab_root' | 'bookmarks_bar' | 'all';
   };
   setFormData: (data: any) => void;
   setSuccessMessage: (msg: string | null) => void;
@@ -71,7 +70,7 @@ export function NewTabTagSection({ formData, setFormData, setSuccessMessage }: N
             NewTab 根目录固定为浏览器书签栏下的文件夹：TMarks。
           </p>
           <p className="mt-1 text-xs text-[var(--tab-options-text-muted)]">
-            后续"AI 整理"会在该根目录范围内创建备份并复制生成整理后的书签结构（可通过下方"AI 分类范围"调整）。
+            后续"AI 整理"会在该根目录范围内创建备份并复制生成整理后的书签结构。
           </p>
         </div>
 
@@ -102,48 +101,6 @@ export function NewTabTagSection({ formData, setFormData, setSuccessMessage }: N
                 }`}
               />
             </button>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[var(--tab-options-text)] mb-2">AI 分类范围</label>
-            <div className="inline-flex rounded-xl border border-[color:var(--tab-options-card-border)] bg-[color:var(--tab-options-card-bg)] p-1 text-sm font-medium text-[var(--tab-options-text)]">
-              <button
-                type="button"
-                onClick={() => setFormData({ ...formData, aiBookmarkClassifyScope: 'newtab_root' })}
-                className={`rounded-lg px-3 py-1.5 transition-colors ${
-                  formData.aiBookmarkClassifyScope === 'newtab_root'
-                    ? 'bg-[var(--tab-options-button-primary-bg)] text-[var(--tab-options-button-primary-text)] shadow'
-                    : 'hover:text-[var(--tab-options-title)]'
-                }`}
-              >
-                仅 NewTab 根目录
-              </button>
-              <button
-                type="button"
-                onClick={() => setFormData({ ...formData, aiBookmarkClassifyScope: 'bookmarks_bar' })}
-                className={`rounded-lg px-3 py-1.5 transition-colors ${
-                  formData.aiBookmarkClassifyScope === 'bookmarks_bar'
-                    ? 'bg-[var(--tab-options-button-primary-bg)] text-[var(--tab-options-button-primary-text)] shadow'
-                    : 'hover:text-[var(--tab-options-title)]'
-                }`}
-              >
-                书签栏
-              </button>
-              <button
-                type="button"
-                onClick={() => setFormData({ ...formData, aiBookmarkClassifyScope: 'all' })}
-                className={`rounded-lg px-3 py-1.5 transition-colors ${
-                  formData.aiBookmarkClassifyScope === 'all'
-                    ? 'bg-[var(--tab-options-button-primary-bg)] text-[var(--tab-options-button-primary-text)] shadow'
-                    : 'hover:text-[var(--tab-options-title)]'
-                }`}
-              >
-                全部书签
-              </button>
-            </div>
-            <p className="mt-2 text-xs text-[var(--tab-options-text-muted)]">
-              用于后续"AI 批量整理/分类既有书签"功能的作用范围。默认只处理 NewTab 根目录。
-            </p>
           </div>
 
           <div>

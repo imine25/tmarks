@@ -18,7 +18,9 @@
     }
   },
   "background": {
-    "scripts": ["service-worker-loader.js"],
+    "scripts": [
+      "service-worker-loader.js"
+    ],
     "type": "module"
   },
   "permissions": [
@@ -38,8 +40,12 @@
   ],
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["src/content/index.ts"]
+      "js": [
+        "assets/index.ts-loader-BxzO9VrR.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ],
   "options_ui": {
@@ -52,10 +58,23 @@
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'; img-src 'self' https: data: blob:; connect-src 'self' https:"
   },
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "resources": [
+        "assets/preload-helper-BhLMWRjL.js",
+        "assets/singlefile-capture-Bkt_j5oF.js",
+        "assets/singlefile-capture-v2-DXdSZKa8.js",
+        "assets/index.ts-YhIuz4me.js"
+      ]
+    }
+  ],
   "browser_specific_settings": {
     "gecko": {
       "id": "aitmarks@example.com",
-      "strict_min_version": "109.0"
+      "strict_min_version": "112.0"
     }
   }
 }

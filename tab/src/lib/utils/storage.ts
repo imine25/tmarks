@@ -22,7 +22,6 @@ const DEFAULT_CONFIG: StorageConfig = {
     maxSuggestedTags: 5,
     defaultVisibility: 'public',
     enableAI: true,
-    aiBookmarkClassifyScope: 'newtab_root',
     defaultIncludeThumbnail: true,
     defaultCreateSnapshot: false,
     tagTheme: 'classic'
@@ -105,7 +104,6 @@ export class StorageService {
         maxSuggestedTags: config.preferences?.maxSuggestedTags ?? defaults.preferences.maxSuggestedTags,
         defaultVisibility: config.preferences?.defaultVisibility ?? defaults.preferences.defaultVisibility,
         enableAI: config.preferences?.enableAI ?? defaults.preferences.enableAI,
-        aiBookmarkClassifyScope: config.preferences?.aiBookmarkClassifyScope ?? defaults.preferences.aiBookmarkClassifyScope,
         defaultIncludeThumbnail: config.preferences?.defaultIncludeThumbnail ?? defaults.preferences.defaultIncludeThumbnail,
         defaultCreateSnapshot: config.preferences?.defaultCreateSnapshot ?? defaults.preferences.defaultCreateSnapshot,
         tagTheme: config.preferences?.tagTheme ?? defaults.preferences.tagTheme,
