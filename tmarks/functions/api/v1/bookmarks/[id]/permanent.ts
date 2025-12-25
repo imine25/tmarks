@@ -7,7 +7,7 @@
 import type { PagesFunction } from '@cloudflare/workers-types'
 import type { Env, RouteParams } from '../../../../lib/types'
 import { noContent, notFound, internalError } from '../../../../lib/response'
-import { requireAuth, AuthContext } from '../../../../middleware/auth-pages'
+import { requireAuth, AuthContext } from '../../../../middleware/auth'
 
 // DELETE /api/v1/bookmarks/:id/permanent - 永久删除（从回收站彻底删除）
 export const onRequestDelete: PagesFunction<Env, RouteParams, AuthContext>[] = [

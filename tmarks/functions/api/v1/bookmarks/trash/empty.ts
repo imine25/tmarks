@@ -7,7 +7,7 @@
 import type { PagesFunction } from '@cloudflare/workers-types'
 import type { Env } from '../../../../lib/types'
 import { success, internalError } from '../../../../lib/response'
-import { requireAuth, AuthContext } from '../../../../middleware/auth-pages'
+import { requireAuth, AuthContext } from '../../../../middleware/auth'
 
 // DELETE /api/v1/bookmarks/trash/empty - 清空回收站
 export const onRequestDelete: PagesFunction<Env, string, AuthContext>[] = [

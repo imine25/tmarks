@@ -7,7 +7,7 @@
 import type { PagesFunction } from '@cloudflare/workers-types'
 import type { Env, BookmarkRow } from '../../../lib/types'
 import { success, internalError } from '../../../lib/response'
-import { requireAuth, AuthContext } from '../../../middleware/auth-pages'
+import { requireAuth, AuthContext } from '../../../middleware/auth'
 import { normalizeBookmark } from '../../../lib/bookmark-utils'
 
 interface TrashQueryParams {
