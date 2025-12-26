@@ -55,7 +55,7 @@ export const WidgetSelector = memo(function WidgetSelector({
       
       {/* 选择器面板 */}
       <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[110] 
-                      w-full max-w-md p-6 rounded-2xl glass-dark animate-modalScaleIn">
+                      w-full max-w-md p-6 rounded-2xl glass-modal" style={{ animation: 'modalScale 0.2s ease-out' }}>
         {/* 标题 */}
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium text-white">添加组件</h3>

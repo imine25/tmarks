@@ -42,12 +42,7 @@ export function BatchEditTip({ isOpen, onClose }: BatchEditTipProps) {
       onClick={handleClose}
     >
       <div
-        className="relative w-[min(420px,calc(100vw-32px))] rounded-2xl glass-dark p-6 shadow-2xl"
-        style={{
-          backdropFilter: 'blur(20px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-          border: '1px solid rgba(255,255,255,0.15)',
-        }}
+        className="relative w-[min(420px,calc(100vw-32px))] rounded-2xl glass-modal p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <button

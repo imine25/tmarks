@@ -34,6 +34,18 @@
   --tab-text-shadow-lg: rgba(0, 0, 0, 0.6);
   --tab-text-shadow-lg-secondary: rgba(0, 0, 0, 0.4);
   --tab-text-shadow-sm: rgba(0, 0, 0, 0.4);
+
+  /* iOS 风格组件变量 - 深色主题适配 */
+  --ios-sheet-bg: rgba(45, 45, 55, 0.98);
+  --ios-sheet-bg-solid: rgb(45, 45, 55);
+  --ios-action-primary: #4a9eff;
+  --ios-action-danger: #ff6b6b;
+  --ios-text-primary: rgba(255, 255, 255, 0.95);
+  --ios-text-secondary: rgba(255, 255, 255, 0.7);
+  --ios-text-muted: rgba(255, 255, 255, 0.5);
+  --ios-divider: rgba(255, 255, 255, 0.1);
+  --ios-hover: rgba(255, 255, 255, 0.08);
+  --ios-active: rgba(255, 255, 255, 0.12);
 }
 
 * {
