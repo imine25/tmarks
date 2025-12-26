@@ -142,7 +142,7 @@
     "isDynamicEntry": true
   },
   "src/newtab/index.html": {
-    "file": "assets/newtab-LSoR7mF_.js",
+    "file": "assets/newtab-CtCiLn6t.js",
     "name": "newtab",
     "src": "src/newtab/index.html",
     "isEntry": true,
@@ -159,11 +159,11 @@
       "_dexie-BAhLzSXZ.js"
     ],
     "css": [
-      "assets/newtab-Ow7Pfo97.css"
+      "assets/newtab-B-koB1Tv.css"
     ]
   },
   "src/options/index.html": {
-    "file": "assets/options-B0iFTOsM.js",
+    "file": "assets/options-Dh_exB_S.js",
     "name": "options",
     "src": "src/options/index.html",
     "isEntry": true,
@@ -182,11 +182,11 @@
       "_index-nR4W4XKG.js"
     ],
     "css": [
-      "assets/options-DQ1qtKwK.css"
+      "assets/options-C_XhQG95.css"
     ]
   },
   "src/popup/index.html": {
-    "file": "assets/popup-C0mhq0oy.js",
+    "file": "assets/popup-Bygp-srx.js",
     "name": "popup",
     "src": "src/popup/index.html",
     "isEntry": true,
@@ -202,7 +202,7 @@
       "_index-NQ3jknxk.js"
     ],
     "css": [
-      "assets/popup-YuSju1Cc.css"
+      "assets/popup-Cqf00_Aj.css"
     ]
   }
 }

@@ -170,7 +170,7 @@ export function GroupSidebar({ onOpenSettings }: GroupSidebarProps) {
               className="fixed inset-0 z-40"
               onClick={() => setShowAddMenu(false)}
             />
-            <div className="absolute left-full top-0 ml-2 w-56 p-3 rounded-xl bg-gray-900/95 border border-white/10 shadow-2xl z-50 animate-scaleIn">
+            <div className="absolute left-full top-0 ml-2 w-56 p-3 rounded-xl glass-modal border border-white/10 shadow-2xl z-50 animate-scaleIn">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-white">新建分组</span>
                 <button

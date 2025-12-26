@@ -62,8 +62,8 @@ export const WidgetConfigModal = memo(function WidgetConfigModal({
       />
 
       {/* 弹窗 */}
-      <div className="fixed top-1/2 left-1/2 z-[110] w-[360px] max-w-[90vw] animate-modalScaleIn">
-        <div className="glass rounded-2xl p-5 border border-white/10">
+      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[110] w-[360px] max-w-[90vw]" style={{ animation: 'modalScale 0.2s ease-out' }}>
+        <div className="glass-modal rounded-2xl p-5 border border-white/10">
           {/* 标题栏 */}
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-medium text-white">
