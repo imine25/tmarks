@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface TagFormModalProps {
   isOpen: boolean
@@ -18,12 +19,16 @@ export function TagFormModal({
   initialName,
   onConfirm,
   onCancel,
-  confirmLabel = '保存',
+  confirmLabel,
   isSubmitting = false,
   onDelete,
   isDeleting = false,
 }: TagFormModalProps) {
+  const { t } = useTranslation('tags')
+  const { t: tc } = useTranslation('common')
   const [name, setName] = useState(initialName)
+
+  const displayConfirmLabel = confirmLabel ?? t('action.save')
 
   useEffect(() => {
     if (isOpen) {
@@ -39,16 +44,16 @@ export function TagFormModal({
       <div className="relative w-full max-w-sm card p-5 space-y-4 animate-scale-in border border-border shadow-2xl rounded-xl">
         <div>
           <h3 className="text-base font-semibold mb-1">{title}</h3>
-          <p className="text-xs text-muted-foreground">调整标签名称，仅影响当前标签。</p>
+          <p className="text-xs text-muted-foreground">{t('form.editHint')}</p>
         </div>
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">标签名称</label>
+          <label className="text-xs font-medium text-muted-foreground">{t('form.nameLabel')}</label>
           <input
             type="text"
             className="input w-full"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="输入标签名称"
+            placeholder={t('form.namePlaceholder')}
             autoFocus
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !isSubmitting) onConfirm(name.trim())
@@ -65,7 +70,7 @@ export function TagFormModal({
               onClick={onDelete}
               disabled={isSubmitting || isDeleting}
             >
-              {isDeleting ? '删除中...' : '删除标签'}
+              {isDeleting ? t('action.deleting') : t('action.delete')}
             </button>
           ) : <span />}
           <div className="flex gap-3">
@@ -75,7 +80,7 @@ export function TagFormModal({
               onClick={onCancel}
               disabled={isSubmitting || isDeleting}
             >
-              取消
+              {tc('button.cancel')}
             </button>
             <button
               type="button"
@@ -83,7 +88,7 @@ export function TagFormModal({
               onClick={() => onConfirm(name.trim())}
               disabled={!name.trim() || isSubmitting || isDeleting}
             >
-              {isSubmitting ? '保存中...' : confirmLabel}
+              {isSubmitting ? t('action.saving') : displayConfirmLabel}
             </button>
           </div>
         </div>

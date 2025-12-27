@@ -1,8 +1,10 @@
+import { useTranslation } from 'react-i18next'
 import { Shield, Download, Info, ExternalLink } from 'lucide-react'
 import { InfoBox } from '../InfoBox'
 import * as simpleIcons from 'simple-icons'
 
 export function BrowserSettingsTab() {
+  const { t } = useTranslation('settings')
 
   type BrowserType = 'chrome' | 'firefox' | 'edge' | 'opera' | 'brave' | '360' | 'qq' | 'sogou'
   
@@ -15,11 +17,9 @@ export function BrowserSettingsTab() {
     document.body.removeChild(link)
   }
 
-  // 浏览器图标组件 - 使用官方 SVG 图标
   const BrowserIcon = ({ browser, className }: { browser: string; className?: string }) => {
     const baseClass = className || 'w-8 h-8'
     
-    // 获取对应的 Simple Icons 图标
     const getIconData = () => {
       switch (browser) {
         case 'chrome':
@@ -27,19 +27,16 @@ export function BrowserSettingsTab() {
         case 'firefox':
           return simpleIcons.siFirefox
         case 'edge':
-          // Edge 使用通用浏览器图标
           return null
         case 'brave':
           return simpleIcons.siBrave
         case 'opera':
           return simpleIcons.siOpera
         case '360':
-          // 360 浏览器没有官方图标
           return null
         case 'qq':
           return simpleIcons.siQq
         case 'sogou':
-          // 搜狗没有官方图标
           return null
         default:
           return simpleIcons.siGooglechrome
@@ -48,9 +45,7 @@ export function BrowserSettingsTab() {
 
     const iconData = getIconData()
     
-    // 如果没有官方图标，使用自定义图标
     if (!iconData) {
-      // Edge 浏览器图标
       if (browser === 'edge') {
         return (
           <svg className={`${baseClass} text-primary`} viewBox="0 0 24 24" fill="currentColor">
@@ -59,7 +54,6 @@ export function BrowserSettingsTab() {
           </svg>
         )
       }
-      // 360 浏览器图标
       if (browser === '360') {
         return (
           <svg className={`${baseClass} text-success`} viewBox="0 0 24 24" fill="currentColor">
@@ -69,7 +63,6 @@ export function BrowserSettingsTab() {
           </svg>
         )
       }
-      // 搜狗浏览器图标（搜索图标）
       return (
         <svg className={`${baseClass} text-muted-foreground`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="11" cy="11" r="8" />
@@ -99,17 +92,16 @@ export function BrowserSettingsTab() {
     { id: 'opera', name: 'Opera', color: 'hover:bg-muted/50' },
     { id: '360', name: '360', color: 'hover:bg-muted/50' },
     { id: 'qq', name: 'QQ', color: 'hover:bg-muted/50' },
-    { id: 'sogou', name: '搜狗', color: 'hover:bg-muted/50' },
+    { id: 'sogou', name: 'Sogou', color: 'hover:bg-muted/50' },
   ]
 
   return (
     <div className="space-y-6">
-      {/* 浏览器插件 */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-semibold text-foreground">浏览器插件下载</h3>
+          <h3 className="text-lg font-semibold text-foreground">{t('browser.download.title')}</h3>
           <p className="text-sm text-muted-foreground mt-1">
-            选择您的浏览器，下载对应的扩展程序
+            {t('browser.download.description')}
           </p>
         </div>
 
@@ -126,7 +118,7 @@ export function BrowserSettingsTab() {
               <div className="text-xs sm:text-sm font-medium mb-0.5 sm:mb-1">{browser.name}</div>
               <div className="flex items-center justify-center gap-1 text-[10px] sm:text-xs text-muted-foreground group-hover:text-primary">
                 <Download className="w-3 h-3" />
-                点击下载
+                {t('browser.download.clickToDownload')}
               </div>
             </button>
           ))}
@@ -134,89 +126,83 @@ export function BrowserSettingsTab() {
 
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
           <p className="text-xs text-muted-foreground">
-            💡 提供 8 个浏览器专用版本，也可以使用 Chrome 通用版（支持所有基于 Chrome 的浏览器）
+            {t('browser.download.tip')}
           </p>
         </div>
       </div>
 
       <div className="border-t border-border"></div>
 
-      {/* 浏览器权限 */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-semibold text-foreground">浏览器权限设置</h3>
+          <h3 className="text-lg font-semibold text-foreground">{t('browser.permissions.title')}</h3>
           <p className="text-sm text-muted-foreground mt-1">
-            配置 TMarks 所需的浏览器权限，以获得最佳使用体验
+            {t('browser.permissions.description')}
           </p>
         </div>
 
-        {/* 弹窗权限说明 */}
         <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
           <div className="flex items-start gap-3">
             <ExternalLink className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
             <div>
-              <h4 className="text-sm font-semibold mb-2">弹窗权限</h4>
+              <h4 className="text-sm font-semibold mb-2">{t('browser.popup.title')}</h4>
               <p className="text-xs text-muted-foreground mb-3">
-                允许 TMarks 打开弹窗，以便使用"一键打开全部标签页"功能。
+                {t('browser.popup.description')}
               </p>
               <div className="text-xs text-muted-foreground space-y-2">
-                <p className="font-medium">如何允许弹窗？</p>
+                <p className="font-medium">{t('browser.popup.howTo')}</p>
                 <ol className="space-y-1 ml-4 list-decimal">
-                  <li>在标签页组详情页面，点击"全部恢复"按钮</li>
-                  <li>浏览器地址栏会出现弹窗拦截图标（通常在右侧）</li>
-                  <li>点击该图标，选择"始终允许显示弹出式窗口"</li>
-                  <li>刷新页面后，再次点击"全部恢复"即可正常使用</li>
+                  <li>{t('browser.popup.step1')}</li>
+                  <li>{t('browser.popup.step2')}</li>
+                  <li>{t('browser.popup.step3')}</li>
+                  <li>{t('browser.popup.step4')}</li>
                 </ol>
               </div>
             </div>
           </div>
         </div>
 
-        {/* 各浏览器设置方法 */}
         <div className="space-y-3">
-          <h4 className="text-sm font-semibold">各浏览器设置方法</h4>
+          <h4 className="text-sm font-semibold">{t('browser.faq.title')}</h4>
           
           <div className="p-3 rounded-lg bg-muted/30">
-            <div className="text-sm font-medium mb-1">Chrome / Edge</div>
+            <div className="text-sm font-medium mb-1">{t('browser.popup.chromeTitle')}</div>
             <div className="text-xs text-muted-foreground">
-              地址栏右侧会出现 🚫 图标，点击后选择"始终允许弹出式窗口和重定向"
+              {t('browser.popup.chromeDesc')}
             </div>
           </div>
 
           <div className="p-3 rounded-lg bg-muted/30">
-            <div className="text-sm font-medium mb-1">Firefox</div>
+            <div className="text-sm font-medium mb-1">{t('browser.popup.firefoxTitle')}</div>
             <div className="text-xs text-muted-foreground">
-              地址栏左侧会出现弹窗拦截提示，点击"选项" → "允许弹出式窗口"
+              {t('browser.popup.firefoxDesc')}
             </div>
           </div>
 
           <div className="p-3 rounded-lg bg-muted/30">
-            <div className="text-sm font-medium mb-1">Safari</div>
+            <div className="text-sm font-medium mb-1">{t('browser.popup.safariTitle')}</div>
             <div className="text-xs text-muted-foreground">
-              菜单栏：Safari → 设置 → 网站 → 弹出式窗口 → 找到当前网站 → 选择"允许"
+              {t('browser.popup.safariDesc')}
             </div>
           </div>
         </div>
 
-        {/* 为什么需要权限 */}
         <div className="p-4 rounded-lg bg-muted/50">
-          <h4 className="text-sm font-semibold mb-2">💡 为什么需要弹窗权限？</h4>
+          <h4 className="text-sm font-semibold mb-2">{t('browser.popup.whyTitle')}</h4>
           <p className="text-xs text-muted-foreground">
-            "一键打开全部标签页"功能需要同时打开多个网页。浏览器为了安全考虑，默认会拦截批量打开的弹窗。
-            允许 TMarks 的弹窗权限后，您就可以一次性打开标签页组中的所有网页，大大提高工作效率。
+            {t('browser.popup.whyDesc')}
           </p>
         </div>
 
-        {/* 扩展权限列表 */}
         <div className="space-y-2">
-          <h4 className="text-sm font-semibold">扩展所需权限</h4>
+          <h4 className="text-sm font-semibold">{t('browser.permissions.title')}</h4>
           
           <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
             <Shield className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <div className="text-sm font-medium mb-1">书签访问权限</div>
+              <div className="text-sm font-medium mb-1">{t('browser.permissions.bookmarks.title')}</div>
               <div className="text-xs text-muted-foreground">
-                允许扩展读取和保存浏览器书签
+                {t('browser.permissions.bookmarks.description')}
               </div>
             </div>
           </div>
@@ -224,9 +210,9 @@ export function BrowserSettingsTab() {
           <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
             <Shield className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <div className="text-sm font-medium mb-1">标签页访问权限</div>
+              <div className="text-sm font-medium mb-1">{t('browser.permissions.tabs.title')}</div>
               <div className="text-xs text-muted-foreground">
-                允许扩展访问当前打开的标签页信息
+                {t('browser.permissions.tabs.description')}
               </div>
             </div>
           </div>
@@ -234,9 +220,9 @@ export function BrowserSettingsTab() {
           <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
             <Shield className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <div className="text-sm font-medium mb-1">存储权限</div>
+              <div className="text-sm font-medium mb-1">{t('browser.permissions.storage.title')}</div>
               <div className="text-xs text-muted-foreground">
-                允许扩展在本地存储数据
+                {t('browser.permissions.storage.description')}
               </div>
             </div>
           </div>
@@ -245,31 +231,30 @@ export function BrowserSettingsTab() {
 
       <div className="border-t border-border"></div>
 
-      {/* 安装步骤 */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-semibold text-foreground">安装步骤</h3>
+          <h3 className="text-lg font-semibold text-foreground">{t('browser.install.title')}</h3>
           <p className="text-sm text-muted-foreground mt-1">
-            按照以下步骤安装浏览器扩展
+            {t('browser.install.description')}
           </p>
         </div>
 
         <div className="space-y-3">
           {[
-            { step: 1, title: '下载插件压缩包', desc: '点击上方下载按钮，获取对应浏览器的扩展文件' },
-            { step: 2, title: '解压文件', desc: '将下载的 zip 文件解压到任意文件夹（建议放在不会删除的位置）' },
-            { step: 3, title: '打开扩展管理页面', desc: 'Chrome: chrome://extensions/ | Edge: edge://extensions/ | Firefox: about:debugging' },
-            { step: 4, title: '启用开发者模式', desc: '在扩展管理页面右上角，打开"开发者模式"开关' },
-            { step: 5, title: '加载插件', desc: '点击"加载已解压的扩展程序"，选择刚才解压的文件夹' },
-            { step: 6, title: '完成安装', desc: '插件图标会出现在浏览器工具栏，点击即可使用' },
+            { step: 1, titleKey: 'step1Title', descKey: 'step1Desc' },
+            { step: 2, titleKey: 'step2Title', descKey: 'step2Desc' },
+            { step: 3, titleKey: 'step3Title', descKey: 'step3Desc' },
+            { step: 4, titleKey: 'step4Title', descKey: 'step4Desc' },
+            { step: 5, titleKey: 'step5Title', descKey: 'step5Desc' },
+            { step: 6, titleKey: 'step6Title', descKey: 'step6Desc' },
           ].map((item) => (
             <div key={item.step} className="flex gap-3 p-3 rounded-lg bg-muted/30">
               <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
                 <span className="text-xs font-bold text-primary">{item.step}</span>
               </div>
               <div className="flex-1">
-                <div className="text-sm font-medium mb-1">{item.title}</div>
-                <div className="text-xs text-muted-foreground">{item.desc}</div>
+                <div className="text-sm font-medium mb-1">{t(`browser.install.${item.titleKey}`)}</div>
+                <div className="text-xs text-muted-foreground">{t(`browser.install.${item.descKey}`)}</div>
               </div>
             </div>
           ))}
@@ -278,38 +263,37 @@ export function BrowserSettingsTab() {
 
       <div className="border-t border-border"></div>
 
-      {/* 常见问题 */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-semibold text-foreground">常见问题</h3>
+          <h3 className="text-lg font-semibold text-foreground">{t('browser.faq.title')}</h3>
         </div>
 
         <div className="space-y-3">
           <div className="p-4 rounded-lg bg-muted/30">
-            <h4 className="text-sm font-medium mb-2">Q: 插件安装后找不到图标？</h4>
+            <h4 className="text-sm font-medium mb-2">{t('browser.faq.iconNotFound')}</h4>
             <p className="text-xs text-muted-foreground">
-              A: 点击浏览器工具栏右侧的拼图图标，找到 TMarks 插件并点击固定按钮，图标就会显示在工具栏上。
+              {t('browser.faq.iconNotFoundAnswer')}
             </p>
           </div>
 
           <div className="p-4 rounded-lg bg-muted/30">
-            <h4 className="text-sm font-medium mb-2">Q: 如何获取 API Key？</h4>
+            <h4 className="text-sm font-medium mb-2">{t('browser.faq.howToGetApiKey')}</h4>
             <p className="text-xs text-muted-foreground">
-              A: 在通用设置的"API"标签页中创建一个新的 API Key 并复制到插件配置中。
+              {t('browser.faq.howToGetApiKeyAnswer')}
             </p>
           </div>
 
           <div className="p-4 rounded-lg bg-muted/30">
-            <h4 className="text-sm font-medium mb-2">Q: 插件支持哪些浏览器？</h4>
+            <h4 className="text-sm font-medium mb-2">{t('browser.faq.supportedBrowsers')}</h4>
             <p className="text-xs text-muted-foreground">
-              A: 支持 Chrome、Edge、Firefox、Brave、Opera、360、QQ、搜狗等主流浏览器。
+              {t('browser.faq.supportedBrowsersAnswer')}
             </p>
           </div>
 
           <div className="p-4 rounded-lg bg-muted/30">
-            <h4 className="text-sm font-medium mb-2">Q: 保存的标签页组在哪里查看？</h4>
+            <h4 className="text-sm font-medium mb-2">Q: {t('browser.faq.whereToView')}</h4>
             <p className="text-xs text-muted-foreground">
-              A: 在 TMarks 网站的"标签页"页面可以查看和管理所有保存的标签页组。
+              A: {t('browser.faq.whereToViewAnswer')}
             </p>
           </div>
         </div>
@@ -317,13 +301,12 @@ export function BrowserSettingsTab() {
 
       <div className="border-t border-border"></div>
 
-      {/* 提示信息 */}
-      <InfoBox icon={Info} title="使用提示" variant="info">
+      <InfoBox icon={Info} title={t('browser.infoBox.title')} variant="info">
         <ul className="space-y-1">
-          <li>• 首次使用需要在插件中配置 TMarks 网站地址和 API Key</li>
-          <li>• 建议将插件图标固定到工具栏，方便快速访问</li>
-          <li>• 插件会自动保存标签页的标题、URL 和网站图标</li>
-          <li>• 所有数据自动同步到云端，多设备无缝切换</li>
+          <li>• {t('browser.infoBox.tip1')}</li>
+          <li>• {t('browser.infoBox.tip2')}</li>
+          <li>• {t('browser.infoBox.tip3')}</li>
+          <li>• {t('browser.infoBox.tip4')}</li>
         </ul>
       </InfoBox>
     </div>

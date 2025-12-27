@@ -4,42 +4,44 @@
  */
 
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { BookOpen, Layers, Database, Download } from 'lucide-react'
 
 interface NavItem {
   id: string
-  label: string
+  labelKey: string
   icon: React.ComponentType<{ className?: string }>
   path: string
   badge?: number
 }
 
 export function MobileBottomNav() {
+  const { t } = useTranslation('common')
   const navigate = useNavigate()
   const location = useLocation()
 
   const navItems: NavItem[] = [
     {
       id: 'bookmarks',
-      label: '书签',
+      labelKey: 'nav.bookmarks',
       icon: BookOpen,
       path: '/'
     },
     {
       id: 'tab-groups',
-      label: '标签页',
+      labelKey: 'nav.tabGroups',
       icon: Layers,
       path: '/tab'
     },
     {
       id: 'data',
-      label: '数据',
+      labelKey: 'nav.data',
       icon: Database,
       path: '/import-export'
     },
     {
       id: 'extension',
-      label: '插件',
+      labelKey: 'nav.extension',
       icon: Download,
       path: '/extension'
     }
@@ -82,7 +84,7 @@ export function MobileBottomNav() {
               <span className={`text-xs font-medium ${
                 active ? 'text-primary' : ''
               }`}>
-                {item.label}
+                {t(item.labelKey)}
               </span>
             </button>
           )

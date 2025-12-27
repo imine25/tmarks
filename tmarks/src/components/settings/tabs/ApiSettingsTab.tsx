@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Key, Copy, Trash2, Plus, Eye, Ban, Info, AlertTriangle } from 'lucide-react'
 import { useApiKeys, useRevokeApiKey, useDeleteApiKey } from '@/hooks/useApiKeys'
 import { useToastStore } from '@/stores/toastStore'
@@ -9,6 +10,7 @@ import type { ApiKey } from '@/services/api-keys'
 import { InfoBox } from '../InfoBox'
 
 export function ApiSettingsTab() {
+  const { t } = useTranslation('settings')
   const { data, isLoading } = useApiKeys()
   const revokeApiKey = useRevokeApiKey()
   const deleteApiKey = useDeleteApiKey()
@@ -26,15 +28,15 @@ export function ApiSettingsTab() {
   const handleRevoke = async (id: string) => {
     setConfirmState({
       isOpen: true,
-      title: '撤销 API Key',
-      message: '确定要撤销此 API Key 吗？撤销后无法恢复。',
+      title: t('apiKey.page.revokeTitle'),
+      message: t('apiKey.page.revokeMessage'),
       onConfirm: async () => {
         setConfirmState(null)
         try {
           await revokeApiKey.mutateAsync(id)
-          addToast('success', 'API Key 已撤销')
+          addToast('success', t('apiKey.page.revokeSuccess'))
         } catch {
-          addToast('error', '撤销失败')
+          addToast('error', t('apiKey.page.revokeFailed'))
         }
       },
     })
@@ -43,15 +45,15 @@ export function ApiSettingsTab() {
   const handleDelete = async (id: string) => {
     setConfirmState({
       isOpen: true,
-      title: '删除 API Key',
-      message: '确定要彻底删除此 API Key 吗？该操作不可恢复，并会清除所有使用记录。',
+      title: t('apiKey.page.deleteTitle'),
+      message: t('apiKey.page.deleteMessage'),
       onConfirm: async () => {
         setConfirmState(null)
         try {
           await deleteApiKey.mutateAsync(id)
-          addToast('success', 'API Key 已永久删除')
+          addToast('success', t('apiKey.page.deleteSuccess'))
         } catch {
-          addToast('error', '删除失败')
+          addToast('error', t('apiKey.page.deleteFailed'))
         }
       },
     })
@@ -59,7 +61,7 @@ export function ApiSettingsTab() {
 
   const handleCopy = (key: string) => {
     navigator.clipboard.writeText(key)
-    addToast('success', '已复制到剪贴板')
+    addToast('success', t('share.copySuccess'))
   }
 
   if (isLoading) {
@@ -86,13 +88,12 @@ export function ApiSettingsTab() {
         />
       )}
 
-      {/* API Keys 管理 */}
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex-1">
-            <h3 className="text-base sm:text-lg font-semibold text-foreground">API Keys 管理</h3>
+            <h3 className="text-base sm:text-lg font-semibold text-foreground">{t('apiKey.page.title')}</h3>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              创建和管理 API 密钥，用于第三方应用访问
+              {t('apiKey.page.description')}
             </p>
           </div>
           <button
@@ -101,31 +102,29 @@ export function ApiSettingsTab() {
             className="btn btn-primary btn-sm sm:btn flex items-center gap-2 justify-center"
           >
             <Plus className="w-4 h-4" />
-            创建
+            {t('apiKey.page.createNew')}
           </button>
         </div>
 
-        {/* 配额信息 */}
         <div className="p-3 bg-card border border-border rounded-lg">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">当前使用</span>
+            <span className="text-muted-foreground">{t('apiKey.page.currentUsage')}</span>
             <span className="font-medium">
-              {quota.used} / {quota.limit >= 999 ? '无限制' : quota.limit}
+              {quota.used} / {quota.limit >= 999 ? t('apiKey.page.unlimited') : quota.limit}
             </span>
           </div>
         </div>
 
-        {/* Keys 列表 */}
         <div className="space-y-3">
           {keys.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <Key className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p className="text-sm mb-4">还没有创建任何 API Key</p>
+              <p className="text-sm mb-4">{t('apiKey.page.empty')}</p>
               <button
                 onClick={() => setShowCreateModal(true)}
                 className="btn btn-primary"
               >
-                创建第一个 API Key
+                {t('apiKey.page.createFirst')}
               </button>
             </div>
           ) : (
@@ -147,7 +146,7 @@ export function ApiSettingsTab() {
                       <span className="font-medium">{key.name}</span>
                       {key.status === 'revoked' && (
                         <span className="text-xs px-2 py-0.5 rounded-full bg-error/20 text-error">
-                          已撤销
+                          {t('apiKey.status.revoked')}
                         </span>
                       )}
                     </div>
@@ -158,15 +157,15 @@ export function ApiSettingsTab() {
                       <button
                         onClick={() => handleCopy(key.key_prefix)}
                         className="p-1 hover:bg-muted rounded"
-                        title="复制密钥前缀"
+                        title={t('apiKey.copyPrefix')}
                       >
                         <Copy className="w-4 h-4" />
                       </button>
                     </div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span>创建于 {new Date(key.created_at).toLocaleString()}</span>
+                      <span>{t('apiKey.createdAt')} {new Date(key.created_at).toLocaleString()}</span>
                       {key.last_used_at && (
-                        <span>最后使用 {new Date(key.last_used_at).toLocaleString()}</span>
+                        <span>{t('apiKey.lastUsed')} {new Date(key.last_used_at).toLocaleString()}</span>
                       )}
                     </div>
                   </div>
@@ -174,7 +173,7 @@ export function ApiSettingsTab() {
                     <button
                       onClick={() => setSelectedKey(key)}
                       className="p-2 hover:bg-muted rounded-lg transition-colors"
-                      title="查看详情"
+                      title={t('apiKey.viewDetails')}
                     >
                       <Eye className="w-4 h-4" />
                     </button>
@@ -182,7 +181,7 @@ export function ApiSettingsTab() {
                       <button
                         onClick={() => handleRevoke(key.id)}
                         className="p-2 text-warning hover:bg-warning/10 rounded-lg transition-colors"
-                        title="撤销"
+                        title={t('apiKey.revoke')}
                       >
                         <Ban className="w-4 h-4" />
                       </button>
@@ -190,7 +189,7 @@ export function ApiSettingsTab() {
                     <button
                       onClick={() => handleDelete(key.id)}
                       className="p-2 text-error hover:bg-error/10 rounded-lg transition-colors"
-                      title="删除"
+                      title={t('apiKey.delete')}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -204,31 +203,28 @@ export function ApiSettingsTab() {
 
       <div className="border-t border-border"></div>
 
-      {/* 使用说明 */}
       <div className="space-y-3">
-        <InfoBox icon={Info} title="使用说明" variant="info">
+        <InfoBox icon={Info} title={t('apiKey.infoBox.usageTitle')} variant="info">
           <ul className="space-y-1">
-            <li>• API Keys 用于第三方应用（如浏览器插件）安全访问您的数据</li>
-            <li>• 每个账户最多创建 {quota.limit >= 999 ? '无限制' : `${quota.limit} 个`} API Key</li>
-            <li>• 创建后仅显示一次完整密钥，请妥善保存</li>
+            <li>• {t('apiKey.infoBox.usageTip1')}</li>
+            <li>• {t('apiKey.page.tip1', { limit: quota.limit >= 999 ? t('apiKey.page.unlimited') : quota.limit })}</li>
+            <li>• {t('apiKey.page.tip2')}</li>
           </ul>
         </InfoBox>
 
-        <InfoBox icon={AlertTriangle} title="安全提示" variant="warning">
+        <InfoBox icon={AlertTriangle} title={t('apiKey.infoBox.securityTitle')} variant="warning">
           <ul className="space-y-1">
-            <li>• 不要在公开场合分享你的 API Key</li>
-            <li>• 如果 API Key 泄露，请立即撤销并创建新的</li>
-            <li>• 撤销后的 Key 无法恢复，但可以删除以清理记录</li>
+            <li>• {t('apiKey.infoBox.securityTip1')}</li>
+            <li>• {t('apiKey.infoBox.securityTip2')}</li>
+            <li>• {t('apiKey.infoBox.securityTip3')}</li>
           </ul>
         </InfoBox>
       </div>
 
-      {/* 创建 API Key 模态框 */}
       {showCreateModal && (
         <CreateApiKeyModal onClose={() => setShowCreateModal(false)} />
       )}
 
-      {/* API Key 详情模态框 */}
       {selectedKey && (
         <ApiKeyDetailModal
           apiKey={selectedKey}

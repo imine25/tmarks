@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { DefaultBookmarkIconComponent } from '@/components/bookmarks/DefaultBookmarkIcon'
 import { DEFAULT_ICON_OPTIONS } from '@/components/bookmarks/defaultIconOptions'
 import type { DefaultBookmarkIcon } from '@/lib/types'
@@ -11,12 +12,14 @@ export function DefaultBookmarkIconSettings({
   selectedIcon,
   onIconChange,
 }: DefaultBookmarkIconSettingsProps) {
+  const { t } = useTranslation('settings')
+
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-foreground">默认书签图标</h3>
+        <h3 className="text-lg font-semibold text-foreground">{t('appearance.defaultIcon.title')}</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          选择当书签没有封面图和网站图标时显示的默认图标
+          {t('appearance.defaultIcon.description')}
         </p>
       </div>
 
@@ -60,7 +63,7 @@ export function DefaultBookmarkIconSettings({
           </svg>
         </div>
         <p className="text-xs text-muted-foreground">
-          当前选择：<span className="font-medium text-foreground">{DEFAULT_ICON_OPTIONS.find(o => o.value === selectedIcon)?.label}</span>
+          {t('appearance.defaultIcon.currentSelection')}<span className="font-medium text-foreground">{DEFAULT_ICON_OPTIONS.find(o => o.value === selectedIcon)?.label}</span>
         </p>
       </div>
     </div>

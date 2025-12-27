@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { User, Mail, Calendar, Shield, Lock, Eye, EyeOff, Info } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import { useToastStore } from '@/stores/toastStore'
@@ -6,6 +7,7 @@ import { InfoBox } from '../InfoBox'
 import { apiClient } from '@/lib/api-client'
 
 export function BasicSettingsTab() {
+    const { t, i18n } = useTranslation('settings')
     const { user } = useAuthStore()
     const { addToast } = useToastStore()
     
@@ -22,17 +24,17 @@ export function BasicSettingsTab() {
         e.preventDefault()
         
         if (!currentPassword || !newPassword || !confirmPassword) {
-            addToast('error', '请填写所有字段')
+            addToast('error', t('basic.password.fillAllFields'))
             return
         }
 
         if (newPassword !== confirmPassword) {
-            addToast('error', '两次输入的新密码不一致')
+            addToast('error', t('basic.password.mismatch'))
             return
         }
 
         if (newPassword.length < 6) {
-            addToast('error', '新密码至少需要 6 个字符')
+            addToast('error', t('basic.password.tooShort'))
             return
         }
 
@@ -43,13 +45,13 @@ export function BasicSettingsTab() {
                 new_password: newPassword,
             })
             
-            addToast('success', '密码修改成功')
+            addToast('success', t('basic.password.changeSuccess'))
             setShowPasswordForm(false)
             setCurrentPassword('')
             setNewPassword('')
             setConfirmPassword('')
         } catch (error) {
-            const message = error instanceof Error ? error.message : '密码修改失败'
+            const message = error instanceof Error ? error.message : t('basic.password.changeFailed')
             addToast('error', message)
         } finally {
             setIsChangingPassword(false)
@@ -57,9 +59,9 @@ export function BasicSettingsTab() {
     }
 
     const formatDate = (dateString?: string) => {
-        if (!dateString) return '未知'
+        if (!dateString) return t('basic.unknown')
         try {
-            return new Date(dateString).toLocaleDateString('zh-CN', {
+            return new Date(dateString).toLocaleDateString(i18n.language === 'zh-CN' ? 'zh-CN' : 'en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
@@ -71,60 +73,55 @@ export function BasicSettingsTab() {
 
     return (
         <div className="space-y-6">
-            {/* 账户信息 */}
             <div className="space-y-4">
                 <div>
-                    <h3 className="text-lg font-semibold text-foreground">账户信息</h3>
+                    <h3 className="text-lg font-semibold text-foreground">{t('basic.accountInfo.title')}</h3>
                     <p className="text-sm text-muted-foreground mt-1">
-                        查看您的账户基本信息
+                        {t('basic.accountInfo.description')}
                     </p>
                 </div>
                 
                 <div className="space-y-3">
-                    {/* 用户名 */}
                     <div className="flex items-center gap-3 p-4 rounded-lg bg-card border border-border">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                             <User className="w-5 h-5 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <div className="text-xs text-muted-foreground">用户名</div>
-                            <div className="text-sm font-medium text-foreground truncate">{user?.username || '未设置'}</div>
+                            <div className="text-xs text-muted-foreground">{t('basic.username')}</div>
+                            <div className="text-sm font-medium text-foreground truncate">{user?.username || t('basic.notSet')}</div>
                         </div>
                     </div>
 
-                    {/* 邮箱 */}
                     {user?.email && (
                         <div className="flex items-center gap-3 p-4 rounded-lg bg-card border border-border">
                             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                                 <Mail className="w-5 h-5 text-primary" />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <div className="text-xs text-muted-foreground">邮箱</div>
+                                <div className="text-xs text-muted-foreground">{t('basic.email')}</div>
                                 <div className="text-sm font-medium text-foreground truncate">{user.email}</div>
                             </div>
                         </div>
                     )}
 
-                    {/* 注册时间 */}
                     <div className="flex items-center gap-3 p-4 rounded-lg bg-card border border-border">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                             <Calendar className="w-5 h-5 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <div className="text-xs text-muted-foreground">注册时间</div>
+                            <div className="text-xs text-muted-foreground">{t('basic.registeredAt')}</div>
                             <div className="text-sm font-medium text-foreground">{formatDate(user?.created_at)}</div>
                         </div>
                     </div>
 
-                    {/* 账户角色 */}
                     <div className="flex items-center gap-3 p-4 rounded-lg bg-card border border-border">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                             <Shield className="w-5 h-5 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <div className="text-xs text-muted-foreground">账户角色</div>
+                            <div className="text-xs text-muted-foreground">{t('basic.role')}</div>
                             <div className="text-sm font-medium text-foreground">
-                                {user?.role === 'admin' ? '管理员' : '普通用户'}
+                                {user?.role === 'admin' ? t('basic.roleAdmin') : t('basic.roleUser')}
                             </div>
                         </div>
                     </div>
@@ -133,12 +130,11 @@ export function BasicSettingsTab() {
 
             <div className="border-t border-border"></div>
 
-            {/* 修改密码 */}
             <div className="space-y-4">
                 <div>
-                    <h3 className="text-lg font-semibold text-foreground">安全设置</h3>
+                    <h3 className="text-lg font-semibold text-foreground">{t('basic.security.title')}</h3>
                     <p className="text-sm text-muted-foreground mt-1">
-                        修改您的登录密码
+                        {t('basic.security.description')}
                     </p>
                 </div>
 
@@ -148,20 +144,19 @@ export function BasicSettingsTab() {
                         className="btn btn-primary flex items-center gap-2"
                     >
                         <Lock className="w-4 h-4" />
-                        修改密码
+                        {t('basic.password.change')}
                     </button>
                 ) : (
                     <form onSubmit={handleChangePassword} className="space-y-4 p-4 rounded-lg bg-card border border-border">
-                        {/* 当前密码 */}
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">当前密码</label>
+                            <label className="text-sm font-medium text-foreground">{t('basic.password.current')}</label>
                             <div className="relative">
                                 <input
                                     type={showCurrentPassword ? 'text' : 'password'}
                                     value={currentPassword}
                                     onChange={(e) => setCurrentPassword(e.target.value)}
                                     className="input w-full pr-10"
-                                    placeholder="请输入当前密码"
+                                    placeholder={t('basic.password.currentPlaceholder')}
                                     required
                                 />
                                 <button
@@ -174,16 +169,15 @@ export function BasicSettingsTab() {
                             </div>
                         </div>
 
-                        {/* 新密码 */}
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">新密码</label>
+                            <label className="text-sm font-medium text-foreground">{t('basic.password.new')}</label>
                             <div className="relative">
                                 <input
                                     type={showNewPassword ? 'text' : 'password'}
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
                                     className="input w-full pr-10"
-                                    placeholder="请输入新密码（至少 6 个字符）"
+                                    placeholder={t('basic.password.newPlaceholder')}
                                     required
                                     minLength={6}
                                 />
@@ -197,16 +191,15 @@ export function BasicSettingsTab() {
                             </div>
                         </div>
 
-                        {/* 确认新密码 */}
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">确认新密码</label>
+                            <label className="text-sm font-medium text-foreground">{t('basic.password.confirm')}</label>
                             <div className="relative">
                                 <input
                                     type={showConfirmPassword ? 'text' : 'password'}
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     className="input w-full pr-10"
-                                    placeholder="请再次输入新密码"
+                                    placeholder={t('basic.password.confirmPlaceholder')}
                                     required
                                 />
                                 <button
@@ -219,7 +212,6 @@ export function BasicSettingsTab() {
                             </div>
                         </div>
 
-                        {/* 按钮组 */}
                         <div className="flex gap-2 pt-2">
                             <button
                                 type="button"
@@ -232,14 +224,14 @@ export function BasicSettingsTab() {
                                 className="btn btn-ghost flex-1"
                                 disabled={isChangingPassword}
                             >
-                                取消
+                                {t('basic.password.cancel')}
                             </button>
                             <button
                                 type="submit"
                                 className="btn btn-primary flex-1"
                                 disabled={isChangingPassword}
                             >
-                                {isChangingPassword ? '修改中...' : '确认修改'}
+                                {isChangingPassword ? t('basic.password.changing') : t('basic.password.submit')}
                             </button>
                         </div>
                     </form>
@@ -248,13 +240,12 @@ export function BasicSettingsTab() {
 
             <div className="border-t border-border"></div>
 
-            {/* 提示信息 */}
-            <InfoBox icon={Info} title="账户安全提示" variant="info">
+            <InfoBox icon={Info} title={t('basic.password.infoBoxTitle')} variant="info">
                 <ul className="space-y-1 text-sm">
-                    <li>• 请定期修改密码以保护账户安全</li>
-                    <li>• 密码至少需要 6 个字符</li>
-                    <li>• 建议使用字母、数字和符号的组合</li>
-                    <li>• 不要与他人分享您的密码</li>
+                    <li>• {t('basic.password.tip1')}</li>
+                    <li>• {t('basic.password.tip2')}</li>
+                    <li>• {t('basic.password.tip3')}</li>
+                    <li>• {t('basic.password.tip4')}</li>
                 </ul>
             </InfoBox>
         </div>

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 import { Camera, ExternalLink, Trash2 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
-import { zhCN } from 'date-fns/locale';
+import { zhCN, enUS } from 'date-fns/locale';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { useAuthStore } from '@/stores/authStore';
 import { useToastStore } from '@/stores/toastStore';
@@ -25,6 +26,8 @@ interface SnapshotViewerProps {
 }
 
 export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }: SnapshotViewerProps) {
+  const { t, i18n } = useTranslation('bookmarks');
+  const dateLocale = i18n.language === 'zh-CN' ? zhCN : enUS;
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -139,10 +142,10 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
       // 刷新书签列表（更新快照计数）
       queryClient.invalidateQueries({ queryKey: [BOOKMARKS_QUERY_KEY] });
       
-      addToast('success', '快照已删除');
+      addToast('success', t('snapshot.deleteSuccess'));
     } catch (error) {
       console.error('Failed to delete snapshot:', error);
-      addToast('error', '删除快照失败');
+      addToast('error', t('snapshot.deleteFailed'));
     } finally {
       setDeletingId(null);
       setPendingDelete(null);
@@ -172,7 +175,7 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
               {bookmarkTitle}
             </h2>
             <p className="text-sm text-muted-foreground mt-1">
-              共 {snapshots.length} 个快照
+              {t('snapshot.count', { count: snapshots.length })}
             </p>
           </div>
           <button
@@ -181,7 +184,7 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
               setIsOpen(false);
             }}
             className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center text-foreground transition-colors flex-shrink-0"
-            aria-label="关闭"
+            aria-label={t('snapshot.close')}
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -197,7 +200,7 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
                 <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary/20"></div>
                 <div className="animate-spin rounded-full h-12 w-12 border-4 border-transparent border-t-primary absolute top-0 left-0"></div>
               </div>
-              <p className="text-sm text-muted-foreground mt-4 font-medium">加载快照中...</p>
+              <p className="text-sm text-muted-foreground mt-4 font-medium">{t('snapshot.loading')}</p>
             </div>
           ) : snapshots.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground">
@@ -207,8 +210,8 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
                   <div className="w-8 h-0.5 bg-border rotate-45"></div>
                 </div>
               </div>
-              <p className="text-base font-medium text-foreground mb-1">暂无快照</p>
-              <p className="text-xs text-muted-foreground">使用浏览器插件可以保存网页快照</p>
+              <p className="text-base font-medium text-foreground mb-1">{t('snapshot.empty')}</p>
+              <p className="text-xs text-muted-foreground">{t('snapshot.emptyHint')}</p>
             </div>
           ) : (
             <div className="space-y-2.5">
@@ -238,7 +241,7 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
                         
                         {/* 版本号 */}
                         <div className="flex items-center gap-2 text-xs text-foreground/80">
-                          <span className="font-medium">版本 {snapshot.version}</span>
+                          <span className="font-medium">{t('snapshot.version', { version: snapshot.version })}</span>
                           {snapshot.file_size > 0 && (
                             <>
                               <span className="text-muted-foreground">•</span>
@@ -251,10 +254,10 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
                         <div className="text-xs text-muted-foreground mt-0.5">
                           {formatDistanceToNow(new Date(snapshot.created_at), { 
                             addSuffix: true, 
-                            locale: zhCN 
+                            locale: dateLocale 
                           })}
                           <span className="mx-1">•</span>
-                          {format(new Date(snapshot.created_at), 'yyyy-MM-dd HH:mm', { locale: zhCN })}
+                          {format(new Date(snapshot.created_at), 'yyyy-MM-dd HH:mm', { locale: dateLocale })}
                         </div>
                       </div>
                     </div>
@@ -266,7 +269,7 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
                     onClick={(e) => handleRequestDelete(snapshot.id, snapshot.version, e)}
                     disabled={deletingId === snapshot.id}
                     className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all opacity-0 sm:group-hover:opacity-100 active:opacity-100 disabled:opacity-50 flex-shrink-0"
-                    title="删除快照"
+                    title={t('snapshot.delete')}
                   >
                     {deletingId === snapshot.id ? (
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-destructive"></div>
@@ -288,8 +291,8 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
     <>
       <ConfirmDialog
         isOpen={showDeleteConfirm}
-        title="删除快照"
-        message={pendingDelete ? `确定要删除版本 ${pendingDelete.version} 的快照吗？\n\n删除后将无法恢复。` : '确定要删除该快照吗？'}
+        title={t('snapshot.deleteTitle')}
+        message={pendingDelete ? t('snapshot.deleteMessage', { version: pendingDelete.version }) : t('snapshot.deleteConfirm')}
         type="warning"
         onConfirm={handleConfirmDelete}
         onCancel={() => {
@@ -302,7 +305,7 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
         <button
           onClick={handleOpen}
           className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary hover:bg-primary/20 hover:scale-105 active:scale-95 transition-all"
-          title={`查看 ${snapshotCount} 个快照`}
+          title={t('snapshot.viewCount', { count: snapshotCount })}
         >
           <Camera className="w-3 h-3" strokeWidth={2} />
           <span className="font-medium">{snapshotCount}</span>
