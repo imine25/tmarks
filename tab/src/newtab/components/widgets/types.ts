@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /**
  * 组件系统类型定义
  */
@@ -25,3 +26,27 @@ export interface WidgetRendererProps {
   onToggleSelect?: (id: string) => void;
   shortcutStyle?: 'icon' | 'card';
 }
+=======
+/**
+ * 组件系统类型定义
+ */
+
+import type { GridItem, GridItemSize, WidgetConfig } from '../../types';
+
+// 组件通用 Props
+export interface WidgetProps {
+  item: GridItem;
+  size: GridItemSize;
+  config?: WidgetConfig;
+  onConfigChange?: (config: WidgetConfig) => void;
+  isEditing?: boolean;
+}
+
+// 组件渲染器 Props
+export interface WidgetRendererProps {
+  item: GridItem;
+  onUpdate?: (id: string, updates: Partial<GridItem>) => void;
+  onRemove?: (id: string) => void;
+  isEditing?: boolean;
+}
+>>>>>>> 466a3a00e4a5595851c6537580d9a27eeeea9e75

@@ -154,7 +154,11 @@ pnpm dev
 #### 5. 初始化数据库
 1. 打开 **Workers & Pages → D1 SQL Database**
 2. 进入 `tmarks-prod-db` → **Console**
-3. 打开仓库中的 `tmarks/migrations/d1_console_pure.sql`
+3. 打开仓库中的
+ “tmarks/migrations/0001_d1_console.sql
+tmarks/migrations/0002_d1_console_ai_settings.sql
+tmarks/migrations/0100_d1_console.sql
+tmarks/migrations/0101_d1_console.sql”
 4. 复制全部 SQL，粘贴到控制台，点击 **Execute** 执行
 
 #### 6. 重新部署
@@ -167,5 +171,6 @@ pnpm dev
 
 
 ## 📄 许可证
+
 
 本项目采用 [MIT License](LICENSE) 开源协议。

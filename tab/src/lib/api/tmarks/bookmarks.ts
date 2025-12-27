@@ -56,6 +56,7 @@ export class BookmarksAPI extends TMarksClient {
    */
   async deleteBookmark(id: string): Promise<void> {
     return this.delete<void>(`/tab/bookmarks/${id}`);
+<<<<<<< HEAD
   }
 
   /**
@@ -96,6 +97,8 @@ export class BookmarksAPI extends TMarksClient {
    */
   async emptyTrash(): Promise<{ message: string; count: number }> {
     return this.delete<{ message: string; count: number }>('/tab/bookmarks/trash/empty');
+=======
+>>>>>>> 466a3a00e4a5595851c6537580d9a27eeeea9e75
   }
 
   
@@ -221,6 +224,7 @@ export class BookmarksAPI extends TMarksClient {
       bookmark_ids: bookmarkIds,
     });
   }
+<<<<<<< HEAD
 
   /**
    * 记录书签点击
@@ -229,4 +233,6 @@ export class BookmarksAPI extends TMarksClient {
   async recordClick(id: string): Promise<{ message: string; clicked_at: string }> {
     return this.post<{ message: string; clicked_at: string }>(`/tab/bookmarks/${id}/click`, {});
   }
+=======
+>>>>>>> 466a3a00e4a5595851c6537580d9a27eeeea9e75
 }
