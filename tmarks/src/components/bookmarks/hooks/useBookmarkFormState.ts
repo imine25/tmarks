@@ -13,7 +13,6 @@ export function useBookmarkFormState(bookmark?: Bookmark | null) {
   )
   const [isPinned, setIsPinned] = useState(bookmark?.is_pinned || false)
   const [isArchived, setIsArchived] = useState(bookmark?.is_archived || false)
-  const [isPublic, setIsPublic] = useState(bookmark?.is_public ?? true)
   const [error, setError] = useState('')
   const [urlWarning, setUrlWarning] = useState<{ exists: boolean; message: string } | null>(null)
   const [isCheckingUrl, setIsCheckingUrl] = useState(false)
@@ -37,8 +36,6 @@ export function useBookmarkFormState(bookmark?: Bookmark | null) {
     setIsPinned,
     isArchived,
     setIsArchived,
-    isPublic,
-    setIsPublic,
     error,
     setError,
     urlWarning,

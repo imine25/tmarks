@@ -114,9 +114,9 @@ async function loadMessages(lang: LanguageCode): Promise<Record<string, { messag
 /**
  * 转义正则表达式特殊字符
  */
-function escapeRegExp(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
+// function escapeRegExp(str: string): string {
+//   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+// }
 
 /**
  * 获取国际化消息

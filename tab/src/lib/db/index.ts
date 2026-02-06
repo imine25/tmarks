@@ -13,14 +13,14 @@ export class BookmarkDB extends Dexie {
 
     this.version(1).stores({
       tags: '++id, name, color, createdAt, count',
-      bookmarks: '++id, url, title, createdAt, remoteId, isPublic, *tags',
+      bookmarks: '++id, url, title, createdAt, remoteId, *tags',
       metadata: 'key, updatedAt'
     });
 
     // Version 2: Add tab groups support
     this.version(2).stores({
       tags: '++id, name, color, createdAt, count',
-      bookmarks: '++id, url, title, createdAt, remoteId, isPublic, *tags',
+      bookmarks: '++id, url, title, createdAt, remoteId, *tags',
       metadata: 'key, updatedAt',
       tabGroups: '++id, title, createdAt, remoteId',
       tabGroupItems: '++id, groupId, title, url, position, createdAt'

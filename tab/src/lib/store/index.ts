@@ -4,7 +4,6 @@ import type {
   PageInfo,
   TagSuggestion,
   StorageConfig,
-  UserPreferences,
   Message,
   MessageResponse,
   RecommendationResult,
@@ -53,9 +52,6 @@ interface AppState {
   lastSaveDurationMs: number | null;
   lastRecommendationDurationMs: number | null;
 
-  isPublic: boolean;
-  setIsPublic: (value: boolean) => void;
-
   includeThumbnail: boolean;
   setIncludeThumbnail: (value: boolean) => void;
 
@@ -97,7 +93,6 @@ export const useAppStore = create<AppState>((set, get) => ({
   lastRecommendationMessage: null,
   lastSaveDurationMs: null,
   lastRecommendationDurationMs: null,
-  isPublic: true,
   includeThumbnail: false,
   createSnapshot: false,
   existingBookmark: null,
@@ -130,43 +125,6 @@ export const useAppStore = create<AppState>((set, get) => ({
   setError: (error) => set({ error }),
   setSuccessMessage: (message) => set({ successMessage: message }),
   setLoadingMessage: (message) => set({ loadingMessage: message }),
-  setIsPublic: (value) => {
-    const defaultVisibility: 'public' | 'private' = value ? 'public' : 'private';
-    const state = get();
-    const nextConfig = state.config
-      ? {
-          ...state.config,
-          preferences: {
-            ...state.config.preferences,
-            defaultVisibility
-          }
-        }
-      : state.config;
-
-    set({
-      isPublic: value,
-      config: nextConfig ?? state.config
-    });
-
-    const preferencesPayload: UserPreferences = state.config
-      ? { ...state.config.preferences, defaultVisibility }
-      : {
-          theme: 'auto',
-          autoSync: true,
-          syncInterval: 24,
-          maxSuggestedTags: 5,
-          defaultVisibility,
-          enableAI: true,
-          defaultIncludeThumbnail: true,
-          defaultCreateSnapshot: false
-        };
-
-    StorageService.saveConfig({
-      preferences: preferencesPayload
-    }).catch(() => {
-      // Silently handle error
-    });
-  },
   setIncludeThumbnail: (value) => set({ includeThumbnail: value }),
 
   setCreateSnapshot: (value) => set({ createSnapshot: value }),
@@ -218,7 +176,6 @@ export const useAppStore = create<AppState>((set, get) => ({
       const config = await StorageService.loadConfig();
       set({
         config,
-        isPublic: config.preferences.defaultVisibility === 'public',
         createSnapshot: config.preferences.defaultCreateSnapshot ?? false
       });
     } catch (error) {
@@ -231,8 +188,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       await StorageService.saveConfig(partialConfig);
       const config = await StorageService.loadConfig();
       set({
-        config,
-        isPublic: config.preferences.defaultVisibility === 'public'
+        config
       });
     } catch (error) {
       set({ error: t('error_save_config') });
@@ -244,7 +200,6 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       const { config } = get();
-      const defaultVisibility = config?.preferences.defaultVisibility ?? 'public';
       const defaultIncludeThumbnail = config?.preferences.defaultIncludeThumbnail ?? true;
 
       const response = await sendMessage<PageInfo>({
@@ -254,7 +209,6 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({
         currentPage: response,
         isLoading: false,
-        isPublic: defaultVisibility === 'public',
         includeThumbnail: defaultIncludeThumbnail && Boolean(response.thumbnail)
       });
     } catch (error) {
@@ -341,7 +295,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   saveBookmark: async () => {
-    const { currentPage, selectedTags, isPublic, includeThumbnail, createSnapshot } = get();
+    const { currentPage, selectedTags, includeThumbnail, createSnapshot } = get();
 
     if (!currentPage) {
       set({ error: t('error_no_page_info') });
@@ -367,7 +321,6 @@ export const useAppStore = create<AppState>((set, get) => ({
           description: currentPage.description,
           tags: selectedTags,
           thumbnail: includeThumbnail ? currentPage.thumbnail : undefined,
-          isPublic,
           createSnapshot
         }
       });

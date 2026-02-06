@@ -228,7 +228,6 @@
     "sort": {
       "created": "By creation time",
       "updated": "By update time",
-      "pinned": "Pinned first",
       "popular": "By popularity"
     },
     "visibility": {

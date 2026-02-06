@@ -1,5 +1,4 @@
 import { useMemo, useEffect, useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
 import { TagSidebar } from '@/components/tags/TagSidebar'
 import { BookmarkListContainer } from '@/components/bookmarks/BookmarkListContainer'
 import { BookmarkForm } from '@/components/bookmarks/BookmarkForm'
@@ -14,11 +13,10 @@ import { useTags } from '@/hooks/useTags'
 import type { Bookmark, BookmarkQueryParams } from '@/lib/types'
 import type { SortOption } from '@/components/common/SortSelector'
 
-const SORT_OPTIONS: SortOption[] = ['created', 'updated', 'pinned', 'popular']
+const SORT_OPTIONS: SortOption[] = ['created', 'updated', 'popular']
 const VIEW_MODES = ['list', 'card', 'minimal', 'title'] as const
 
 export function BookmarksPage() {
-  const { t } = useTranslation('bookmarks')
   // 状态管理
   const state = useBookmarksState()
   const {
@@ -36,8 +34,6 @@ export function BookmarksPage() {
     setSortBy,
     viewMode,
     setViewMode,
-    visibilityFilter,
-    setVisibilityFilter,
     tagLayout,
     setTagLayout,
     sortByInitialized,
@@ -119,7 +115,7 @@ export function BookmarksPage() {
         return
       }
 
-      // 如果 tags 数量相同但新的对象字段更“新”，也用新的覆盖（例如更新时间、点击数等）
+      // 如果 tags 数量相同但新的对象字段更"新"，也用新的覆盖（例如更新时间、点击数等）
       if (nextTagCount === existingTagCount) {
         uniqueBookmarksMap.set(bookmark.id, { ...existing, ...bookmark })
       }
@@ -127,23 +123,14 @@ export function BookmarksPage() {
     return Array.from(uniqueBookmarksMap.values())
   }, [bookmarksQuery.data])
 
-  // 可见性过滤
-  const filteredBookmarks = useMemo(() => {
-    if (visibilityFilter === 'all') return bookmarks
-
-    return bookmarks.filter((bookmark) =>
-      visibilityFilter === 'public' ? bookmark.is_public : !bookmark.is_public
-    )
-  }, [bookmarks, visibilityFilter])
-
   const isInitialLoading = bookmarksQuery.isLoading && bookmarks.length === 0
   const isFetchingExisting = bookmarksQuery.isFetching && !isInitialLoading
 
   useEffect(() => {
-    if (filteredBookmarks.length > 0) {
-      previousCountRef.current = filteredBookmarks.length
+    if (bookmarks.length > 0) {
+      previousCountRef.current = bookmarks.length
     }
-  }, [filteredBookmarks.length, previousCountRef])
+  }, [bookmarks.length, previousCountRef])
 
   const hasMore = Boolean(bookmarksQuery.hasNextPage)
 
@@ -204,8 +191,8 @@ export function BookmarksPage() {
   }, [setSelectedIds])
 
   const handleSelectAll = useCallback(() => {
-    setSelectedIds(filteredBookmarks.map((b) => b.id))
-  }, [filteredBookmarks, setSelectedIds])
+    setSelectedIds(bookmarks.map((b) => b.id))
+  }, [bookmarks, setSelectedIds])
 
   const handleClearSelection = useCallback(() => {
     setSelectedIds([])
@@ -230,7 +217,7 @@ export function BookmarksPage() {
               onTagsChange={setSelectedTags}
               tagLayout={tagLayout}
               onTagLayoutChange={handleTagLayoutChange}
-              bookmarks={filteredBookmarks}
+              bookmarks={bookmarks}
               isLoadingBookmarks={isInitialLoading || isFetchingExisting}
               searchQuery={searchMode === 'tag' ? debouncedSearchKeyword : ''}
             />
@@ -246,8 +233,6 @@ export function BookmarksPage() {
               setSearchKeyword={setSearchKeyword}
               sortBy={sortBy}
               onSortByChange={handleSortByChange}
-              visibilityFilter={visibilityFilter}
-              setVisibilityFilter={setVisibilityFilter}
               viewMode={viewMode}
               onViewModeChange={handleViewModeChange}
               batchMode={batchMode}
@@ -265,17 +250,17 @@ export function BookmarksPage() {
                     <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
                       <span className="font-medium text-foreground whitespace-nowrap">
                         {selectedIds.length > 0
-                          ? t('batch.selectedCount', { count: selectedIds.length })
-                          : t('batch.pleaseSelect')}
+                          ? `已选择 ${selectedIds.length} 项`
+                          : '请选择书签'}
                       </span>
-                      {selectedIds.length < filteredBookmarks.length && (
+                      {selectedIds.length < bookmarks.length && (
                         <>
                           <span className="text-border hidden sm:inline">|</span>
                           <button
                             onClick={handleSelectAll}
                             className="text-primary hover:text-primary/80 transition-colors whitespace-nowrap"
                           >
-                            {t('batch.selectAll', { count: filteredBookmarks.length })}
+                            全选({bookmarks.length})
                           </button>
                         </>
                       )}
@@ -286,7 +271,7 @@ export function BookmarksPage() {
                             onClick={handleClearSelection}
                             className="text-primary hover:text-primary/80 transition-colors whitespace-nowrap"
                           >
-                            {t('batch.cancel')}
+                            取消
                           </button>
                         </>
                       )}
@@ -300,7 +285,7 @@ export function BookmarksPage() {
             <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4 md:px-6 pb-20 sm:pb-4 md:pb-6 w-full overscroll-contain touch-auto">
               <div className="space-y-3 sm:space-y-4 md:space-y-5 w-full min-w-0">
                 <BookmarkListContainer
-                  bookmarks={filteredBookmarks}
+                  bookmarks={bookmarks}
                   isLoading={isInitialLoading || isFetchingExisting}
                   viewMode={viewMode}
                   onEdit={handleOpenForm}
@@ -310,13 +295,13 @@ export function BookmarksPage() {
                   onToggleSelect={handleToggleSelect}
                 />
 
-                {!isInitialLoading && filteredBookmarks.length > 0 && (
+                {!isInitialLoading && bookmarks.length > 0 && (
                   <PaginationFooter
                     hasMore={hasMore}
                     isLoading={bookmarksQuery.isFetchingNextPage}
                     onLoadMore={handleLoadMore}
-                    currentCount={filteredBookmarks.length}
-                    totalLoaded={filteredBookmarks.length}
+                    currentCount={bookmarks.length}
+                    totalLoaded={bookmarks.length}
                   />
                 )}
               </div>
@@ -334,11 +319,11 @@ export function BookmarksPage() {
 
             <div className="absolute left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-background border-r border-border shadow-xl animate-in slide-in-from-left duration-300 flex flex-col">
               <div className="flex items-center justify-between p-4 border-b border-border bg-background flex-shrink-0">
-                <h3 className="text-lg font-semibold text-foreground">{t('tags:filter.title')}</h3>
+                <h3 className="text-lg font-semibold text-foreground">标签筛选</h3>
                 <button
                   onClick={() => setIsTagSidebarOpen(false)}
                   className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-muted transition-colors"
-                  aria-label={t('tags:filter.close')}
+                  aria-label="关闭标签抽屉"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -357,7 +342,7 @@ export function BookmarksPage() {
                   }}
                   tagLayout={tagLayout}
                   onTagLayoutChange={handleTagLayoutChange}
-                  bookmarks={filteredBookmarks}
+                  bookmarks={bookmarks}
                   isLoadingBookmarks={isInitialLoading || isFetchingExisting}
                   searchQuery={searchMode === 'tag' ? debouncedSearchKeyword : ''}
                 />

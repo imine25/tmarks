@@ -16,7 +16,6 @@ export interface Bookmark {
   tags: string[];
   createdAt: number;
   remoteId?: string;
-  isPublic?: boolean;
 }
 
 export interface Metadata {
@@ -68,7 +67,6 @@ export interface UserPreferences {
   autoSync: boolean;
   syncInterval: number;
   maxSuggestedTags: number;
-  defaultVisibility: 'public' | 'private';
   enableAI: boolean; // 是否启用 AI 标签推荐
   defaultIncludeThumbnail: boolean; // 默认是否包含封面图
   defaultCreateSnapshot: boolean; // 默认是否创建快照
@@ -185,7 +183,6 @@ export interface BookmarkInput {
   tags: string[];
   thumbnail?: string;
   favicon?: string;
-  isPublic?: boolean;
   createSnapshot?: boolean;
 }
 

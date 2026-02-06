@@ -11,7 +11,6 @@ import { requireApiKeyAuth, ApiKeyAuthContext } from '../../../middleware/api-ke
 import { isValidUrl, sanitizeString } from '../../../lib/validation'
 import { generateUUID } from '../../../lib/crypto'
 import { normalizeBookmark } from '../../../lib/bookmark-utils'
-import { invalidatePublicShareCache } from '../../shared/cache'
 import { uploadCoverImageToR2 } from '../../../lib/image-upload'
 
 interface CreateBookmarkRequest {
@@ -24,7 +23,6 @@ interface CreateBookmarkRequest {
   tags?: string[]     // 新版：标签名称数组（推荐）
   is_pinned?: boolean
   is_archived?: boolean
-  is_public?: boolean
 }
 
 // GET /api/bookmarks - 获取书签列表
@@ -43,7 +41,7 @@ export const onRequestGet: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[] 
       const tags = url.searchParams.get('tags')
       const pageSize = parseInt(url.searchParams.get('page_size') || '30')
       const pageCursor = url.searchParams.get('page_cursor')
-      const sortBy = (url.searchParams.get('sort') as 'created' | 'updated' | 'pinned') || 'created'
+      const sortBy = (url.searchParams.get('sort') as 'created' | 'updated' | 'popular') || 'created'
       const archivedParam = url.searchParams.get('archived')
       const archived = archivedParam ? archivedParam === 'true' : undefined
       const pinnedParam = url.searchParams.get('pinned')
@@ -102,9 +100,6 @@ export const onRequestGet: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[] 
       switch (sortBy) {
         case 'updated':
           orderBy = 'ORDER BY b.is_pinned DESC, CASE WHEN b.is_pinned = 1 THEN b.pin_order ELSE NULL END ASC, b.updated_at DESC, b.id DESC'
-          break
-        case 'pinned':
-          orderBy = 'ORDER BY b.is_pinned DESC, CASE WHEN b.is_pinned = 1 THEN b.pin_order ELSE NULL END ASC, b.created_at DESC, b.id DESC'
           break
         case 'created':
         default:
@@ -219,7 +214,6 @@ export const onRequestPost: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[]
       let bookmarkId: string
       const isPinned = body.is_pinned ? 1 : 0
       const isArchived = body.is_archived ? 1 : 0
-      const isPublic = body.is_public ? 1 : 0
 
       // 如果有封面图且配置了 R2 bucket，上传到 R2
       let coverImageId: string | null = null
@@ -297,7 +291,7 @@ export const onRequestPost: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[]
         await context.env.DB.prepare(
           `UPDATE bookmarks
            SET title = ?, description = ?, cover_image = ?, favicon = ?,
-               is_pinned = ?, is_archived = ?, is_public = ?,
+               is_pinned = ?, is_archived = ?,
                deleted_at = NULL, updated_at = ?
            WHERE id = ?`
         )
@@ -308,7 +302,6 @@ export const onRequestPost: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[]
             favicon,
             isPinned,
             isArchived,
-            isPublic,
             now,
             bookmarkId
           )
@@ -321,8 +314,8 @@ export const onRequestPost: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[]
         // 创建新书签
         bookmarkId = generateUUID()
         await context.env.DB.prepare(
-          `INSERT INTO bookmarks (id, user_id, title, url, description, cover_image, cover_image_id, favicon, is_pinned, is_archived, is_public, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          `INSERT INTO bookmarks (id, user_id, title, url, description, cover_image, cover_image_id, favicon, is_pinned, is_archived, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         )
           .bind(
             bookmarkId,
@@ -335,7 +328,6 @@ export const onRequestPost: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[]
             favicon,
             isPinned,
             isArchived,
-            isPublic,
             now,
             now
           )
@@ -375,8 +367,6 @@ export const onRequestPost: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[]
       if (!bookmarkRow) {
         return internalError('Failed to load bookmark after creation')
       }
-
-      await invalidatePublicShareCache(context.env, userId)
 
       return created({
         bookmark: {

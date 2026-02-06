@@ -150,8 +150,7 @@ export class BookmarkAPIClient {
         description: bm.description || '',
         tags: bm.tags.map((tag: TMarksTag) => tag.name), // 只保留标签名称
         createdAt: new Date(bm.created_at).getTime(),
-        remoteId: bm.id,
-        isPublic: bm.is_public
+        remoteId: bm.id
       }));
 
       return {
@@ -180,8 +179,7 @@ export class BookmarkAPIClient {
       description: bookmark.description,
       cover_image: bookmark.thumbnail,
       favicon: bookmark.favicon,
-      tags: bookmark.tags,
-      is_public: bookmark.isPublic ?? false
+      tags: bookmark.tags
     };
 
     // 打印请求数据用于调试

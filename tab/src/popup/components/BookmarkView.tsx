@@ -34,8 +34,6 @@ interface BookmarkViewProps {
   isAIEnabled: boolean;
 
   // Options
-  isPublic: boolean;
-  setIsPublic: (v: boolean) => void;
   includeThumbnail: boolean;
   handleToggleThumbnail: () => void;
   createSnapshot: boolean;
@@ -65,8 +63,6 @@ export function BookmarkView({
   isLoading,
   isRecommending,
   isAIEnabled,
-  isPublic,
-  setIsPublic,
   includeThumbnail,
   handleToggleThumbnail,
   createSnapshot,
@@ -107,8 +103,6 @@ export function BookmarkView({
         <PageInfoSection
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
-          isPublic={isPublic}
-          setIsPublic={setIsPublic}
           includeThumbnail={includeThumbnail}
           handleToggleThumbnail={handleToggleThumbnail}
           createSnapshot={createSnapshot}
@@ -201,8 +195,6 @@ function SelectedTagsSection({
 function PageInfoSection({
   currentPage,
   setCurrentPage,
-  isPublic,
-  setIsPublic,
   includeThumbnail,
   handleToggleThumbnail,
   createSnapshot,
@@ -220,8 +212,6 @@ function PageInfoSection({
 }: {
   currentPage: NonNullable<BookmarkViewProps['currentPage']>;
   setCurrentPage: (page: any) => void;
-  isPublic: boolean;
-  setIsPublic: (v: boolean) => void;
   includeThumbnail: boolean;
   handleToggleThumbnail: () => void;
   createSnapshot: boolean;
@@ -240,19 +230,6 @@ function PageInfoSection({
   return (
     <section className="rounded-xl border border-[var(--tab-popup-section-gray-border)] bg-[var(--tab-popup-section-gray-bg)] p-3.5 shadow-lg">
       <div className="mb-3 flex items-center justify-center gap-2">
-        <OptionButton
-          active={isPublic}
-          onClick={() => setIsPublic(!isPublic)}
-          title={isPublic ? t('tooltip_public') : t('tooltip_private')}
-          activeClass="bg-[var(--tab-popup-action-emerald-bg)] text-[var(--tab-popup-action-emerald-text)] hover:bg-[var(--tab-popup-action-emerald-bg-hover)]"
-        >
-          {isPublic ? (
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          ) : (
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-          )}
-        </OptionButton>
-
         <OptionButton
           active={includeThumbnail}
           onClick={handleToggleThumbnail}

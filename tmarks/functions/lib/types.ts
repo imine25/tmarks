@@ -43,7 +43,6 @@ export interface Bookmark {
   favicon: string | null
   is_pinned: boolean
   is_archived: boolean
-  is_public: boolean
   click_count: number
   last_clicked_at: string | null
   has_snapshot?: boolean
@@ -54,10 +53,9 @@ export interface Bookmark {
   deleted_at: string | null
 }
 
-export interface BookmarkRow extends Omit<Bookmark, 'is_pinned' | 'is_archived' | 'is_public'> {
+export interface BookmarkRow extends Omit<Bookmark, 'is_pinned' | 'is_archived'> {
   is_pinned: number | boolean
   is_archived: number | boolean
-  is_public: number | boolean
 }
 
 export interface PublicProfile {

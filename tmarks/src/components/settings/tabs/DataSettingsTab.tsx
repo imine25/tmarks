@@ -1,11 +1,11 @@
 /**
  * 数据设置标签页
- * 简化版本：导入导出、存储管理、AI设置
+ * 简化版本：导入导出、存储管理
  */
 
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Database, Download, Upload, Camera, Trash2, Bot, ChevronDown, ChevronUp } from 'lucide-react'
+import { Database, Download, Upload, Camera, Trash2 } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { ExportSection } from '@/components/import-export/ExportSection'
 import { ImportSection } from '@/components/import-export/ImportSection'
@@ -15,7 +15,6 @@ import { TAGS_QUERY_KEY } from '@/hooks/useTags'
 import { useToastStore } from '@/stores/toastStore'
 import { useAuthStore } from '@/stores/authStore'
 import { useR2StorageQuota } from '@/hooks/useStorage'
-import { AiSettingsTab } from './AiSettingsTab'
 import { SettingsSection, SettingsDivider } from '../SettingsSection'
 import type { ExportFormat, ExportOptions, ImportResult } from '@shared/import-export-types'
 
@@ -28,7 +27,6 @@ export function DataSettingsTab() {
   const [activeTab, setActiveTab] = useState<'export' | 'import'>('export')
   const [isCleaningSnapshots, setIsCleaningSnapshots] = useState(false)
   const [showCleanupConfirm, setShowCleanupConfirm] = useState(false)
-  const [showAiSettings, setShowAiSettings] = useState(false)
 
   const handleExportComplete = (format: ExportFormat, options: ExportOptions) => {
     const details = `${format.toUpperCase()}${options.include_tags ? ' + tags' : ''}${options.include_metadata ? ' + metadata' : ''}`
@@ -198,37 +196,6 @@ export function DataSettingsTab() {
           </div>
         </div>
       </SettingsSection>
-
-      <SettingsDivider />
-
-      {/* AI 设置 - 可折叠 */}
-      <div className="space-y-4">
-        <button
-          onClick={() => setShowAiSettings(!showAiSettings)}
-          className="w-full flex items-center justify-between p-4 rounded-lg bg-card border border-border hover:border-primary/50 transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Bot className="w-5 h-5 text-primary" />
-            </div>
-            <div className="text-left">
-              <h3 className="text-sm font-semibold text-foreground">{t('data.aiSettings.title')}</h3>
-              <p className="text-xs text-muted-foreground">{t('data.aiSettings.description')}</p>
-            </div>
-          </div>
-          {showAiSettings ? (
-            <ChevronUp className="w-5 h-5 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="w-5 h-5 text-muted-foreground" />
-          )}
-        </button>
-
-        {showAiSettings && (
-          <div className="p-4 rounded-lg border border-border bg-card">
-            <AiSettingsTab />
-          </div>
-        )}
-      </div>
     </div>
   )
 }

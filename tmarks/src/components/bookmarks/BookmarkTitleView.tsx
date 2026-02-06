@@ -239,8 +239,8 @@ function TitleOnlyCard({
   }
 
   return (
-    <div className="relative group">
-      <div className={`rounded-lg sm:rounded-xl border border-border/70 bg-card/95 backdrop-blur-sm shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/10 ${
+    <div className="group">
+      <div className={`relative rounded-lg sm:rounded-xl border border-border/70 bg-card/95 backdrop-blur-sm shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/10 ${
         batchMode && isSelected ? 'ring-2 ring-primary' : ''
       }`}>
         <div className="pointer-events-none absolute inset-0 rounded-lg sm:rounded-xl bg-gradient-to-br from-primary/4 via-transparent to-secondary/8 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />

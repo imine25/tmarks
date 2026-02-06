@@ -260,49 +260,6 @@
       "tip2": "建议启用智能去重，避免保存重复内容，节省存储空间"
     }
   },
-  "share": {
-    "title": "分享设置",
-    "publicShare": {
-      "title": "公开分享",
-      "description": "创建公开链接，让其他人查看你的书签",
-      "enable": "启用公开分享",
-      "enableHint": "开启后，其他人可以通过链接访问你的公开书签"
-    },
-    "slug": {
-      "label": "分享链接后缀",
-      "placeholder": "例如：my-bookmarks",
-      "hint": "仅支持字母、数字与短横线，留空将自动生成",
-      "regenerate": "重新生成"
-    },
-    "pageTitle": {
-      "label": "页面标题",
-      "placeholder": "公开页面标题，用于向访客介绍"
-    },
-    "pageDescription": {
-      "label": "页面描述",
-      "placeholder": "可选描述，向访客说明书签集合内容"
-    },
-    "shareLink": {
-      "label": "分享链接",
-      "placeholder": "生成后显示分享链接",
-      "copy": "复制",
-      "copied": "已复制"
-    },
-    "reset": "重置",
-    "saveSuccess": "分享设置已保存",
-    "saveFailed": "保存失败",
-    "regenerateSuccess": "链接已重新生成",
-    "regenerateFailed": "生成失败",
-    "copySuccess": "链接已复制",
-    "copyFailed": "复制失败",
-    "resetSuccess": "已重置为上次保存的设置",
-    "infoBox": {
-      "title": "分享功能说明",
-      "tip1": "只有标记为\"公开\"的书签才会在分享页面显示",
-      "tip2": "你可以随时修改分享链接或关闭分享功能",
-      "tip3": "分享页面不需要登录即可访问"
-    }
-  },
   "data": {
     "title": "数据管理",
     "r2Storage": {
@@ -578,8 +535,7 @@
       "title": "使用说明",
       "tip1": "API Key 会加密存储在服务器，不会泄露",
       "tip2": "AI 调用直接从浏览器发起，数据不经过 TMarks 服务器",
-      "tip3": "推荐使用 DeepSeek 或 gpt-4o-mini，性价比高",
-      "tip4": "导入 100 个书签约消耗 0.01-0.05 美元"
+      "tip3": "推荐使用 DeepSeek 或 gpt-4o-mini，性价比高"
     }
   }
 }

@@ -578,8 +578,7 @@
       "title": "Usage Guide",
       "tip1": "API Key is encrypted and stored on server, will not be leaked",
       "tip2": "AI calls are made directly from browser, data doesn't pass through TMarks server",
-      "tip3": "Recommended: DeepSeek or gpt-4o-mini for best value",
-      "tip4": "Importing 100 bookmarks costs about $0.01-0.05"
+      "tip3": "Recommended: DeepSeek or gpt-4o-mini for best value"
     }
   }
 }

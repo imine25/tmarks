@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Save, RotateCcw, Settings, Zap, Chrome, Key, Database, LogOut, BarChart3, Camera, Share2 } from 'lucide-react'
+import { Save, RotateCcw, Settings, Zap, Chrome, Key, Database, LogOut, BarChart3, Camera } from 'lucide-react'
 import { usePreferences, useUpdatePreferences } from '@/hooks/usePreferences'
 import { useAuthStore } from '@/stores/authStore'
 import { useToastStore } from '@/stores/toastStore'
@@ -10,10 +10,8 @@ import { ApiError } from '@/lib/api-client'
 import { SettingsTabs } from '@/components/settings/SettingsTabs'
 import { BasicSettingsTab } from '@/components/settings/tabs/BasicSettingsTab'
 import { AutomationSettingsTab } from '@/components/settings/tabs/AutomationSettingsTab'
-
 import { BrowserSettingsTab } from '@/components/settings/tabs/BrowserSettingsTab'
 import { ApiSettingsTab } from '@/components/settings/tabs/ApiSettingsTab'
-import { ShareSettingsTab } from '@/components/settings/tabs/ShareSettingsTab'
 import { DataSettingsTab } from '@/components/settings/tabs/DataSettingsTab'
 import { BookmarkStatisticsPage } from '@/pages/bookmarks/BookmarkStatisticsPage'
 import { SnapshotSettingsTab } from '@/components/settings/tabs/SnapshotSettingsTab'
@@ -98,11 +96,9 @@ export function GeneralSettingsPage() {
   const tabs = [
     { id: 'basic', label: t('tabs.basic'), icon: <Settings className="w-4 h-4" /> },
     { id: 'automation', label: t('tabs.automation'), icon: <Zap className="w-4 h-4" /> },
-
     { id: 'snapshot', label: t('tabs.snapshot'), icon: <Camera className="w-4 h-4" /> },
     { id: 'browser', label: t('tabs.browser'), icon: <Chrome className="w-4 h-4" /> },
     { id: 'api', label: t('tabs.api'), icon: <Key className="w-4 h-4" /> },
-    { id: 'share', label: t('tabs.share'), icon: <Share2 className="w-4 h-4" /> },
     { id: 'data', label: t('tabs.data'), icon: <Database className="w-4 h-4" /> },
     { id: 'statistics', label: t('tabs.statistics'), icon: <BarChart3 className="w-4 h-4" /> },
   ]
@@ -185,8 +181,6 @@ export function GeneralSettingsPage() {
           {activeTab === 'browser' && <BrowserSettingsTab />}
 
           {activeTab === 'api' && <ApiSettingsTab />}
-
-          {activeTab === 'share' && <ShareSettingsTab />}
 
           {activeTab === 'data' && <DataSettingsTab />}
 

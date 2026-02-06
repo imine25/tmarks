@@ -9,7 +9,6 @@
     "build:legacy": "node scripts/build-and-pack.mjs",
     "build:only": "tsc && vite build",
     "build:chrome": "node scripts/build-multi-browser.mjs chrome",
-    "build:firefox": "node scripts/build-multi-browser.mjs firefox",
     "preview": "vite preview",
     "icons": "node scripts/generate-icons.mjs"
   },
@@ -33,9 +32,7 @@
     "tailwindcss": "^3.4.18",
     "terser": "^5.44.1",
     "typescript": "^5.9.3",
-    "vite": "^7.2.4",
-    "web-ext": "^9.2.0",
-    "webextension-polyfill": "^0.12.0"
+    "vite": "^7.2.4"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.70.0",

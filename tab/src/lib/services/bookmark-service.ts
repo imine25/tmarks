@@ -51,8 +51,7 @@ export class BookmarkService {
           description: bookmark.description,
           tags: bookmark.tags,
           createdAt: Date.now(),
-          remoteId: result.id,
-          isPublic: bookmark.isPublic ?? false
+          remoteId: result.id
         });
 
         // 3. Update tag usage counts

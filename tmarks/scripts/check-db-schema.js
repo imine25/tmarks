@@ -39,7 +39,6 @@ const requiredBookmarkFields = [
   'snapshot_count',
   'is_pinned',
   'is_archived',
-  'is_public',
   'click_count',
   'last_clicked_at',
   'created_at',

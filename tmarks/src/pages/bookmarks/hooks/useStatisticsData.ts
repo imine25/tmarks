@@ -9,7 +9,6 @@ export interface BookmarkStatistics {
     total_tags: number
     total_clicks: number
     archived_bookmarks: number
-    public_bookmarks: number
   }
   top_bookmarks: Array<{
     id: string

@@ -23,7 +23,7 @@ interface ExportStats {
 
 export function ExportSection({ onExport }: ExportSectionProps) {
   const { t } = useTranslation('import')
-  const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('json')
+  const [selectedFormat] = useState<ExportFormat>('json')
   const [isExporting, setIsExporting] = useState(false)
   const [exportStats, setExportStats] = useState<ExportStats | null>(null)
   const [exportError, setExportError] = useState<string | null>(null)
@@ -126,18 +126,24 @@ export function ExportSection({ onExport }: ExportSectionProps) {
       description: t('format.jsonDesc'),
       icon: Code,
       recommended: true
-    },
-    {
-      value: 'html' as ExportFormat,
-      label: t('format.html'),
-      description: t('format.htmlDesc'),
-      icon: FileText,
-      recommended: false
     }
   ]
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      {/* 格式说明 */}
+      <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+        <div className="flex items-start gap-3">
+          <FileText className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-sm font-semibold text-foreground mb-1">{t('export.formatNotice.title', '仅支持 TMarks 格式')}</h3>
+            <p className="text-xs text-muted-foreground">
+              {t('export.formatNotice.description', '本系统仅支持导出 TMarks JSON 格式的书签数据。导出的文件可以在其他 TMarks 实例中导入使用。')}
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div>
         <h3 className="text-base sm:text-lg font-semibold text-foreground">
           {t('export.title')}
@@ -151,24 +157,19 @@ export function ExportSection({ onExport }: ExportSectionProps) {
         <label className="block text-sm font-medium text-foreground">
           {t('export.selectFormat')}
         </label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3">
           {formatOptions.map((format) => {
             const Icon = format.icon
             return (
               <div
                 key={format.value}
-                className={`relative rounded-lg border p-3 sm:p-4 cursor-pointer transition-all touch-manipulation ${
-                  selectedFormat === format.value
-                    ? 'border-primary bg-primary/10'
-                    : 'border-border hover:border-border/80'
-                }`}
-                onClick={() => setSelectedFormat(format.value)}
+                className="relative rounded-lg border border-primary bg-primary/5 p-4"
               >
                 <div className="flex items-start space-x-3">
-                  <Icon className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                  <Icon className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2">
-                      <span className="font-medium text-foreground text-sm sm:text-base">
+                      <span className="font-medium text-foreground">
                         {format.label}
                       </span>
                       {format.recommended && (
@@ -177,18 +178,13 @@ export function ExportSection({ onExport }: ExportSectionProps) {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                    <p className="text-sm text-muted-foreground mt-1">
                       {format.description}
                     </p>
                   </div>
-                  <input
-                    type="radio"
-                    name="format"
-                    value={format.value}
-                    checked={selectedFormat === format.value}
-                    onChange={() => setSelectedFormat(format.value)}
-                    className="h-4 w-4 text-primary border-border focus:ring-primary flex-shrink-0 mt-0.5"
-                  />
+                  <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Download className="w-3 h-3 text-primary-foreground" />
+                  </div>
                 </div>
               </div>
             )

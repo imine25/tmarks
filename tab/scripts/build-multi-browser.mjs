@@ -116,8 +116,6 @@ function formatSize(bytes) {
 
 /**
  * 创建 ZIP 压缩包
- * 注意：始终使用 dist/manifest.json（已被 Vite 正确转换），不使用 manifests/ 目录下的文件
- * 对于 Firefox，会动态修改 manifest 添加必要的配置
  */
 async function createZip(sourceDir, outputPath, browser) {
     return new Promise((resolve, reject) => {
@@ -136,64 +134,8 @@ async function createZip(sourceDir, outputPath, browser) {
 
         archive.pipe(output)
 
-        // 对于 Firefox，使用 MV3 格式（Firefox 109+ 支持）
-        if (browser.id === 'firefox') {
-            const manifestPath = join(sourceDir, 'manifest.json')
-            const mv3Manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'))
-            
-            // Firefox MV3 manifest
-            const manifestContent = {
-                manifest_version: 3,
-                name: mv3Manifest.name,
-                version: mv3Manifest.version,
-                description: mv3Manifest.description,
-                icons: mv3Manifest.icons,
-                action: mv3Manifest.action,
-                // Firefox MV3 使用 scripts 数组而不是 service_worker
-                background: {
-                    scripts: [mv3Manifest.background?.service_worker || 'service-worker-loader.js'],
-                    type: 'module'
-                },
-                permissions: mv3Manifest.permissions || [],
-                host_permissions: mv3Manifest.host_permissions || [],
-                content_scripts: mv3Manifest.content_scripts,
-                options_ui: mv3Manifest.options_ui,
-                chrome_url_overrides: mv3Manifest.chrome_url_overrides,
-                // Firefox CSP 不支持 chrome: 协议
-                content_security_policy: {
-                    extension_pages: "script-src 'self'; object-src 'self'; img-src 'self' https: data: blob:; connect-src 'self' https:"
-                },
-                // Firefox 不支持 use_dynamic_url，需要移除
-                web_accessible_resources: (mv3Manifest.web_accessible_resources || []).map(item => ({
-                    matches: item.matches,
-                    resources: item.resources
-                })),
-                browser_specific_settings: {
-                    gecko: {
-                        id: 'aitmarks@example.com',
-                        strict_min_version: '112.0'
-                    }
-                }
-            }
-            
-            // 添加除 manifest.json 外的所有文件
-            const files = readdirSync(sourceDir, { withFileTypes: true })
-            for (const file of files) {
-                if (file.name === 'manifest.json') continue
-                const filePath = join(sourceDir, file.name)
-                if (file.isDirectory()) {
-                    archive.directory(filePath, file.name)
-                } else {
-                    archive.file(filePath, { name: file.name })
-                }
-            }
-            
-            // 添加修改后的 manifest
-            archive.append(JSON.stringify(manifestContent, null, 2), { name: 'manifest.json' })
-        } else {
-            // 其他浏览器直接添加整个 dist 目录
-            archive.directory(sourceDir, false)
-        }
+        // 直接添加整个 dist 目录
+        archive.directory(sourceDir, false)
 
         archive.finalize()
     })
@@ -201,8 +143,6 @@ async function createZip(sourceDir, outputPath, browser) {
 
 /**
  * 构建单个浏览器版本
- * 注意：所有浏览器版本都使用相同的构建产物（dist 目录），
- * 因为 manifest.json 已被 Vite 正确转换，包含正确的文件路径
  */
 async function buildBrowser(browser, distSize) {
     const outputPath = join(OUTPUT_DIR, browser.outputFile)
@@ -212,7 +152,7 @@ async function buildBrowser(browser, distSize) {
         await rm(outputPath, { force: true })
     }
 
-    // 创建 ZIP（使用 dist 目录中已转换的 manifest.json）
+    // 创建 ZIP
     log(`  正在压缩 ${browser.name} 版本...`, colors.dim)
     const zipSize = await createZip(DIST_DIR, outputPath, browser)
 

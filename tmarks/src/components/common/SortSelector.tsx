@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { createPortal } from 'react-dom'
-import { ChevronDown, Clock, RefreshCw, Pin, TrendingUp, Calendar } from 'lucide-react'
+import { ChevronDown, Clock, RefreshCw, TrendingUp, Calendar } from 'lucide-react'
 import { Z_INDEX } from '@/lib/constants/z-index'
 
-export type SortOption = 'created' | 'updated' | 'pinned' | 'popular'
+export type SortOption = 'created' | 'updated' | 'popular'
 
 interface SortSelectorProps {
   value: SortOption
@@ -40,13 +40,6 @@ const SORT_OPTIONS: SortOptionConfig[] = [
     icon: RefreshCw,
     descriptionKey: 'sort.byUpdatedDesc',
     group: 'time'
-  },
-  {
-    value: 'pinned',
-    labelKey: 'sort.pinnedFirst',
-    icon: Pin,
-    descriptionKey: 'sort.pinnedFirstDesc',
-    group: 'priority'
   },
   {
     value: 'popular',

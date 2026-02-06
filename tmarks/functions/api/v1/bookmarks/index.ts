@@ -6,7 +6,6 @@ import { isValidUrl, sanitizeString } from '../../../lib/validation'
 import { filterRateLimiter } from '../../../lib/rate-limit'
 import { generateUUID } from '../../../lib/crypto'
 import { normalizeBookmark } from '../../../lib/bookmark-utils'
-import { invalidatePublicShareCache } from '../../shared/cache'
 import { CacheService } from '../../../lib/cache'
 import { createBookmarkCacheManager } from '../../../lib/cache/bookmark-cache'
 import type { QueryParams } from '../../../lib/cache/types'
@@ -23,7 +22,6 @@ interface CreateBookmarkRequest {
   tags?: string[]     // 新版：标签名称数组（推荐）
   is_pinned?: boolean
   is_archived?: boolean
-  is_public?: boolean
 }
 
 interface BookmarkWithTags extends Bookmark {
@@ -138,9 +136,6 @@ export const onRequestGet: PagesFunction<Env, RouteParams, AuthContext>[] = [
       switch (sortBy) {
         case 'updated':
           orderBy = 'ORDER BY b.is_pinned DESC, CASE WHEN b.is_pinned = 1 THEN b.pin_order ELSE NULL END ASC, b.updated_at DESC, b.id DESC'
-          break
-        case 'pinned':
-          orderBy = 'ORDER BY b.is_pinned DESC, CASE WHEN b.is_pinned = 1 THEN b.pin_order ELSE NULL END ASC, b.created_at DESC, b.id DESC'
           break
         case 'popular':
           orderBy = 'ORDER BY b.is_pinned DESC, CASE WHEN b.is_pinned = 1 THEN b.pin_order ELSE NULL END ASC, b.click_count DESC, b.last_clicked_at DESC, b.id DESC'
@@ -292,7 +287,6 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
       let bookmarkId: string
       const isPinned = body.is_pinned ? 1 : 0
       const isArchived = body.is_archived ? 1 : 0
-      const isPublic = body.is_public ? 1 : 0
 
       // 如果有封面图且配置了 R2 bucket，上传到 R2
       let coverImageId: string | null = null
@@ -361,7 +355,7 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
         await context.env.DB.prepare(
           `UPDATE bookmarks
            SET title = ?, description = ?, cover_image = ?, cover_image_id = ?, favicon = ?,
-               is_pinned = ?, is_archived = ?, is_public = ?,
+               is_pinned = ?, is_archived = ?,
                deleted_at = NULL, updated_at = ?
            WHERE id = ?`
         )
@@ -373,7 +367,6 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
             favicon,
             isPinned,
             isArchived,
-            isPublic,
             now,
             bookmarkId
           )
@@ -389,8 +382,8 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
         bookmarkId = bookmarkUuid
 
         await context.env.DB.prepare(
-          `INSERT INTO bookmarks (id, user_id, title, url, description, cover_image, cover_image_id, favicon, is_pinned, is_archived, is_public, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          `INSERT INTO bookmarks (id, user_id, title, url, description, cover_image, cover_image_id, favicon, is_pinned, is_archived, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         )
           .bind(
             bookmarkUuid,
@@ -403,7 +396,6 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
             favicon,
             isPinned,
             isArchived,
-            isPublic,
             now,
             now
           )
@@ -447,10 +439,6 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
       const cache = new CacheService(context.env)
       const bookmarkCache = createBookmarkCacheManager(cache)
       await bookmarkCache.invalidateUserBookmarks(userId)
-
-      if (body.is_public) {
-        await invalidatePublicShareCache(context.env, userId)
-      }
 
       return created({
         bookmark: {

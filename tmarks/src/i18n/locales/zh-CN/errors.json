@@ -15,10 +15,6 @@
     "tooLong": "内容过长",
     "tooShort": "内容过短"
   },
-  "share": {
-    "loadFailed": "无法加载公开分享内容",
-    "notFound": "公开内容不存在"
-  },
   "ai": {
     "modelListFailed": "获取模型列表失败",
     "modelListInvalid": "模型列表响应格式无效",

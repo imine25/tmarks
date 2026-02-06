@@ -30,7 +30,6 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
   )
   const [isPinned, setIsPinned] = useState(bookmark?.is_pinned || false)
   const [isArchived, setIsArchived] = useState(bookmark?.is_archived || false)
-  const [isPublic, setIsPublic] = useState(bookmark?.is_public || false)
   const [error, setError] = useState('')
   const [tagInput, setTagInput] = useState('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -118,7 +117,6 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
           tag_ids: selectedTagIds,
           is_pinned: isPinned,
           is_archived: isArchived,
-          is_public: isPublic,
         }
 
         if (title.trim() !== (bookmark.title || '')) {
@@ -149,7 +147,6 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
           tag_ids: selectedTagIds,
           is_pinned: isPinned,
           is_archived: isArchived,
-          is_public: isPublic,
         }
 
         await createBookmark.mutateAsync(createData)
@@ -487,16 +484,6 @@ export function BookmarkForm({ bookmark, onClose, onSuccess }: BookmarkFormProps
                 />
                 <span className="text-xs text-foreground">{t('form.archived')}</span>
               </label>
-
-            <label className="flex items-center gap-1.5 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isPublic}
-                onChange={(e) => setIsPublic(e.target.checked)}
-                disabled={isPending}
-              />
-              <span className="text-xs text-foreground">{t('form.public')}</span>
-            </label>
             </div>
 
             {/* 按钮 */}

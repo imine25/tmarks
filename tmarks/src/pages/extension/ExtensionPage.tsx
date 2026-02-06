@@ -4,10 +4,10 @@ import { Download, Chrome, CheckCircle, AlertCircle } from 'lucide-react'
 export function ExtensionPage() {
   const { t } = useTranslation('info')
   
-  const handleDownload = (browser: 'chrome' | 'firefox' | 'edge' | 'opera' | 'brave' | '360' | 'qq' | 'sogou') => {
+  const handleDownload = () => {
     const link = document.createElement('a')
-    link.href = `/extensions/tmarks-extension-${browser}.zip`
-    link.download = `tmarks-extension-${browser}.zip`
+    link.href = `/extensions/tmarks-extension-chrome.zip`
+    link.download = `tmarks-extension-chrome.zip`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -34,92 +34,15 @@ export function ExtensionPage() {
           {t('extension.download.title')}
         </h2>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
+        <div className="flex justify-center">
           {/* Chrome */}
-          <div className="text-center p-3 rounded-xl border-2 transition-all hover:border-primary" style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
-            <div className="w-10 h-10 mx-auto mb-2 flex items-center justify-center">
-              <Chrome className="w-10 h-10" style={{ color: 'var(--foreground)' }} />
+          <div className="text-center p-6 rounded-xl border-2 transition-all hover:border-primary max-w-xs" style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
+            <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+              <Chrome className="w-16 h-16" style={{ color: 'var(--foreground)' }} />
             </div>
-            <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--foreground)' }}>Chrome</h3>
-            <button onClick={() => handleDownload('chrome')} className="w-full inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shadow-sm hover:shadow-md transition-all hover:scale-105 active:scale-95">
-              <Download className="w-3 h-3" />{t('extension.download.button')}
-            </button>
-          </div>
-
-          {/* Firefox */}
-          <div className="text-center p-3 rounded-xl border-2 transition-all hover:border-primary" style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
-            <div className="w-10 h-10 mx-auto mb-2 flex items-center justify-center">
-              <Chrome className="w-10 h-10" style={{ color: 'var(--foreground)' }} />
-            </div>
-            <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--foreground)' }}>Firefox</h3>
-            <button onClick={() => handleDownload('firefox')} className="w-full inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shadow-sm hover:shadow-md transition-all hover:scale-105 active:scale-95">
-              <Download className="w-3 h-3" />{t('extension.download.button')}
-            </button>
-          </div>
-
-          {/* Edge */}
-          <div className="text-center p-3 rounded-xl border-2 transition-all hover:border-primary" style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
-            <div className="w-10 h-10 mx-auto mb-2 flex items-center justify-center">
-              <Chrome className="w-10 h-10" style={{ color: 'var(--foreground)' }} />
-            </div>
-            <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--foreground)' }}>Edge</h3>
-            <button onClick={() => handleDownload('edge')} className="w-full inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shadow-sm hover:shadow-md transition-all hover:scale-105 active:scale-95">
-              <Download className="w-3 h-3" />{t('extension.download.button')}
-            </button>
-          </div>
-
-          {/* Opera */}
-          <div className="text-center p-3 rounded-xl border-2 transition-all hover:border-primary" style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
-            <div className="w-10 h-10 mx-auto mb-2 flex items-center justify-center">
-              <Chrome className="w-10 h-10" style={{ color: 'var(--foreground)' }} />
-            </div>
-            <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--foreground)' }}>Opera</h3>
-            <button onClick={() => handleDownload('opera')} className="w-full inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shadow-sm hover:shadow-md transition-all hover:scale-105 active:scale-95">
-              <Download className="w-3 h-3" />{t('extension.download.button')}
-            </button>
-          </div>
-
-          {/* Brave */}
-          <div className="text-center p-3 rounded-xl border-2 transition-all hover:border-primary" style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
-            <div className="w-10 h-10 mx-auto mb-2 flex items-center justify-center">
-              <Chrome className="w-10 h-10" style={{ color: 'var(--foreground)' }} />
-            </div>
-            <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--foreground)' }}>Brave</h3>
-            <button onClick={() => handleDownload('brave')} className="w-full inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shadow-sm hover:shadow-md transition-all hover:scale-105 active:scale-95">
-              <Download className="w-3 h-3" />{t('extension.download.button')}
-            </button>
-          </div>
-
-          {/* 360浏览器 */}
-          <div className="text-center p-3 rounded-xl border-2 transition-all hover:border-primary" style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
-            <div className="w-10 h-10 mx-auto mb-2 flex items-center justify-center">
-              <Chrome className="w-10 h-10" style={{ color: 'var(--foreground)' }} />
-            </div>
-            <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--foreground)' }}>360</h3>
-            <button onClick={() => handleDownload('360')} className="w-full inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shadow-sm hover:shadow-md transition-all hover:scale-105 active:scale-95">
-              <Download className="w-3 h-3" />{t('extension.download.button')}
-            </button>
-          </div>
-
-          {/* QQ浏览器 */}
-          <div className="text-center p-3 rounded-xl border-2 transition-all hover:border-primary" style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
-            <div className="w-10 h-10 mx-auto mb-2 flex items-center justify-center">
-              <Chrome className="w-10 h-10" style={{ color: 'var(--foreground)' }} />
-            </div>
-            <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--foreground)' }}>QQ</h3>
-            <button onClick={() => handleDownload('qq')} className="w-full inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shadow-sm hover:shadow-md transition-all hover:scale-105 active:scale-95">
-              <Download className="w-3 h-3" />{t('extension.download.button')}
-            </button>
-          </div>
-
-          {/* 搜狗浏览器 */}
-          <div className="text-center p-3 rounded-xl border-2 transition-all hover:border-primary" style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
-            <div className="w-10 h-10 mx-auto mb-2 flex items-center justify-center">
-              <Chrome className="w-10 h-10" style={{ color: 'var(--foreground)' }} />
-            </div>
-            <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--foreground)' }}>Sogou</h3>
-            <button onClick={() => handleDownload('sogou')} className="w-full inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shadow-sm hover:shadow-md transition-all hover:scale-105 active:scale-95">
-              <Download className="w-3 h-3" />{t('extension.download.button')}
+            <h3 className="text-lg font-bold mb-3" style={{ color: 'var(--foreground)' }}>Chrome</h3>
+            <button onClick={handleDownload} className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-primary text-primary-foreground text-sm font-semibold shadow-sm hover:shadow-md transition-all hover:scale-105 active:scale-95">
+              <Download className="w-4 h-4" />{t('extension.download.button')}
             </button>
           </div>
         </div>
@@ -129,38 +52,10 @@ export function ExtensionPage() {
           <h3 className="text-sm font-semibold mb-3 text-center" style={{ color: 'var(--foreground)' }}>
             {t('extension.browsers.title')}
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs" style={{ color: 'var(--muted-foreground)' }}>
-            <div className="text-center p-2 rounded bg-muted/30">
+          <div className="flex justify-center">
+            <div className="text-center p-3 rounded bg-muted/30">
               <div className="font-medium">Chrome</div>
               <div className="text-xs opacity-75">88+</div>
-            </div>
-            <div className="text-center p-2 rounded bg-muted/30">
-              <div className="font-medium">Edge</div>
-              <div className="text-xs opacity-75">88+</div>
-            </div>
-            <div className="text-center p-2 rounded bg-muted/30">
-              <div className="font-medium">Firefox</div>
-              <div className="text-xs opacity-75">109+</div>
-            </div>
-            <div className="text-center p-2 rounded bg-muted/30">
-              <div className="font-medium">Brave</div>
-              <div className="text-xs opacity-75">88+</div>
-            </div>
-            <div className="text-center p-2 rounded bg-muted/30">
-              <div className="font-medium">Opera</div>
-              <div className="text-xs opacity-75">74+</div>
-            </div>
-            <div className="text-center p-2 rounded bg-muted/30">
-              <div className="font-medium">360</div>
-              <div className="text-xs opacity-75">{t('extension.browsers.speedMode')}</div>
-            </div>
-            <div className="text-center p-2 rounded bg-muted/30">
-              <div className="font-medium">QQ</div>
-              <div className="text-xs opacity-75">{t('extension.browsers.speedMode')}</div>
-            </div>
-            <div className="text-center p-2 rounded bg-muted/30">
-              <div className="font-medium">Sogou</div>
-              <div className="text-xs opacity-75">{t('extension.browsers.speedMode')}</div>
             </div>
           </div>
         </div>
@@ -263,9 +158,7 @@ export function ExtensionPage() {
                 {t('extension.install.step3.description')}
               </p>
               <div className="bg-muted/30 rounded-lg p-3 font-mono text-sm">
-                <p className="mb-1">Chrome: chrome://extensions/</p>
-                <p className="mb-1">Edge: edge://extensions/</p>
-                <p>Firefox: about:debugging#/runtime/this-firefox</p>
+                <p>Chrome: chrome://extensions/</p>
               </div>
             </div>
           </div>

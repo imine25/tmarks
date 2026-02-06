@@ -16,7 +16,6 @@ export interface OptionsFormData {
   enableCustomPrompt: boolean;
   customPrompt: string;
   maxSuggestedTags: number;
-  defaultVisibility: 'public' | 'private';
   enableAI: boolean;
   defaultIncludeThumbnail: boolean;
   defaultCreateSnapshot: boolean;
@@ -45,7 +44,6 @@ export const DEFAULT_FORM_DATA: OptionsFormData = {
   enableCustomPrompt: false,
   customPrompt: '',
   maxSuggestedTags: 5,
-  defaultVisibility: 'public',
   enableAI: true,
   defaultIncludeThumbnail: true,
   defaultCreateSnapshot: false,

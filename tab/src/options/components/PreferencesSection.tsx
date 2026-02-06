@@ -4,7 +4,6 @@ interface PreferencesSectionProps {
   formData: {
     theme: 'light' | 'dark' | 'auto';
     themeStyle: 'default' | 'bw' | 'tmarks';
-    defaultVisibility: 'public' | 'private';
     defaultIncludeThumbnail: boolean;
     defaultCreateSnapshot: boolean;
     tagTheme: 'classic' | 'mono' | 'bw';
@@ -158,35 +157,6 @@ export function PreferencesSection({ formData, setFormData }: PreferencesSection
           </div>
 
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-[var(--tab-options-text)] mb-2">{t('pref_visibility')}</label>
-              <div className="inline-flex rounded-xl border border-[color:var(--tab-options-card-border)] bg-[color:var(--tab-options-card-bg)] p-1 text-sm font-medium text-[var(--tab-options-text)]">
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, defaultVisibility: 'public' })}
-                  className={`rounded-lg px-3 py-1.5 transition-colors ${
-                    formData.defaultVisibility === 'public'
-                      ? 'bg-[var(--tab-options-button-primary-bg)] text-[var(--tab-options-button-primary-text)] shadow'
-                      : 'hover:text-[var(--tab-options-title)]'
-                  }`}
-                >
-                  {t('pref_visibility_public')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, defaultVisibility: 'private' })}
-                  className={`rounded-lg px-3 py-1.5 transition-colors ${
-                    formData.defaultVisibility === 'private'
-                      ? 'bg-[var(--tab-options-button-primary-bg)] text-[var(--tab-options-button-primary-text)] shadow'
-                      : 'hover:text-[var(--tab-options-title)]'
-                  }`}
-                >
-                  {t('pref_visibility_private')}
-                </button>
-              </div>
-              <p className="mt-2 text-xs text-[var(--tab-options-text-muted)]">{t('pref_visibility_hint')}</p>
-            </div>
-
             <div className="flex items-center justify-between py-3 border-t border-[color:var(--tab-options-card-border)]">
               <div>
                 <label className="block text-sm font-medium text-[var(--tab-options-text)]">{t('pref_thumbnail')}</label>

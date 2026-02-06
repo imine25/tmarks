@@ -19,7 +19,6 @@ export interface OptionsFormData {
   enableCustomPrompt: boolean;
   customPrompt: string;
   maxSuggestedTags: number;
-  defaultVisibility: 'public' | 'private';
   enableAI: boolean;
   defaultIncludeThumbnail: boolean;
   defaultCreateSnapshot: boolean;
@@ -55,7 +54,6 @@ export function useOptionsForm() {
     enableCustomPrompt: false,
     customPrompt: DEFAULT_PROMPT_TEMPLATE,
     maxSuggestedTags: 5,
-    defaultVisibility: 'public',
     enableAI: true,
     defaultIncludeThumbnail: true,
     defaultCreateSnapshot: false,
@@ -223,7 +221,6 @@ export function useOptionsForm() {
       enableCustomPrompt: config.aiConfig.enableCustomPrompt || false,
       customPrompt: config.aiConfig.customPrompt || prev.customPrompt,
       maxSuggestedTags: config.preferences.maxSuggestedTags,
-      defaultVisibility: config.preferences.defaultVisibility,
       enableAI: config.preferences.enableAI ?? true,
       defaultIncludeThumbnail: config.preferences.defaultIncludeThumbnail ?? true,
       defaultCreateSnapshot: config.preferences.defaultCreateSnapshot ?? false,
@@ -350,7 +347,6 @@ export function useOptionsForm() {
           autoSync: config?.preferences.autoSync ?? true,
           syncInterval: config?.preferences.syncInterval ?? 24,
           maxSuggestedTags: formData.maxSuggestedTags,
-          defaultVisibility: formData.defaultVisibility,
           enableAI: formData.enableAI,
           defaultIncludeThumbnail: formData.defaultIncludeThumbnail,
           defaultCreateSnapshot: formData.defaultCreateSnapshot,
@@ -442,7 +438,6 @@ export function useOptionsForm() {
         enableCustomPrompt: false,
         customPrompt: DEFAULT_PROMPT_TEMPLATE,
         maxSuggestedTags: 5,
-        defaultVisibility: 'public',
         enableAI: true,
         defaultIncludeThumbnail: true,
         defaultCreateSnapshot: false,
