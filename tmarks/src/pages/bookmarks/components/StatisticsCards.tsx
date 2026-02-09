@@ -14,7 +14,7 @@ export function StatisticsCards({ statistics, formatDate, formatDateTime }: Stat
   return (
     <>
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6 mb-6 sm:mb-8">
         <div className="card p-4 sm:p-6">
           <div className="flex items-center justify-between mb-2">
             <Bookmark className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
@@ -37,6 +37,14 @@ export function StatisticsCards({ statistics, formatDate, formatDateTime }: Stat
             <span className="text-2xl sm:text-3xl font-bold text-foreground">{statistics.summary.total_clicks}</span>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground">{t('statistics.summary.totalClicks')}</p>
+        </div>
+
+        <div className="card p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-2">
+            <Globe className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+            <span className="text-2xl sm:text-3xl font-bold text-foreground">{statistics.summary.public_bookmarks}</span>
+          </div>
+          <p className="text-xs sm:text-sm text-muted-foreground">{t('statistics.summary.publicBookmarks')}</p>
         </div>
 
         <div className="card p-4 sm:p-6">

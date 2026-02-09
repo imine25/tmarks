@@ -4,9 +4,6 @@
  */
 
 export const Z_INDEX = {
-  // 主内容层 (10-19)
-  WEATHER: 10,
-  
   // 侧边栏层 (20-29)
   SIDEBAR: 20,
   
@@ -33,10 +30,6 @@ export const Z_INDEX = {
   BATCH_EDIT_BAR: 120,
 
   DRAG_OVERLAY: 1000,
-  
-  // 组件选择器层 (200-209) - 最高层级
-  WIDGET_SELECTOR_BACKDROP: 200,
-  WIDGET_SELECTOR_CONTENT: 201,
 } as const;
 
 export type ZIndexKey = keyof typeof Z_INDEX;

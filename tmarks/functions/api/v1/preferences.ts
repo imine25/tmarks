@@ -10,7 +10,7 @@ interface UserPreferences {
   view_mode: 'list' | 'card' | 'minimal' | 'title'
   density: 'compact' | 'normal' | 'comfortable'
   tag_layout?: 'grid' | 'masonry'
-  sort_by?: 'created' | 'updated' | 'popular'
+  sort_by?: 'created' | 'updated' | 'pinned' | 'popular'
   search_auto_clear_seconds?: number
   tag_selection_auto_clear_seconds?: number
   enable_search_auto_clear?: number
@@ -29,7 +29,7 @@ interface UpdatePreferencesRequest {
   view_mode?: 'list' | 'card' | 'minimal' | 'title'
   density?: 'compact' | 'normal' | 'comfortable'
   tag_layout?: 'grid' | 'masonry'
-  sort_by?: 'created' | 'updated' | 'popular'
+  sort_by?: 'created' | 'updated' | 'pinned' | 'popular'
   search_auto_clear_seconds?: number
   tag_selection_auto_clear_seconds?: number
   enable_search_auto_clear?: boolean
@@ -160,7 +160,7 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
         return badRequest('Invalid tag layout value')
       }
 
-      if (body.sort_by && !['created', 'updated', 'popular'].includes(body.sort_by)) {
+      if (body.sort_by && !['created', 'updated', 'pinned', 'popular'].includes(body.sort_by)) {
         return badRequest('Invalid sort_by value')
       }
 

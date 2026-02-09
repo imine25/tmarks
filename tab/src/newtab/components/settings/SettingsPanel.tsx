@@ -4,22 +4,21 @@
 
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Cloud, User, Palette, Sparkles } from 'lucide-react';
+import { X, Cloud, User, Palette } from 'lucide-react';
 import { t } from '@/lib/i18n';
 import { Z_INDEX } from '../../constants/z-index';
-import { GeneralTab, AppearanceTab, SyncTab, AITab } from './tabs';
+import { GeneralTab, AppearanceTab, SyncTab } from './tabs';
 
 interface SettingsPanelProps {
   onClose: () => void;
 }
 
-type SettingsTab = 'general' | 'appearance' | 'sync' | 'ai';
+type SettingsTab = 'general' | 'appearance' | 'sync';
 
 const TABS = [
   { id: 'general' as const, labelKey: 'settings_general', icon: User },
   { id: 'appearance' as const, labelKey: 'settings_appearance', icon: Palette },
   { id: 'sync' as const, labelKey: 'settings_sync', icon: Cloud },
-  { id: 'ai' as const, labelKey: 'settings_ai', icon: Sparkles },
 ];
 
 export function SettingsPanel({ onClose }: SettingsPanelProps) {
@@ -78,7 +77,6 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
             {activeTab === 'general' && <GeneralTab />}
             {activeTab === 'appearance' && <AppearanceTab />}
             {activeTab === 'sync' && <SyncTab />}
-            {activeTab === 'ai' && <AITab />}
           </div>
         </div>
       </div>

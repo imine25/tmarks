@@ -15,6 +15,7 @@ interface BookmarkStatistics {
     total_tags: number
     total_clicks: number
     archived_bookmarks: number
+    public_bookmarks: number
   }
   top_bookmarks: Array<{
     id: string
@@ -136,6 +137,7 @@ export const onRequestGet: PagesFunction<Env, string, AuthContext>[] = [
             COUNT(*) as total_bookmarks,
             SUM(CASE WHEN deleted_at IS NULL THEN 1 ELSE 0 END) as active_bookmarks,
             SUM(CASE WHEN is_archived = 1 AND deleted_at IS NULL THEN 1 ELSE 0 END) as archived_bookmarks,
+            SUM(CASE WHEN is_public = 1 AND deleted_at IS NULL THEN 1 ELSE 0 END) as public_bookmarks,
             SUM(click_count) as total_clicks
           FROM bookmarks 
           WHERE user_id = ? AND deleted_at IS NULL`
@@ -265,6 +267,7 @@ export const onRequestGet: PagesFunction<Env, string, AuthContext>[] = [
           total_tags: (tagCount?.total_tags as number) || 0,
           total_clicks: (summary?.total_clicks as number) || 0,
           archived_bookmarks: (summary?.archived_bookmarks as number) || 0,
+          public_bookmarks: (summary?.public_bookmarks as number) || 0,
         },
         top_bookmarks: (topBookmarks.results || []) as Array<{
           id: string

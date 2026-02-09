@@ -3,7 +3,7 @@
  * 主入口文件 - 负责消息监听和事件处理
  */
 
-import { t, initI18n } from '@/lib/i18n';
+import { initI18n } from '@/lib/i18n';
 import { cacheManager } from '@/lib/services/cache-manager';
 import { tagRecommender } from '@/lib/services/tag-recommender';
 import { bookmarkService } from '@/lib/services/bookmark-service';
@@ -17,7 +17,6 @@ import {
   handleBookmarkNodeRemoved,
   handleBookmarkNodeMoved,
 } from './services/newtab-folder';
-import { reportAiOrganizeProgress } from './services/progress-reporter';
 import { handleExtractPageInfo } from './handlers/page-info';
 import {
   handleSaveToNewtab,
@@ -25,7 +24,6 @@ import {
   handleGetNewtabFolders,
 } from './handlers/newtab-folders';
 import { handleRecommendNewtabFolder } from './handlers/ai-recommend';
-import { handleAiOrganizeNewtabWorkspace } from './handlers/ai-organize';
 
 // 初始化 i18n（Service Worker 启动时）
 initI18n().catch(() => {});
@@ -215,9 +213,6 @@ async function handleMessage(
     .toUpperCase();
 
   switch (type) {
-    case 'AI_ORGANIZE_PROGRESS':
-      return { success: true, data: {} };
-
     case 'EXTRACT_PAGE_INFO':
       return handleExtractPageInfo(message);
 
@@ -233,40 +228,6 @@ async function handleMessage(
       return { success: true, data: result };
     }
 
-    case 'AI_ORGANIZE_NEWTAB_WORKSPACE': {
-      try {
-        return await handleAiOrganizeNewtabWorkspace(message);
-      } catch (error) {
-        const rawMsg = error instanceof Error ? error.message : 'Failed to organize';
-        const msg = (() => {
-          const m = String(rawMsg || '');
-          if (m.includes('429') || m.includes('rate_limit_exceeded')) {
-            return t('error_ai_rate_limit');
-          }
-          return rawMsg;
-        })();
-        try {
-          const payload = (message.payload || {}) as { sessionId?: string };
-          const sessionId =
-            typeof payload.sessionId === 'string' && payload.sessionId.trim()
-              ? payload.sessionId.trim()
-              : String(Date.now());
-          await reportAiOrganizeProgress({
-            sessionId,
-            level: 'error',
-            step: 'fatal',
-            message: msg,
-            detail: {
-              rawMessage: rawMsg,
-              stack: error instanceof Error ? error.stack : undefined,
-            },
-          });
-        } catch {
-          // ignore
-        }
-        return { success: false, error: msg };
-      }
-    }
 
     case 'SAVE_TO_NEWTAB':
       return handleSaveToNewtab(message);

@@ -4,5 +4,3 @@
 
 export * from './newtab-folder';
 export * from './bookmark-collector';
-export * from './history-stats';
-export * from './progress-reporter';

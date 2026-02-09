@@ -5,4 +5,3 @@
 export * from './page-info';
 export * from './newtab-folders';
 export * from './ai-recommend';
-export * from './ai-organize';

@@ -2,15 +2,10 @@
  * 组件系统 - 导出入口
  */
 
-/**
- * 组件系统 - 导出入口
- */
-
 export { WidgetRenderer } from './WidgetRenderer';
-export { WidgetSelector } from './WidgetSelector';
-export { WidgetConfigModal } from './WidgetConfigModal';
+export { ShortcutWidget } from './ShortcutWidget';
+export { BookmarkFolderWidget } from './BookmarkFolderWidget';
 export {
-  WIDGET_REGISTRY,
   getWidgetMeta,
   getDefaultWidgetConfig,
   getSizeSpan,

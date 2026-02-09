@@ -1,6 +1,7 @@
 import type { PagesFunction } from '@cloudflare/workers-types'
 import type { Env, RouteParams } from '../../../lib/types'
 import { requireAuth, type AuthContext } from '../../../middleware/auth'
+import { invalidatePublicShareCache } from '../../shared/cache'
 import { CacheService } from '../../../lib/cache'
 import { createBookmarkCacheManager } from '../../../lib/cache/bookmark-cache'
 
@@ -304,6 +305,8 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
     const cache = new CacheService(context.env)
     const bookmarkCache = createBookmarkCacheManager(cache)
     await bookmarkCache.handleBatchOperation(userId)
+
+    await invalidatePublicShareCache(context.env, userId)
 
     return new Response(JSON.stringify(response), {
       status: 200,

@@ -12,6 +12,7 @@ import zhCNTags from './locales/zh-CN/tags.json'
 import zhCNSettings from './locales/zh-CN/settings.json'
 import zhCNImport from './locales/zh-CN/import.json'
 import zhCNInfo from './locales/zh-CN/info.json'
+import zhCNShare from './locales/zh-CN/share.json'
 
 import enCommon from './locales/en/common.json'
 import enAuth from './locales/en/auth.json'
@@ -22,6 +23,7 @@ import enTags from './locales/en/tags.json'
 import enSettings from './locales/en/settings.json'
 import enImport from './locales/en/import.json'
 import enInfo from './locales/en/info.json'
+import enShare from './locales/en/share.json'
 
 // 支持的语言列表
 export const supportedLanguages = [
@@ -42,7 +44,8 @@ const resources = {
     tags: zhCNTags,
     settings: zhCNSettings,
     import: zhCNImport,
-    info: zhCNInfo
+    info: zhCNInfo,
+    share: zhCNShare
   },
   en: {
     common: enCommon,
@@ -53,7 +56,8 @@ const resources = {
     tags: enTags,
     settings: enSettings,
     import: enImport,
-    info: enInfo
+    info: enInfo,
+    share: enShare
   }
 }
 
@@ -65,7 +69,7 @@ i18n
     resources,
     fallbackLng: 'zh-CN',
     defaultNS: 'common',
-    ns: ['common', 'auth', 'errors', 'tabGroups', 'bookmarks', 'tags', 'settings', 'import', 'info'],
+    ns: ['common', 'auth', 'errors', 'tabGroups', 'bookmarks', 'tags', 'settings', 'import', 'info', 'share'],
 
     detection: {
       // 语言检测顺序：localStorage -> 浏览器语言

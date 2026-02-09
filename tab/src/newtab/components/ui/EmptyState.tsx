@@ -2,10 +2,10 @@
  * iOS 风格空状态组件
  */
 
-import { Inbox, Search, Bookmark, CheckSquare, FileText, TrendingUp } from 'lucide-react';
+import { Inbox, Search, Bookmark } from 'lucide-react';
 import { t } from '@/lib/i18n';
 
-type EmptyStateType = 'default' | 'search' | 'bookmark' | 'todo' | 'notes' | 'hotsearch';
+type EmptyStateType = 'default' | 'search' | 'bookmark';
 
 interface EmptyStateProps {
   type?: EmptyStateType;
@@ -17,9 +17,6 @@ const ICONS: Record<EmptyStateType, React.ReactNode> = {
   default: <Inbox className="w-8 h-8" />,
   search: <Search className="w-8 h-8" />,
   bookmark: <Bookmark className="w-8 h-8" />,
-  todo: <CheckSquare className="w-8 h-8" />,
-  notes: <FileText className="w-8 h-8" />,
-  hotsearch: <TrendingUp className="w-8 h-8" />,
 };
 
 const getDefaultMessage = (type: EmptyStateType): string => {
@@ -27,9 +24,6 @@ const getDefaultMessage = (type: EmptyStateType): string => {
     default: t('empty_default'),
     search: t('empty_search'),
     bookmark: t('empty_bookmark'),
-    todo: t('empty_todo'),
-    notes: t('empty_notes'),
-    hotsearch: t('empty_hotsearch'),
   };
   return messages[type];
 };

@@ -10,6 +10,7 @@ import { success, badRequest, notFound, noContent, internalError } from '../../.
 import { requireApiKeyAuth, ApiKeyAuthContext } from '../../../middleware/api-key-auth-pages'
 import { isValidUrl, sanitizeString } from '../../../lib/validation'
 import { normalizeBookmark } from '../../../lib/bookmark-utils'
+import { invalidatePublicShareCache } from '../../shared/cache'
 
 interface UpdateBookmarkRequest {
   title?: string
@@ -21,6 +22,7 @@ interface UpdateBookmarkRequest {
   tags?: string[]     // 新版：标签名称数组（推荐）
   is_pinned?: boolean
   is_archived?: boolean
+  is_public?: boolean
 }
 
 // GET /api/bookmarks/:id - 获取单个书签详情
@@ -59,6 +61,8 @@ export const onRequestGet: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[] 
         .first<{ count: number }>()
 
       const snapshotCount = snapshotCountResult?.count || 0
+
+      await invalidatePublicShareCache(context.env, userId)
 
       return success({
         bookmark: {
@@ -147,6 +151,11 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, ApiKeyAuthContext>[
       if (body.is_archived !== undefined) {
         updates.push('is_archived = ?')
         values.push(body.is_archived ? 1 : 0)
+      }
+
+      if (body.is_public !== undefined) {
+        updates.push('is_public = ?')
+        values.push(body.is_public ? 1 : 0)
       }
 
       const now = new Date().toISOString()
@@ -258,6 +267,8 @@ export const onRequestDelete: PagesFunction<Env, RouteParams, ApiKeyAuthContext>
       await context.env.DB.prepare('DELETE FROM bookmark_tags WHERE bookmark_id = ?')
         .bind(bookmarkId)
         .run()
+
+      await invalidatePublicShareCache(context.env, userId)
 
       return noContent()
     } catch (error) {

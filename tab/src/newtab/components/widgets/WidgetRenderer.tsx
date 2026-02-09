@@ -1,19 +1,11 @@
 /**
- * 组件渲染器 - 根据类型渲染对应的组件
+ * 组件渲染器 - 只渲染 shortcut 和 bookmarkFolder
  */
 
 import { memo } from 'react';
 import type { GridItem } from '../../types';
 import type { WidgetRendererProps } from './types';
 import { getSizeSpan } from './widgetRegistry';
-
-// 懒加载组件包装器
-import { WeatherWidget } from './WeatherWidget';
-import { ClockWidget } from './ClockWidget';
-import { TodoWidget } from './TodoWidget';
-import { NotesWidget } from './NotesWidget';
-import { HotSearchWidget } from './HotSearchWidget';
-import { PoetryWidget } from './PoetryWidget';
 import { ShortcutWidget } from './ShortcutWidget';
 import { BookmarkFolderWidget } from './BookmarkFolderWidget';
 
@@ -21,12 +13,6 @@ import { BookmarkFolderWidget } from './BookmarkFolderWidget';
 const WIDGET_COMPONENTS: Record<string, React.ComponentType<WidgetRendererProps>> = {
   shortcut: ShortcutWidget,
   bookmarkFolder: BookmarkFolderWidget,
-  weather: WeatherWidget,
-  clock: ClockWidget,
-  todo: TodoWidget,
-  notes: NotesWidget,
-  hotsearch: HotSearchWidget,
-  poetry: PoetryWidget,
 };
 
 interface Props {

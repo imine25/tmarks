@@ -5,9 +5,16 @@
     "tagPlaceholder": "Search tags...",
     "noResults": "No matching bookmarks found"
   },
+  "filter": {
+    "all": "All bookmarks",
+    "public": "Public only",
+    "private": "Private only",
+    "clickToSwitch": "(click to switch)"
+  },
   "sort": {
     "created": "By created time",
     "updated": "By updated time",
+    "pinned": "Pinned first",
     "popular": "By popularity",
     "clickToSwitch": "(click to switch)"
   },
@@ -24,13 +31,13 @@
     "switchToBookmarkSearch": "Switch to bookmark search",
     "batchMode": "Batch mode",
     "exitBatchMode": "Exit batch mode",
-    "archive": "Archive",
     "trash": "Trash",
     "addBookmark": "Add bookmark"
   },
   "empty": {
     "title": "No bookmarks yet",
-    "description": "Click \"Add Bookmark\" button to start collecting"
+    "description": "Click \"Add Bookmark\" button to start collecting",
+    "readOnlyDescription": "No public bookmarks available"
   },
   "loading": "Loading...",
   "status": {
@@ -116,6 +123,7 @@
     "noTags": "No tags yet, type above and press Enter to create",
     "pinned": "Pinned",
     "archived": "Archived",
+    "public": "Public",
     "save": "Save",
     "create": "Create",
     "saving": "Saving...",
@@ -165,6 +173,7 @@
       "totalBookmarks": "Total Bookmarks",
       "totalTags": "Total Tags",
       "totalClicks": "Total Clicks",
+      "publicBookmarks": "Public Bookmarks",
       "archived": "Archived"
     },
     "charts": {
@@ -216,35 +225,5 @@
     "emptyTrashFailed": "Failed to empty trash, please try again",
     "confirmDelete": "Confirm Delete",
     "confirm": "Confirm"
-  },
-  "archive": {
-    "title": "Archived Bookmarks",
-    "backToBookmarks": "Back to Bookmarks",
-    "description": "Bookmarks you don't need now but might use later",
-    "loadFailed": "Failed to load archive",
-    "searchPlaceholder": "Search archived bookmarks...",
-    "searchResults": "Found {{count}} results ({{total}} archived bookmarks total)",
-    "noResults": "No matching archived bookmarks found",
-    "emptyState": {
-      "title": "No archived bookmarks",
-      "description": "Archive feature helps you hide bookmarks you don't need now, keeping your main list clean"
-    },
-    "archivedAt": "Archived {{time}}",
-    "unarchive": "Restore",
-    "unarchiveTooltip": "Restore to main list",
-    "delete": "Delete",
-    "deleteTooltip": "Move to trash",
-    "unarchiveTitle": "Restore Bookmark",
-    "unarchiveMessage": "Are you sure you want to restore \"{{title}}\" to main list?",
-    "unarchiveSuccess": "Bookmark restored to main list",
-    "unarchiveFailed": "Failed to restore, please try again",
-    "deleteTitle": "Delete Bookmark",
-    "deleteMessage": "Are you sure you want to delete \"{{title}}\"? It will be moved to trash.",
-    "deleteSuccess": "Bookmark moved to trash",
-    "deleteFailed": "Failed to delete, please try again",
-    "infoBox": {
-      "tip1": "Archived bookmarks won't appear in main list, but will be saved permanently and won't be auto-deleted.",
-      "tip2": "You can restore archived bookmarks to main list anytime, or delete them to trash."
-    }
   }
 }

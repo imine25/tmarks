@@ -2,7 +2,6 @@
  * 可排序的网格项包装器
  */
 
-import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { WidgetRenderer } from '../widgets/WidgetRenderer';
@@ -14,7 +13,6 @@ interface SortableGridItemProps {
   onUpdate?: (id: string, updates: Partial<GridItem>) => void;
   onRemove?: (id: string) => void;
   isEditing?: boolean;
-  onConfigClick?: (item: GridItem) => void;
   onOpenFolder?: (folderId: string) => void;
   isBatchMode?: boolean;
   isSelected?: boolean;
@@ -27,7 +25,6 @@ export function SortableGridItem({
   onUpdate,
   onRemove,
   isEditing,
-  onConfigClick,
   onOpenFolder,
   isBatchMode,
   isSelected,
@@ -52,14 +49,6 @@ export function SortableGridItem({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const handleDoubleClick = (e: React.MouseEvent) => {
-    if (isEditing && item.type !== 'shortcut') {
-      e.preventDefault();
-      e.stopPropagation();
-      onConfigClick?.(item);
-    }
-  };
-
   return (
     <div
       ref={setNodeRef}
@@ -67,7 +56,6 @@ export function SortableGridItem({
       {...attributes}
       {...listeners}
       className={`touch-none cursor-grab active:cursor-grabbing`}
-      onDoubleClick={handleDoubleClick}
     >
       <WidgetRenderer
         item={item}

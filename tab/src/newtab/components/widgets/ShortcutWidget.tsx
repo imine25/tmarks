@@ -42,42 +42,18 @@ export const ShortcutWidget = memo(function ShortcutWidget({
   const [imgError, setImgError] = useState(false);
   const [imgLoading, setImgLoading] = useState(true);
   const iconRef = useRef<HTMLDivElement>(null);
-  const triedChromeRef = useRef(false);
   const triedIconRef = useRef(false);
 
   const handleImgLoad = useCallback(() => setImgLoading(false), []);
   const handleImgError = useCallback(() => {
-    const href = typeof location !== 'undefined' ? location.href : '';
-    const isNewtabPage = href.includes('/src/newtab/') || href.includes('/newtab/');
-
-    const ua = typeof navigator !== 'undefined' ? navigator.userAgent.toLowerCase() : '';
-    const isFirefox = ua.includes('firefox');
-    const isChromium =
-      !isFirefox &&
-      typeof globalThis !== 'undefined' &&
-      typeof (globalThis as any).chrome !== 'undefined' &&
-      !!(globalThis as any).chrome?.runtime?.id;
-
-    if (isChromium && isNewtabPage && !triedChromeRef.current) {
-      triedChromeRef.current = true;
-      try {
-        const chromeSrc = `chrome://favicon2/?size=64&page_url=${encodeURIComponent(shortcut.url)}`;
-        if (chromeSrc !== imgSrc) {
-          setImgSrc(chromeSrc);
-          setImgError(false);
-          setImgLoading(true);
-          return;
-        }
-      } catch {}
-    }
-
+    // 回退到 Google Favicon API（国内可用）
     if (!triedIconRef.current) {
       triedIconRef.current = true;
       try {
         const domain = new URL(shortcut.url).hostname;
-        const iconSrc = `https://icon.ooo/${domain}?size=64&v=1`;
-        if (iconSrc !== imgSrc) {
-          setImgSrc(iconSrc);
+        const googleSrc = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+        if (googleSrc !== imgSrc) {
+          setImgSrc(googleSrc);
           setImgError(false);
           setImgLoading(true);
           return;
@@ -93,8 +69,7 @@ export const ShortcutWidget = memo(function ShortcutWidget({
     setImgSrc(favicon);
     setImgError(false);
     setImgLoading(true);
-    triedChromeRef.current = favicon.startsWith('chrome://favicon2/');
-    triedIconRef.current = favicon.includes('icon.ooo');
+    triedIconRef.current = favicon.includes('google.com/s2/favicons');
   }, [favicon]);
 
   useEffect(() => {

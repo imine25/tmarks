@@ -7,6 +7,7 @@ const VIEW_MODE_UPDATED_AT_STORAGE_KEY = 'tmarks:view_mode_updated_at'
 
 const VIEW_MODES = ['list', 'card', 'minimal', 'title'] as const
 export type ViewMode = typeof VIEW_MODES[number]
+export type VisibilityFilter = 'all' | 'public' | 'private'
 
 function isValidViewMode(value: string | null): value is ViewMode {
   return !!value && (VIEW_MODES as readonly string[]).includes(value)
@@ -48,6 +49,7 @@ export function useBookmarksState() {
   // 排序和视图状态
   const [sortBy, setSortBy] = useState<SortOption>('created')
   const [viewMode, setViewMode] = useState<ViewMode>(() => getStoredViewMode() ?? 'card')
+  const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('all')
   const [tagLayout, setTagLayout] = useState<'grid' | 'masonry'>('grid')
   const [sortByInitialized, setSortByInitialized] = useState(false)
 
@@ -86,6 +88,8 @@ export function useBookmarksState() {
     setSortBy,
     viewMode,
     setViewMode,
+    visibilityFilter,
+    setVisibilityFilter,
     tagLayout,
     setTagLayout,
     sortByInitialized,

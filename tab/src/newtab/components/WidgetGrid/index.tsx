@@ -20,7 +20,6 @@ import { t } from '@/lib/i18n';
 import { useNewtabStore } from '../../hooks/useNewtabStore';
 import { Z_INDEX } from '../../constants/z-index';
 import { WidgetRenderer } from '../widgets/WidgetRenderer';
-import { WidgetConfigModal } from '../widgets/WidgetConfigModal';
 import { BookmarkFolderModal } from '../BookmarkFolderModal';
 import { SortableGridItem } from '../grid';
 import { useDndDebug, useDndDebugListeners } from '../grid';
@@ -58,7 +57,6 @@ export function WidgetGrid({
 
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeItemSnapshot, setActiveItemSnapshot] = useState<GridItem | null>(null);
-  const [configItem, setConfigItem] = useState<GridItem | null>(null);
   const [openFolderId, setOpenFolderId] = useState<string | null>(null);
   const [folderMergePrompt, setFolderMergePrompt] = useState<MergePrompt | null>(null);
   const [shortcutMergePrompt, setShortcutMergePrompt] = useState<MergePrompt | null>(null);
@@ -230,7 +228,6 @@ export function WidgetGrid({
                   onUpdate={updateGridItem}
                   onRemove={removeGridItem}
                   isEditing={isEditing}
-                  onConfigClick={setConfigItem}
                   onOpenFolder={handleOpenFolder}
                   isBatchMode={isBatchMode}
                   isSelected={!!batchSelectedIds?.has(item.id)}
@@ -282,16 +279,6 @@ export function WidgetGrid({
           />
         )}
       </DndContext>
-
-      {configItem && (
-        <WidgetConfigModal
-          item={configItem}
-          isOpen={!!configItem}
-          onClose={() => setConfigItem(null)}
-          onUpdate={updateGridItem}
-          onRemove={removeGridItem}
-        />
-      )}
 
       <EditButton isEditing={isEditing} onToggle={() => onEditingChange?.(!isEditing)} />
 

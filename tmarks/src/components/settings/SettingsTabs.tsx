@@ -33,7 +33,7 @@ export function SettingsTabs({ tabs, activeTab, onTabChange, children }: Setting
           <ChevronDown className={`w-4 h-4 transition-transform ${showMobileMenu ? 'rotate-180' : ''}`} />
         </button>
         {showMobileMenu && (
-          <div className="absolute z-20 mt-2 w-full rounded-lg border border-border bg-card shadow-lg">
+          <div className="absolute z-20 mt-2 w-full rounded-lg border border-border bg-popover shadow-lg">
             {tabs.map((tab) => (
               <button
                 key={tab.id}

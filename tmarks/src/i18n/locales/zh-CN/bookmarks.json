@@ -5,9 +5,16 @@
     "tagPlaceholder": "搜索标签...",
     "noResults": "没有找到匹配的书签"
   },
+  "filter": {
+    "all": "全部书签",
+    "public": "仅公开",
+    "private": "仅私密",
+    "clickToSwitch": "(点击切换)"
+  },
   "sort": {
     "created": "按创建时间",
     "updated": "按更新时间",
+    "pinned": "置顶优先",
     "popular": "按热门程度",
     "clickToSwitch": "(点击切换)"
   },
@@ -24,13 +31,13 @@
     "switchToBookmarkSearch": "切换到书签搜索",
     "batchMode": "批量操作",
     "exitBatchMode": "退出批量操作",
-    "archive": "归档",
     "trash": "回收站",
     "addBookmark": "新增书签"
   },
   "empty": {
     "title": "暂无书签",
-    "description": "点击右上角 \"新增书签\" 按钮开始收藏精彩内容"
+    "description": "点击右上角 \"新增书签\" 按钮开始收藏精彩内容",
+    "readOnlyDescription": "发布者尚未公开任何书签，或公开内容已取消"
   },
   "loading": "加载中...",
   "status": {
@@ -116,6 +123,7 @@
     "noTags": "暂无标签，在上方输入框输入后按 Enter 创建",
     "pinned": "置顶",
     "archived": "归档",
+    "public": "公开分享",
     "save": "保存",
     "create": "创建",
     "saving": "保存中...",
@@ -165,6 +173,7 @@
       "totalBookmarks": "书签总数",
       "totalTags": "标签数量",
       "totalClicks": "总点击数",
+      "publicBookmarks": "公开书签",
       "archived": "已归档"
     },
     "charts": {
@@ -216,35 +225,5 @@
     "emptyTrashFailed": "清空回收站失败，请重试",
     "confirmDelete": "确认删除",
     "confirm": "确认"
-  },
-  "archive": {
-    "title": "归档书签",
-    "backToBookmarks": "返回书签",
-    "description": "这里存放暂时不需要但将来可能用到的书签",
-    "loadFailed": "加载归档失败",
-    "searchPlaceholder": "搜索归档书签...",
-    "searchResults": "找到 {{count}} 个结果（共 {{total}} 个归档书签）",
-    "noResults": "没有找到匹配的归档书签",
-    "emptyState": {
-      "title": "暂无归档书签",
-      "description": "归档功能可以帮你隐藏暂时不需要的书签，保持主列表整洁"
-    },
-    "archivedAt": "归档于 {{time}}",
-    "unarchive": "恢复",
-    "unarchiveTooltip": "恢复到主列表",
-    "delete": "删除",
-    "deleteTooltip": "移到回收站",
-    "unarchiveTitle": "恢复书签",
-    "unarchiveMessage": "确定要将\"{{title}}\"恢复到主列表吗？",
-    "unarchiveSuccess": "书签已恢复到主列表",
-    "unarchiveFailed": "恢复失败，请重试",
-    "deleteTitle": "删除书签",
-    "deleteMessage": "确定要删除\"{{title}}\"吗？删除后将移到回收站。",
-    "deleteSuccess": "书签已移到回收站",
-    "deleteFailed": "删除失败，请重试",
-    "infoBox": {
-      "tip1": "归档的书签不会出现在主列表中，但会永久保存，不会自动删除。",
-      "tip2": "你可以随时恢复归档的书签到主列表，或者将其删除到回收站。"
-    }
   }
 }

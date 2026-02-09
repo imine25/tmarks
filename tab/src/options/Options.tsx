@@ -8,6 +8,7 @@ import { CacheStatusSection } from './components/CacheStatusSection';
 import { PresetModal } from './components/PresetModal';
 import { TMarksTagSection } from './components/TMarksTagSection';
 import { NewTabTagSection } from './components/NewTabTagSection';
+import { ImportSection } from './components/ImportSection';
 import { useOptionsForm } from './hooks/useOptionsForm';
 import { t } from '@/lib/i18n';
 
@@ -54,7 +55,7 @@ export function Options() {
     handleDeleteSavedConnection,
   } = useOptionsForm();
 
-  type OptionsTab = 'ai' | 'tmarkstag' | 'newtabtag' | 'preferences' | 'tmarks';
+  type OptionsTab = 'ai' | 'tmarkstag' | 'newtabtag' | 'import' | 'preferences' | 'tmarks';
   const [activeTab, setActiveTab] = useState<OptionsTab>('ai');
 
   const tabs = useMemo(
@@ -63,6 +64,7 @@ export function Options() {
         { id: 'ai' as const, label: t('options_tab_ai') },
         { id: 'tmarkstag' as const, label: 'TMarks' },
         { id: 'newtabtag' as const, label: 'NewTab' },
+        { id: 'import' as const, label: t('options_tab_import') },
         { id: 'preferences' as const, label: t('options_tab_preferences') },
         { id: 'tmarks' as const, label: t('options_tab_tmarks') },
       ],
@@ -171,6 +173,10 @@ export function Options() {
 
               {activeTab === 'newtabtag' && (
                 <NewTabTagSection formData={formData} setFormData={setFormData} setSuccessMessage={setSuccessMessage} />
+              )}
+
+              {activeTab === 'import' && (
+                <ImportSection formData={formData} setSuccessMessage={setSuccessMessage} setError={setError} />
               )}
 
               {activeTab === 'preferences' && (

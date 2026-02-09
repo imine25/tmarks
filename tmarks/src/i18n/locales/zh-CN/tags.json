@@ -7,7 +7,8 @@
   "empty": {
     "title": "暂无标签",
     "description": "点击 + 创建第一个标签",
-    "noMatch": "没有找到匹配的标签"
+    "noMatch": "没有找到匹配的标签",
+    "readOnly": "发布者尚未公开任何标签"
   },
   "sort": {
     "byUsage": "按书签数排序 (点击切换到按热度)",

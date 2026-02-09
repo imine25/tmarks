@@ -73,6 +73,7 @@ export interface Bookmark {
   favicon: string | null
   is_pinned: boolean
   is_archived: boolean
+  is_public: boolean
   click_count: number
   last_clicked_at: string | null
   has_snapshot: boolean
@@ -93,6 +94,7 @@ export interface CreateBookmarkRequest {
   tag_ids?: string[]
   is_pinned?: boolean
   is_archived?: boolean
+  is_public?: boolean
 }
 
 export interface UpdateBookmarkRequest {
@@ -104,6 +106,7 @@ export interface UpdateBookmarkRequest {
   tag_ids?: string[]
   is_pinned?: boolean
   is_archived?: boolean
+  is_public?: boolean
 }
 
 export interface BookmarksResponse {
@@ -430,4 +433,3 @@ export interface StatisticsResponse {
   top_domains: DomainCount[]
   group_size_distribution: GroupSizeDistribution[]
 }
-

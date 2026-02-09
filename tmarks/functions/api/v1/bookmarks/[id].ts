@@ -4,6 +4,7 @@ import { success, badRequest, notFound, noContent, internalError } from '../../.
 import { requireAuth, AuthContext } from '../../../middleware/auth'
 import { isValidUrl, sanitizeString } from '../../../lib/validation'
 import { normalizeBookmark } from '../../../lib/bookmark-utils'
+import { invalidatePublicShareCache } from '../../shared/cache'
 
 interface UpdateBookmarkRequest {
   title?: string
@@ -15,6 +16,7 @@ interface UpdateBookmarkRequest {
   tags?: string[]     // 新版：标签名称数组（推荐）
   is_pinned?: boolean
   is_archived?: boolean
+  is_public?: boolean
 }
 
 // PATCH /api/v1/bookmarks/:id - 更新书签
@@ -79,6 +81,11 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
       if (body.is_archived !== undefined) {
         updates.push('is_archived = ?')
         values.push(body.is_archived ? 1 : 0)
+      }
+
+      if (body.is_public !== undefined) {
+        updates.push('is_public = ?')
+        values.push(body.is_public ? 1 : 0)
       }
 
       const now = new Date().toISOString()
@@ -146,6 +153,8 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
         return internalError('Failed to load bookmark after update')
       }
 
+      await invalidatePublicShareCache(context.env, userId)
+
       return success({
         bookmark: {
           ...normalizeBookmark(updatedBookmarkRow),
@@ -190,6 +199,8 @@ export const onRequestDelete: PagesFunction<Env, RouteParams, AuthContext>[] = [
       await context.env.DB.prepare('DELETE FROM bookmark_tags WHERE bookmark_id = ?')
         .bind(bookmarkId)
         .run()
+
+      await invalidatePublicShareCache(context.env, userId)
 
       return noContent()
     } catch (error) {
@@ -243,6 +254,8 @@ export const onRequestPut: PagesFunction<Env, RouteParams, AuthContext>[] = [
       if (!restoredBookmarkRow) {
         return internalError('Failed to load bookmark after restore')
       }
+
+      await invalidatePublicShareCache(context.env, userId)
 
       return success({
         bookmark: {

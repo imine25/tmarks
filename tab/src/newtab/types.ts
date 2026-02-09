@@ -27,40 +27,11 @@ export type GridItemSize = '1x1' | '2x1' | '1x2' | '2x2' | '2x3' | '2x4';
 // 网格项类型
 export type GridItemType = 
   | 'shortcut' 
-  | 'bookmarkFolder'
-  | 'weather' 
-  | 'clock' 
-  | 'todo' 
-  | 'notes' 
-  | 'hotsearch' 
-  | 'poetry';
+  | 'bookmarkFolder';
 
-// 组件配置类型
+// 组件配置类型（保留为空，未来扩展使用）
 export interface WidgetConfig {
-  weather?: {
-    city?: string;
-    unit?: 'C' | 'F';
-    showForecast?: boolean;
-    autoLocation?: boolean;
-  };
-  clock?: {
-    format?: ClockFormat;
-    showDate?: boolean;
-    showSeconds?: boolean;
-    showLunar?: boolean;
-  };
-  todo?: {
-    showCompleted?: boolean;
-  };
-  notes?: {
-    content?: string;
-  };
-  hotsearch?: {
-    type?: HotSearchType;
-  };
-  poetry?: {
-    autoRefresh?: boolean;
-  };
+  // 保留接口定义
 }
 
 // 统一网格项类型
@@ -141,7 +112,7 @@ export type ClockFormat = '12h' | '24h';
 export interface NewTabSettings {
   // 时钟
   showClock: boolean;
-  clockFormat: ClockFormat;
+  clockFormat: '12h' | '24h';
   showDate: boolean;
   showSeconds: boolean;
   
@@ -160,8 +131,8 @@ export interface NewTabSettings {
   // TMarks 同步
   showPinnedBookmarks: boolean;
   enableSearchSuggestions: boolean;
-  autoRefreshPinnedBookmarks: boolean; // 自动刷新置顶书签
-  pinnedBookmarksRefreshTime: 'morning' | 'evening'; // 刷新时间：早上或晚上
+  autoRefreshPinnedBookmarks: boolean;
+  pinnedBookmarksRefreshTime: 'morning' | 'evening';
 
   // 问候语
   showGreeting: boolean;
@@ -172,28 +143,8 @@ export interface NewTabSettings {
 
   // 每日诗词
   showPoetry: boolean;
-  
-  // 热搜类型（用于网格组件配置）
-  hotSearchType: HotSearchType;
-
-  enableWorkspaceAiOrganize?: boolean;
-  workspaceAiOrganizeRules?: string;
-  workspaceAiOrganizeMaxBookmarks?: number;
-  enableHistoryHeat?: boolean;
-  historyDays?: number;
-  historyHeatTopN?: number;
-  workspaceAiOrganizeStrictHierarchy?: boolean;
-  workspaceAiOrganizeAllowNewFolders?: boolean;
-  workspaceAiOrganizePreferOriginalPaths?: boolean;
-  workspaceAiOrganizeVerboseLogs?: boolean;
-  workspaceAiOrganizeTopLevelCount?: number;
-
-  enableWorkspaceAiOrganizeCustomPrompt?: boolean;
-  workspaceAiOrganizePrompt?: string;
 
   showEditGuide?: boolean;
-
-
 }
 
 // NewTab 存储数据
@@ -208,23 +159,6 @@ export interface NewTabStorage {
   gridItems?: GridItem[];
 }
 
-// 组件尺寸配置
-export interface WidgetSizeConfig {
-  type: GridItemType;
-  defaultSize: GridItemSize;
-  allowedSizes: GridItemSize[];
-  minWidth: number; // 最小列数
-  minHeight: number; // 最小行数
-}
-
-// 组件元数据
-export interface WidgetMeta {
-  type: GridItemType;
-  name: string;
-  icon: string;
-  description: string;
-  sizeConfig: WidgetSizeConfig;
-}
 
 // 搜索结果
 export interface SearchResult {
@@ -251,15 +185,7 @@ export interface SyncState {
   error: string | null;
 }
 
-// 待办事项
-export interface TodoItem {
-  id: string;
-  text: string;
-  completed: boolean;
-  createdAt: number;
-}
-
-// 天气数据
+// 天气数据（Weather 组件使用）
 export interface WeatherData {
   temp: number;
   condition: string;
@@ -268,23 +194,7 @@ export interface WeatherData {
   updatedAt: number;
 }
 
-// 备忘录
-export interface NoteData {
-  content: string;
-  updatedAt: number;
-}
-
-// 热搜项
-export interface HotSearchItem {
-  title: string;
-  hot: number | string;
-  url: string;
-}
-
-// 热搜类型
-export type HotSearchType = 'baidu' | 'weibo' | 'zhihu' | 'bilibili';
-
-// 诗词
+// 诗词（Poetry 组件使用）
 export interface Poetry {
   content: string;
   author: string;

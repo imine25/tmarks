@@ -5,6 +5,9 @@ import {
   List, 
   AlignLeft, 
   Type, 
+  Eye, 
+  Lock, 
+  Layers, 
   Calendar, 
   RefreshCw, 
   Bookmark as BookmarkIcon, 
@@ -12,12 +15,11 @@ import {
   Tag as TagIcon,
   Search,
   Plus,
-  Trash2,
-  Archive
+  Trash2
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import type { ViewMode } from '../hooks/useBookmarksState'
+import type { ViewMode, VisibilityFilter } from '../hooks/useBookmarksState'
 import type { SortOption } from '@/components/common/SortSelector'
 
 function ViewModeIcon({ mode }: { mode: ViewMode }) {
@@ -35,12 +37,27 @@ function ViewModeIcon({ mode }: { mode: ViewMode }) {
   }
 }
 
+function VisibilityIcon({ filter }: { filter: VisibilityFilter }) {
+  switch (filter) {
+    case 'public':
+      return <Eye className="w-4 h-4" />
+    case 'private':
+      return <Lock className="w-4 h-4" />
+    case 'all':
+      return <Layers className="w-4 h-4" />
+    default:
+      return <Layers className="w-4 h-4" />
+  }
+}
+
 function SortIcon({ sort }: { sort: SortOption }) {
   switch (sort) {
     case 'created':
       return <Calendar className="w-4 h-4" />
     case 'updated':
       return <RefreshCw className="w-4 h-4" />
+    case 'pinned':
+      return <BookmarkIcon className="w-4 h-4" />
     case 'popular':
       return <TrendingUp className="w-4 h-4" />
     default:
@@ -55,6 +72,8 @@ interface TopActionBarProps {
   setSearchKeyword: (keyword: string) => void
   sortBy: SortOption
   onSortByChange: () => void
+  visibilityFilter: VisibilityFilter
+  setVisibilityFilter: (filter: VisibilityFilter) => void
   viewMode: ViewMode
   onViewModeChange: () => void
   batchMode: boolean
@@ -71,6 +90,8 @@ export function TopActionBar({
   setSearchKeyword,
   sortBy,
   onSortByChange,
+  visibilityFilter,
+  setVisibilityFilter,
   viewMode,
   onViewModeChange,
   batchMode,
@@ -83,6 +104,7 @@ export function TopActionBar({
   
   const getViewModeLabel = (mode: ViewMode) => t(`viewMode.${mode}`)
   const getSortLabel = (sort: SortOption) => t(`sort.${sort}`)
+  const getVisibilityLabel = (filter: VisibilityFilter) => t(`filter.${filter}`)
 
   return (
     <div className="flex-shrink-0 px-3 sm:px-4 md:px-6 pt-3 sm:pt-4 md:pt-6 pb-3 sm:pb-4 w-full">
@@ -146,6 +168,24 @@ export function TopActionBar({
               <SortIcon sort={sortBy} />
             </button>
 
+            {/* Visibility filter button */}
+            <button
+              onClick={() => {
+                const nextFilter = visibilityFilter === 'all' 
+                  ? 'public' 
+                  : visibilityFilter === 'public' 
+                    ? 'private' 
+                    : 'all'
+                setVisibilityFilter(nextFilter)
+              }}
+              className="btn btn-sm btn-ghost p-2 flex-shrink-0"
+              title={`${getVisibilityLabel(visibilityFilter)} ${t('filter.clickToSwitch')}`}
+              aria-label={`${getVisibilityLabel(visibilityFilter)} ${t('filter.clickToSwitch')}`}
+              type="button"
+            >
+              <VisibilityIcon filter={visibilityFilter} />
+            </button>
+
             {/* View mode button */}
             <button
               onClick={onViewModeChange}
@@ -176,16 +216,6 @@ export function TopActionBar({
             >
               <CheckCircle className="w-4 h-4" />
             </button>
-
-            {/* Archive button */}
-            <Link
-              to="/bookmarks/archive"
-              className="btn btn-sm btn-ghost p-2 flex-shrink-0"
-              title={t('toolbar.archive')}
-              aria-label={t('toolbar.archive')}
-            >
-              <Archive className="w-4 h-4" />
-            </Link>
 
             {/* Trash button */}
             <Link
@@ -256,6 +286,17 @@ export function TopActionBar({
               <SortIcon sort={sortBy} />
             </button>
 
+            {/* Visibility filter button */}
+            <button
+              onClick={() => setVisibilityFilter(visibilityFilter === 'all' ? 'public' : visibilityFilter === 'public' ? 'private' : 'all')}
+              className="btn btn-sm btn-ghost p-2 flex-shrink-0"
+              title={`${getVisibilityLabel(visibilityFilter)} ${t('filter.clickToSwitch')}`}
+              aria-label={`${getVisibilityLabel(visibilityFilter)} ${t('filter.clickToSwitch')}`}
+              type="button"
+            >
+              <VisibilityIcon filter={visibilityFilter} />
+            </button>
+
             {/* View mode button */}
             <button
               onClick={onViewModeChange}
@@ -284,16 +325,6 @@ export function TopActionBar({
             >
               <CheckSquare className="w-5 h-5" />
             </button>
-
-            {/* Archive button */}
-            <Link
-              to="/bookmarks/archive"
-              className="btn btn-sm btn-ghost p-2 flex-shrink-0"
-              title={t('toolbar.archive')}
-              aria-label={t('toolbar.archive')}
-            >
-              <Archive className="w-5 h-5" />
-            </Link>
 
             {/* Trash button */}
             <Link

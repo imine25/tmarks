@@ -69,40 +69,7 @@ export const DEFAULT_SETTINGS: NewTabSettings = {
   userName: '',
   showLunar: true,
   showPoetry: true,
-  hotSearchType: 'baidu',
-  enableWorkspaceAiOrganize: true,
-  workspaceAiOrganizeRules: '',
-  workspaceAiOrganizeMaxBookmarks: 300,
-  enableHistoryHeat: false,
-  historyDays: 30,
-  historyHeatTopN: 20,
-  workspaceAiOrganizeStrictHierarchy: false,
-  workspaceAiOrganizeAllowNewFolders: true,
-  workspaceAiOrganizePreferOriginalPaths: true,
-  workspaceAiOrganizeVerboseLogs: true,
-  workspaceAiOrganizeTopLevelCount: 5,
-  enableWorkspaceAiOrganizeCustomPrompt: false,
-  workspaceAiOrganizePrompt: '',
   showEditGuide: true,
-};
-
-// 热搜类型配置
-export const HOT_SEARCH_TYPES = [
-  { id: 'baidu', name: 'Baidu Hot' },
-  { id: 'weibo', name: 'Weibo Hot' },
-  { id: 'zhihu', name: 'Zhihu Hot' },
-  { id: 'bilibili', name: 'Bilibili Hot' },
-] as const;
-
-// 获取本地化的热搜类型名称
-export const getHotSearchTypeName = (id: string): string => {
-  const nameMap: Record<string, string> = {
-    baidu: t('hot_search_baidu'),
-    weibo: t('hot_search_weibo'),
-    zhihu: t('hot_search_zhihu'),
-    bilibili: t('hot_search_bilibili'),
-  };
-  return nameMap[id] || id;
 };
 
 // 默认诗词库
