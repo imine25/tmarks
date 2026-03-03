@@ -184,7 +184,19 @@ export function TMarksImport({ formData, setSuccessMessage, setError }: TMarksIm
 
               const result = await importToTMarks(bookmarks, importState.importOptions, tmarksUrl, accessToken)
               tmarksImport.setImportResult(result)
-              setSuccessMessage(`成功导入 ${result.success} 个书签`)
+              
+              if (result.failed > 0 && result.imported === 0) {
+                // 全部失败
+                const firstError = result.errors?.[0]
+                const errorMsg = typeof firstError === 'string' ? firstError : firstError?.error || '导入失败'
+                throw new Error(errorMsg)
+              } else if (result.failed > 0) {
+                // 部分失败
+                setSuccessMessage(`成功导入 ${result.imported} 个书签，${result.failed} 个失败`)
+              } else {
+                // 全部成功
+                setSuccessMessage(`成功导入 ${result.imported} 个书签`)
+              }
             } catch (error) {
               setError(error instanceof Error ? error.message : '导入失败')
             } finally {
