@@ -52,8 +52,13 @@ export async function importToTMarks(
       }))
     }
     
-    console.log('[Import] Request body:', JSON.stringify(requestBody).substring(0, 200) + '...')
+    console.log('[Import] ========== REQUEST DEBUG ==========')
+    console.log('[Import] Request body:', JSON.stringify(requestBody, null, 2))
     console.log('[Import] Bookmarks count in request:', requestBody.bookmarks.length)
+    console.log('[Import] First bookmark:', JSON.stringify(requestBody.bookmarks[0], null, 2))
+    console.log('[Import] Has bookmarks field:', 'bookmarks' in requestBody)
+    console.log('[Import] Is bookmarks array:', Array.isArray(requestBody.bookmarks))
+    console.log('[Import] ==========================================')
 
     try {
       const response = await fetch(batchApiUrl, {
